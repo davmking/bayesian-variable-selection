@@ -209,7 +209,129 @@ lasso_tau + lasso_beta
 Note to myself: This might actually be why our sampler isn't working. Let's incorporate this into the actual thesis.
 
 
+### Normal-Gamma Prior
+
+This is similar to the LASSO regression, but solves some of the problems. Bayesian LASSO is suboptimal: the shrinkage effect is too weak for small coefficients. The Normal-Gamma assumes the mxing distribution in the scale normal of mixture has a gamma distribution, given by:
+
+$$
+  \beta_j | \tau_j \sim N(0, \tau_j^2) \\
+  \tau_j^2 \sim \text{gamma}(\lambda, 1/(2\xi^2))
+$$
+
+In this case, both hyperparameters are important.
+
+### Horseshoe Prior
+
+The horseshoe class of priors uses a global hyperparameter to shrink all coefficients towards zero, with a local hyperparameter to allow some coefficients to adjust the scale of shrinkage at the local level. These are known as **global-local** shrinkage priors. It can be represented as a scale mixture of normals,
+
+$$
+  \beta_j | \kappa_j \sim N(0, \kappa_j^2) \\
+  \kappa_j | \tau \sim C^+(0, \tau)
+$$
+
+In this case, $C^+(0, \tau)$ is a half-Cauchy distribution for the standard deviation $\kappa_j$. The $\kappa_j$ is referred to as the local shrinkage parameter, while $\tau$ is gthe global shrinkage parameter.
+
+```{r}
+tau <- 0.1
+
+N_samples <- 100000
+
+kappa <- rcauchy(N_samples * 2, 0, tau)
+kappa <- kappa[kappa > 0]
+
+beta <- rnorm(length(kappa), 0, kappa^2)
+
+horseshoe_kappa <- ggplot(mapping = aes(x = kappa)) +
+  geom_density(fill = "grey") +
+  coord_cartesian(xlim = c(0, quantile(kappa, 0.9975))) +
+  theme_bw() +
+  labs(x = "Kappa", y = "Density", title = "Horseshoe Kappa",
+       subtitle = "Tau = 0.1") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank())
+
+horseshoe_beta <- ggplot(mapping = aes(x = beta)) +
+  geom_density(fill = "grey") +
+  coord_cartesian(xlim = quantile(beta, c(.00001, .99999))) +
+  theme_bw() +
+  labs(x = "Beta", y = "Density", title = "Horseshoe Beta",
+       subtitle = "Tau = 0.1") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank())
+
+horseshoe_kappa + horseshoe_beta
+```
+
+Going to need to set a seed for this one, it has absurdly different outcomes based on the run.
+
+
+### Horseshoe+ Prior
+
+An extension of the horseshoe prior is the horseshoe+ prior,
+
+$$
+  \beta_j | \kappa_j \sim N(0, \kappa_j^2) \\
+  \kappa_j | \tau, \eta_j \sim C^+(0, \tau \eta_j) \\
+  \eta_j \sim C^+(0, 1)
+$$
+
+This extra latent variable provides an extra layer of local shrinkage, which is (in practice) often better in performance in terms of both MSE and computation time when dealing with ultra-sparse signals.
+
+
+### Dirichlet-Laplace Prior
+
+This is another global-local shrinkage prior:
+
+$$
+  \beta_j | \sigma^2, \phi_j, \psi_j, \tau \sim N(0, \sigma^2 \phi_j^2 \psi_j \tau^2) \\
+  \psi_j \sim \text{exp}(1/2) \\
+  (\phi_1, \dots, \phi_p) \sim \text{Dir}(a, \dots, a) \\
+  \tau \sim \text{gamma}(pa, 1/2)
+$$
+
+In this case, $\phi_j$ is the local shrinkage parameter, whereas $\tau$ is the global shrinkage parameter. Dir$(a, \dots, a)$ is the Dirichlet distribution with concentration vector $(a, \dots, a)$. This can be a hyperprior, but we can also choose: $a = 1/n$ if $p > n$ or there is a strong correlation between covariates; $a = 1/2$ when $p$ is small and there is only moderate correlation between covariates.
+
+```{r}
+p <- 10
+a <- 1/2
+sigma_2 <- 1
+
+N_samples <- 100000
+
+psi <- rexp(N_samples, 1/2)
+phi <- rdiric(N_samples, a)
+tau <- rgamma(N_samples, p * a, 1/2)
+beta <- rnorm(N_samples, 0, sigma_2 * psi * phi * tau^2)
+
+dl_psi <- ggplot(mapping = aes(x = psi)) +
+  geom_density(fill = "grey") +
+  theme_bw() +
+  labs(x = "Psi", y = "Density", title = "Psi",
+       subtitle = "Dirichlet-Laplace Prior") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank())
+
+ggplot(mapping = aes(x = phi)) +
+  geom_density(fill = "grey")
+```
+
+This might not be super possible to plot, due to the nature of a Dirichlet distribution in high dimensions. We will see.
+
+
 ## Hybrid Priors
+
+### SSLASSO
+
+The SSLASSO process considers a mixture of two Laplace distributions, where $\phi_1(\beta_j) = \frac{\lambda_1}{2} \text{exp} \{-\lambda_1 |\beta_j| \}$ with small $\lambda_1$ and $\lambda_0(\beta_j) = \frac{\lambda_0}{2} \text{exp}\{-\lambda_0 |\beta_j|\}$ with large $\lambda_0$. Using a binomial prior on $\gamma$,
+
+$$
+  \pi(\mathbf{\beta} | \mathbf{\gamma}) = \prod_{i = 1}^{p} \left [ \gamma_j \phi_1 (\beta_j) + (1 - \gamma_j) \phi_0(\beta_j) \right ]
+$$
+
+If $\phi_1(\beta_j) = \phi_0(\beta_j)$, we have the standard Lasso penalty.
 
 
 # Other Methods
