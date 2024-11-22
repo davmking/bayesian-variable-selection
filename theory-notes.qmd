@@ -6,6 +6,13 @@ bibliography: references.bib
 csl: apa.csl
 ---
 
+```{r}
+library(tidyverse)
+library(viridis)
+library(patchwork)
+```
+
+
 # Overview/Background
 
 Variable selection is important in high-dimensional settings: We often expect that only a small handful of the predictors are actually associated with the outcome, but when we include many in the model, we have issues with computational complexity, sparse solutions, and potentially issues with finding variables significant which are not actually meaningful predictors.
@@ -24,6 +31,114 @@ $$
 $$
 
 In this case, $\phi_1(\beta_j)$ is a diffuse "slab distribution" so that the $\beta_j$ can reach their true coefficients, and $\phi_0(\beta_j)$ is a concentrated "spike distribution" pulling effects to 0, and $\gamma_j$ is a binary latent indicator representing the $2^p$ possible models [@lu2022].
+
+### Stochastic Search Variable Selection (SSVS)
+
+SSVS embeds the entire regression setup in a hierarchical Bayes normal mixture model, using latent variables to identify subset choices. Promising subsets of predictors have higher posterior probability, and Gibbs sampling can indirectly sample from the multinomial posterior distribution on the set of possible subset choices. Subsets with higher probability are identified by their more frequent appearance in the Gibbs sample, avoiding the problem of calculating the posterior probabilities for all $2^p$ subsets. Frequently, this converges quickly to near-optimal solutions [@george1993].
+
+According to George (1993), this can be represented using latent variable $\gamma_j \in \{0, 1\}$ with
+
+$$
+  \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2)
+$$
+
+
+```{r}
+tau <- 1
+c <- 4
+
+slab <- rnorm(100000, 0, tau^2)
+spike <- rnorm(100000, 0, c^2 * tau^2)
+
+data.frame(slab, spike) %>% 
+  pivot_longer(everything()) %>% 
+  mutate(name = factor(name, levels = c("spike", "slab"))) %>% 
+  ggplot(aes(x = value, fill = name)) +
+  geom_density(alpha = 0.5) +
+  theme_bw() +
+  labs(x = "Beta", y = "Density", fill = "Distribution",
+       title = "Plot of SSVS Spike-and-Slab Distribution",
+       subtitle = "tau = 1, c = 4") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  scale_y_continuous(labels = scales::percent_format())
+```
+
+
+### Normal Mixture of Inverse Gamma (NMIG)
+
+Given in [@fahrmeir2010] and Ishwaran and Rao (2003, 2005, find citations), The hierarchical prior for $\beta_j | \tau_j^2$ is
+
+$$
+  \beta_j | \tau_j^2 \sim N(0, \tau_j^2) \\
+  \tau_j | \gamma_j \sim (1 - \gamma_j) \text{IG}(a_\tau, \nu_0 b_\tau) + \gamma_j \text{IG}(a_\tau, \nu_1 b_\tau)
+$$
+
+By placing the spike and slab priors on the variances instead of the coefficients themselves, we can have some robustness against tuning parameters [@lu2022].
+
+```{r}
+nu_0 <- 1e-2
+nu_1 <- 0.2
+
+a_tau <- 1
+b_tau <- 1
+
+N_samples <- 100000
+
+spike_tau <- 1 / rgamma(N_samples, a_tau, nu_0 * b_tau)
+slab_tau <- 1 / rgamma(N_samples, a_tau, nu_1 * b_tau)
+
+spike_beta <- rnorm(N_samples, 0, spike_tau)
+slab_beta <- rnorm(N_samples, 0, slab_tau)
+
+#data.frame(spike_tau, slab_tau, spike_beta, slab_beta) %>% 
+  #pivot_longer(everything()) %>% 
+  #separate(name, into = c("distribution", "level"), sep = "_") %>% 
+  #ggplot(aes(x = value, fill = distribution)) +
+  #geom_density(alpha = 0.3) +
+  #facet_wrap(~level, scales = "free") +
+  #coord_cartesian(xlim = c(-100, 100))
+
+
+nmig_tau <- data.frame(spike_tau, slab_tau) %>% 
+  pivot_longer(everything()) %>% 
+  mutate(name = substring(name, 1, nchar(name) - 4)) %>% 
+  mutate(name = factor(name, levels = c("spike", "slab"))) %>% 
+  ggplot(aes(x = value, fill = name)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(0, 200)) +
+  theme_bw() +
+  labs(x = "Tau", y = "Density", fill = "Distribution",
+       title = "Plot of NMIG Tau Spike-and-Slab Distribution",
+       subtitle = "nu0 = 0.01, nu1 = 0.2") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, direction = -1)
+
+
+nmig_beta <- data.frame(spike_beta, slab_beta) %>% 
+  pivot_longer(everything()) %>% 
+  mutate(name = substring(name, 1, nchar(name) - 5)) %>% 
+  mutate(name = factor(name, levels = c("spike", "slab"))) %>% 
+  ggplot(aes(x = value, fill = name)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(-150, 150)) +
+  theme_bw() +
+  labs(x = "Beta", y = "Density", fill = "Distribution",
+       title = "Plot of NMIG Beta Spike-and-Slab Distribution",
+       subtitle = "nu0 = 0.01, nu1 = 0.2") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, direction = -1)
+
+nmig_tau + nmig_beta
+```
+
+
 
 
 ## Shrinkage Priors
