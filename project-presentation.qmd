@@ -1,0 +1,30 @@
+---
+title: "Bayesian Methods of Variable Selection"
+author: "Dav King"
+format: revealjs
+---
+
+## Motivation: Why Variable Selection?
+
+ - In modeling, we often have a vast number of possible predictors, but only anticipate a small handful are associated with the outcome variable.
+ - Without controlling the number of predictors, we are likely to find significance in predictors that are actually unrelated to the outcome variable.
+ - We also have much greater computational complexity with the high number of predictors.
+ - By selecting a subset of predictors, we can often reduce variance in the model and create a much simpler, easy-to-interpret outcome.
+ - This has particularly useful applications in fields like genomics and the social sciences.
+
+## Bullets
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Code
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+
