@@ -1,0 +1,9 @@
+---
+title: "Theory Notes"
+author: "Dav King"
+format: pdf
+bibliography: references.bib
+csl: apa.csl
+---
+
+
