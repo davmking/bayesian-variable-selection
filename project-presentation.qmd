@@ -41,9 +41,26 @@ $$
 
 In this model,
 
- - $p(\mathbf{Y} | \mathbf{\beta})$ is the **Data Generative Model (DGM)**
- - $p(\mathbf{\beta})$ is the **Prior**(**)
+ - $p(\mathbf{Y} | \mathbf{\beta})$ is the **Data Generative Model (DGM)**.
+ - $p(\mathbf{\beta})$ is the **Prior Distribution**(**).
  - $\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}$ is a **constant**, and we are usually not concerned with it.
+ - $p(\mathbf{\beta} | \mathbf{Y})$ is the **Posterior Distribution**.
+ 
+ 
+## Bayesian Statistics: Markov Chain Monte Carlo
+
+ - Since many posterior distributions are hard or impossible to compute numerically, we run a **Markov Chain Monte Carlo (MCMC)** algorithm:
+  1. Sample $\mathbf{\beta}$ based on $\mathbf{Y}$.
+  2. Sample $\mathbf{Y}$ based on (updated) $\mathbf{\beta}$.
+  3. Sample hyperparameters accordingly.
+ - **Metropolis-Hastings Algorithm**: propose new values of $\mathbf{\beta}/\mathbf{Y}$, accept/reject based on the likelihood.
+ 
+ 
+## Why Bayesian?
+
+ - Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the data.
+ - This can help stabilize calculations and produce an outcome structured as we would like it to be.
+ - Can apply priors to groups of variables, etc.
 
 
 ## Research Questions

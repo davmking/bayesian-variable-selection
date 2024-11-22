@@ -374,9 +374,32 @@ Dav King
 \]</span></p>
 <p>In this model,</p>
 <ul>
-<li><span class="math inline">\(p(\mathbf{Y} | \mathbf{\beta})\)</span> is the <strong>Data Generative Model (DGM)</strong></li>
-<li><span class="math inline">\(p(\mathbf{\beta})\)</span> is the <strong>Prior</strong>(**)</li>
+<li><span class="math inline">\(p(\mathbf{Y} | \mathbf{\beta})\)</span> is the <strong>Data Generative Model (DGM)</strong>.</li>
+<li><span class="math inline">\(p(\mathbf{\beta})\)</span> is the <strong>Prior Distribution</strong>(**).</li>
 <li><span class="math inline">\(\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}\)</span> is a <strong>constant</strong>, and we are usually not concerned with it.</li>
+<li><span class="math inline">\(p(\mathbf{\beta} | \mathbf{Y})\)</span> is the <strong>Posterior Distribution</strong>.</li>
+</ul>
+</section>
+<section id="bayesian-statistics-markov-chain-monte-carlo" class="slide level2">
+<h2>Bayesian Statistics: Markov Chain Monte Carlo</h2>
+<ul>
+<li>Since many posterior distributions are hard or impossible to compute numerically, we run a <strong>Markov Chain Monte Carlo (MCMC)</strong> algorithm:</li>
+</ul>
+<ol type="1">
+<li>Sample <span class="math inline">\(\mathbf{\beta}\)</span> based on <span class="math inline">\(\mathbf{Y}\)</span>.</li>
+<li>Sample <span class="math inline">\(\mathbf{Y}\)</span> based on (updated) <span class="math inline">\(\mathbf{\beta}\)</span>.</li>
+<li>Sample hyperparameters accordingly.</li>
+</ol>
+<ul>
+<li><strong>Metropolis-Hastings Algorithm</strong>: propose new values of <span class="math inline">\(\mathbf{\beta}/\mathbf{Y}\)</span>, accept/reject based on the likelihood.</li>
+</ul>
+</section>
+<section id="why-bayesian" class="slide level2">
+<h2>Why Bayesian?</h2>
+<ul>
+<li>Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the data.</li>
+<li>This can help stabilize calculations and produce an outcome structured as we would like it to be.</li>
+<li>Can apply priors to groups of variables, etc.</li>
 </ul>
 </section>
 <section id="research-questions" class="slide level2">
