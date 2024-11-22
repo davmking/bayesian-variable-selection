@@ -347,22 +347,24 @@ Dav King
 <li>This has particularly useful applications in fields like genomics and the social sciences.</li>
 </ul>
 </section>
-<section id="bullets" class="slide level2">
-<h2>Bullets</h2>
-<p>When you click the <strong>Render</strong> button a document will be generated that includes:</p>
+<section id="frequentist-analogues" class="slide level2">
+<h2>Frequentist Analogues</h2>
 <ul>
-<li>Content authored with markdown</li>
-<li>Output from executable code</li>
+<li>A tempting solution is to simply perform <strong>best subset selection</strong>, in order to identify the subset of predictors that minimizes RSS.</li>
+<li>Problem: Combinatorial complexity.</li>
+<li>There are some workarounds.</li>
+<li>Another common method is <strong>shrinkage models</strong>, such as LASSO regression.</li>
 </ul>
 </section>
-<section id="code" class="slide level2">
-<h2>Code</h2>
-<p>When you click the <strong>Render</strong> button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
-</div>
-</div>
+<section id="bayesian-statistics-background" class="slide level2">
+<h2>Bayesian Statistics: Background</h2>
+<p><strong>Bayesian statistics</strong> revolves around the use of Bayes’ theorem to update predictions of our parameters based on a data generative model and a prior belief about our parameters:</p>
+<p><span class="math display">\[
+  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\beta)}{\int_\beta p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+\]</span></p>
+</section>
+<section id="research-questions" class="slide level2">
+<h2>Research Questions</h2>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
@@ -579,82 +581,6 @@ Dav King
         ]
       });
     </script>
-    
-
-    <script>
-
-      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
-      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
-      // slide changes (different for each slide format).
-
-      (function () {
-
-        // dispatch for htmlwidgets
-
-        function fireSlideEnter() {
-
-          const event = window.document.createEvent("Event");
-
-          event.initEvent("slideenter", true, true);
-
-          window.document.dispatchEvent(event);
-
-        }
-
-    
-
-        function fireSlideChanged(previousSlide, currentSlide) {
-
-          fireSlideEnter();
-
-    
-
-          // dispatch for shiny
-
-          if (window.jQuery) {
-
-            if (previousSlide) {
-
-              window.jQuery(previousSlide).trigger("hidden");
-
-            }
-
-            if (currentSlide) {
-
-              window.jQuery(currentSlide).trigger("shown");
-
-            }
-
-          }
-
-        }
-
-    
-
-        // hookup for slidy
-
-        if (window.w3c_slidy) {
-
-          window.w3c_slidy.add_observer(function (slide_num) {
-
-            // slide_num starts at position 1
-
-            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
-          });
-
-        }
-
-    
-
-      })();
-
-    </script>
-
-    
-
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
       const toggleBodyColorMode = (bsSheetEl) => {

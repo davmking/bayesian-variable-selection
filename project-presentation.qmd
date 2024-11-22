@@ -12,19 +12,21 @@ format: revealjs
  - By selecting a subset of predictors, we can often reduce variance in the model and create a much simpler, easy-to-interpret outcome.
  - This has particularly useful applications in fields like genomics and the social sciences.
 
-## Bullets
+## Frequentist Analogues
 
-When you click the **Render** button a document will be generated that includes:
+ - A tempting solution is to simply perform **best subset selection**, in order to identify the subset of predictors that minimizes RSS.
+  - Problem: Combinatorial complexity.
+  - There are some workarounds.
+ - Another common method is **shrinkage models**, such as LASSO regression.
 
--   Content authored with markdown
--   Output from executable code
+## Bayesian Statistics: Background
 
-## Code
+**Bayesian statistics** revolves around the use of Bayes' theorem to update predictions of our parameters based on a data generative model and a prior belief about our parameters:
 
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+$$
+  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\beta)}{\int_\beta p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+$$
 
-```{r}
-1 + 1
-```
 
+## Research Questions
 
