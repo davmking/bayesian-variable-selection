@@ -206,7 +206,7 @@ lasso_beta <- data.frame(beta_values) %>%
 lasso_tau + lasso_beta
 ```
 
-
+Note to myself: This might actually be why our sampler isn't working. Let's incorporate this into the actual thesis.
 
 
 ## Hybrid Priors
