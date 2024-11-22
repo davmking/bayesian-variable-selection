@@ -358,10 +358,26 @@ Dav King
 </section>
 <section id="bayesian-statistics-background" class="slide level2">
 <h2>Bayesian Statistics: Background</h2>
-<p><strong>Bayesian statistics</strong> revolves around the use of Bayes’ theorem to update predictions of our parameters based on a data generative model and a prior belief about our parameters:</p>
+<p><strong>Bayesian statistics</strong> revolves around the use of Bayes’ theorem to update our beliefs about a probability based on new information:</p>
 <p><span class="math display">\[
-  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\beta)}{\int_\beta p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+  p(B | A) = \frac{p(A | B) p(B)}{p(A)}
 \]</span></p>
+<p>In <strong>Bayesian modeling</strong>, we use Bayes’ theorem to update our beliefs about parameters based on our prior beliefs and the likelihood of the data:</p>
+<p><span class="math display">\[
+  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta})}{\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+\]</span></p>
+</section>
+<section id="bayesian-statistics-background-1" class="slide level2">
+<h2>Bayesian Statistics Background</h2>
+<p><span class="math display">\[
+  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta})}{\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+\]</span></p>
+<p>In this model,</p>
+<ul>
+<li><span class="math inline">\(p(\mathbf{Y} | \mathbf{\beta})\)</span> is the <strong>Data Generative Model (DGM)</strong></li>
+<li><span class="math inline">\(p(\mathbf{\beta})\)</span> is the <strong>Prior</strong>(**)</li>
+<li><span class="math inline">\(\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}\)</span> is a <strong>constant</strong>, and we are usually not concerned with it.</li>
+</ul>
 </section>
 <section id="research-questions" class="slide level2">
 <h2>Research Questions</h2>

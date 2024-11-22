@@ -6,27 +6,44 @@ format: revealjs
 
 ## Motivation: Why Variable Selection?
 
- - In modeling, we often have a vast number of possible predictors, but only anticipate a small handful are associated with the outcome variable.
- - Without controlling the number of predictors, we are likely to find significance in predictors that are actually unrelated to the outcome variable.
- - We also have much greater computational complexity with the high number of predictors.
- - By selecting a subset of predictors, we can often reduce variance in the model and create a much simpler, easy-to-interpret outcome.
- - This has particularly useful applications in fields like genomics and the social sciences.
+-   In modeling, we often have a vast number of possible predictors, but only anticipate a small handful are associated with the outcome variable.
+-   Without controlling the number of predictors, we are likely to find significance in predictors that are actually unrelated to the outcome variable.
+-   We also have much greater computational complexity with the high number of predictors.
+-   By selecting a subset of predictors, we can often reduce variance in the model and create a much simpler, easy-to-interpret outcome.
+-   This has particularly useful applications in fields like genomics and the social sciences.
 
 ## Frequentist Analogues
 
- - A tempting solution is to simply perform **best subset selection**, in order to identify the subset of predictors that minimizes RSS.
-  - Problem: Combinatorial complexity.
-  - There are some workarounds.
- - Another common method is **shrinkage models**, such as LASSO regression.
+-   A tempting solution is to simply perform **best subset selection**, in order to identify the subset of predictors that minimizes RSS.
+-   Problem: Combinatorial complexity.
+-   There are some workarounds.
+-   Another common method is **shrinkage models**, such as LASSO regression.
 
 ## Bayesian Statistics: Background
 
-**Bayesian statistics** revolves around the use of Bayes' theorem to update predictions of our parameters based on a data generative model and a prior belief about our parameters:
+**Bayesian statistics** revolves around the use of Bayes' theorem to update our beliefs about a probability based on new information:
 
 $$
-  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\beta)}{\int_\beta p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+  p(B | A) = \frac{p(A | B) p(B)}{p(A)}
 $$
+
+In **Bayesian modeling**, we use Bayes' theorem to update our beliefs about parameters based on our prior beliefs and the likelihood of the data:
+
+$$
+  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta})}{\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+$$
+
+## Bayesian Statistics Background
+
+$$
+  p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta})}{\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
+$$
+
+In this model,
+
+ - $p(\mathbf{Y} | \mathbf{\beta})$ is the **Data Generative Model (DGM)**
+ - $p(\mathbf{\beta})$ is the **Prior**(**)
+ - $\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}$ is a **constant**, and we are usually not concerned with it.
 
 
 ## Research Questions
-
