@@ -7,6 +7,7 @@ csl: apa.csl
 ---
 
 ```{r}
+library(VGAM)
 library(tidyverse)
 library(viridis)
 library(patchwork)
@@ -139,9 +140,73 @@ nmig_tau + nmig_beta
 ```
 
 
-
-
 ## Shrinkage Priors
+
+Shrinkage priors focus on simply pulling some of the coefficients towards zero, while retaining the stron geffects with minimum penalization. Shrinkage priors are continuous, as opposed to the spike-and-slab prior.
+
+### LASSO Prior
+
+Originally written about in [@park2008], we can write the Laplace prior as
+
+$$
+  \beta_j | \tau_j \sim N(0, \sigma^2 \tau_j^2) \\
+  \tau_j^2 | \lambda \sim \text{exp}(\lambda^2 / 2)
+$$
+
+We can Gibbs sample the $\lambda$ parameter, instead of having to do cross-validation.
+
+```{r}
+lambda <- c(1, 3, 5, 10)
+sigma_2 <- 1
+
+N_samples <- 100000
+
+tau_values <- matrix(NA, nrow = N_samples, ncol = length(lambda))
+beta_values <- matrix(NA, nrow = N_samples, ncol = length(lambda))
+
+for(l in 1:length(lambda)){
+  tau_values[,l] <- rexp(N_samples, lambda[l]^2 / 2)
+}
+
+for(l in 1:length(lambda)){
+  beta_values[,l] <- rnorm(N_samples, 0, sigma_2 * tau_values[,l])
+}
+
+lasso_tau <- data.frame(tau_values) %>%
+  pivot_longer(everything(), names_to = "lambda_number") %>% 
+  mutate(lambda_number = as.integer(substring(lambda_number, 2))) %>% 
+  mutate(lambda = lambda[lambda_number]) %>% 
+  mutate(lambda = factor(lambda)) %>% 
+  ggplot(aes(x = value, fill = lambda)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(0, .5)) +
+  theme_bw() +
+  labs(x = "Tau", y = "Density", fill = "Lambda",
+       title = "LASSO Tau by Lambda") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "B", direction = -1)
+
+
+lasso_beta <- data.frame(beta_values) %>% 
+  pivot_longer(everything(), names_to = "lambda_number") %>% 
+  mutate(lambda_number = as.integer(substring(lambda_number, 2))) %>% 
+  mutate(lambda = lambda[lambda_number]) %>% 
+  mutate(lambda = factor(lambda)) %>% 
+  ggplot(aes(x = value, fill = lambda)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(-1, 1)) +
+  theme_bw() +
+  labs(x = "Beta", y = "Density", fill = "Lambda",
+       title = "LASSO Beta by Lambda") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "B", direction = -1)
+
+lasso_tau + lasso_beta
+```
+
+
 
 
 ## Hybrid Priors
