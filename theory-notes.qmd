@@ -142,7 +142,7 @@ nmig_tau + nmig_beta
 
 ## Shrinkage Priors
 
-Shrinkage priors focus on simply pulling some of the coefficients towards zero, while retaining the stron geffects with minimum penalization. Shrinkage priors are continuous, as opposed to the spike-and-slab prior.
+Shrinkage priors focus on simply pulling some of the coefficients towards zero, while retaining the stron geffects with minimum penalization. Shrinkage priors are continuous, as opposed to the spike-and-slab prior. As noted in [@bhadra2017], there are many settings (such as genomics) where many effects are negligible but not zero; this creates an argument for one-group global-local shrinkage priors, rather than two-group spike-and-slab priors.
 
 ### LASSO Prior
 
@@ -218,7 +218,8 @@ $$
   \tau_j^2 \sim \text{gamma}(\lambda, 1/(2\xi^2))
 $$
 
-In this case, both hyperparameters are important.
+In this case, both hyperparameters are important. Per [@griffin2010], this results in a distribution that places a lot of mass close to 0, but also has heavy tails, particularly as $\lambda$ decreases. In many ways, this can be considered similar to a spike-and-slab prior with the right formulation.
+
 
 ### Horseshoe Prior
 
@@ -226,7 +227,8 @@ The horseshoe class of priors uses a global hyperparameter to shrink all coeffic
 
 $$
   \beta_j | \kappa_j \sim N(0, \kappa_j^2) \\
-  \kappa_j | \tau \sim C^+(0, \tau)
+  \kappa_j | \tau \sim C^+(0, \tau) \\
+  \tau | \sigma \sim C^+(0, \sigma)
 $$
 
 In this case, $C^+(0, \tau)$ is a half-Cauchy distribution for the standard deviation $\kappa_j$. The $\kappa_j$ is referred to as the local shrinkage parameter, while $\tau$ is gthe global shrinkage parameter.
@@ -266,6 +268,8 @@ horseshoe_kappa + horseshoe_beta
 
 Going to need to set a seed for this one, it has absurdly different outcomes based on the run.
 
+Per [@carvalho2010], this model has benefits in not needing to select any hyperparameters, since all unknowns have fully specified priors. This is different from most similar approaches in shrinkage models. The prior remains robust and highly adaptive even in the absence of these hyperparameters. The other benefit, compared to other models, is that it converges to the correct answer in sparse situations extremely quickly, while still demonstrating strong robustness against noise for obvious signals, which it leaves unshrunk.
+
 
 ### Horseshoe+ Prior
 
@@ -278,6 +282,8 @@ $$
 $$
 
 This extra latent variable provides an extra layer of local shrinkage, which is (in practice) often better in performance in terms of both MSE and computation time when dealing with ultra-sparse signals.
+
+In terms of signals, the regression setting for noisy signals differentiates signals ($\kappa_i = 0$) from noise ($\kappa_i = 1$). The horseshoe+ prior has a "horseshoe" shape pushing posterior mass to either $\kappa_i = 0$ or $\kappa_i = 1$, which the horseshoe prior does not.
 
 
 ### Dirichlet-Laplace Prior
