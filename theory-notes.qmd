@@ -324,7 +324,7 @@ ggplot(mapping = aes(x = phi)) +
   geom_density(fill = "grey")
 ```
 
-This might not be super possible to plot, due to the nature of a Dirichlet distribution in high dimensions. We will see.
+This might not be super possible to plot, due to the nature of a Dirichlet distribution in high dimensions. We will see. There is a good paper [@bhattacharya2014], but I am not going to explain the nonsense happening with this distribution unless it somehow becomes demonstrably the best performing test.
 
 
 ## Hybrid Priors
@@ -344,8 +344,12 @@ If $\phi_1(\beta_j) = \phi_0(\beta_j)$, we have the standard Lasso penalty.
 
 ## Bayesian Model Averaging
 
+In BMA, you essentially have a vector of latent variables that says whether or not each beta should be included in the model, and you sample this along with your other variables in the MCMC sampler. Remarkably, averaging over the outputs from these has shockingly good performance, and often provides a good estimate for the true model parameters without doing the full $2^p$ search. Many descriptions of this and similar approaches can be found in [@hoeting1999].
+
 
 ## Best Subset Selection
+
+This is talked about extensively in [@kowal2022]. This approach de-empasizes *best* subset selection, which is often unstable under permutations of the data, and instead emphasizes *acceptable* or *good enough* subset selection, which is more stable and also simplifies the computation time. They use a modified Branch-and-Bound Algorithm (BBA) to implement this in the Bayesian setting. This approach focuses on the $\ell_0$ norm, rather than $\ell_1$ or $\ell_2$.
 
 
 \newpage
