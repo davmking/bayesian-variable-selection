@@ -20,6 +20,8 @@ Variable selection is important in high-dimensional settings: We often expect th
 
 Why is a Bayesian approach potentially better? Bayesian methods allow us to introduce prior information on the betas, which can help us introduce known structure into the variable selection setting and also stabilize inferences in high-dimensional settings [@lu2022].
 
+I note that the introduction to [@rockova2013] has a lot of good background on this topic, and would be useful in explaining the setup for this presentation.
+
 
 # Priors
 
