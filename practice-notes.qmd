@@ -1,0 +1,29 @@
+---
+title: "practice-notes"
+format: html
+---
+
+# Prior-Based Regression
+
+## General Linear Regression
+
+You can run linear regression using the function `MCMCregress()` from the package `MCMCpack`. In the paper [@lu2022], they used this with a non-informative conjugate prior with $\beta_j j\sim N(0, \beta_0)$ and $\beta_0 = 10^6$ for all $j = 1, \dots, p$.
+
+
+## Bayesian Model Selection
+
+Bayesian model selection using Bayes factor can be implemented using either `Bvs()` or `GibbsBvs()` from the `BayesVarSel` package. In the paper [@lu2022], they used the ScottBerger prior for model space and Zellner's g-prior for regression coefficients. They used `Bvs()` to perform exhaustive search of candidate models (when $p \leq 20$), and `GibbsBvs()` when $p > 20$ to simulate sampling from the posterior distribution over the model space using Gibbs sampling.
+
+
+## Bayesian Model Averaging
+
+There are several packages which can be used to calculate BMA, but `bms()` from the `BMS` package was selected by the authors as the most flexible package. They used the reversible jump algorithm (`mcmc = "rev.jump"`), and a beta-binomial hyperprior on the inclusion probability with Zellner's g-prior for regression coefficients.
+
+## Spike and Slab Priors
+
+You can use `lm.spike()` from `BoomSpikeSlab` to implement spike-and-slab priors. Both SSVS and data augmentation algorithms are available, the authors used the latter because it is faster since it introduces a latent variable, though this relies on conditional independence between parameters. Theoretically, you can implement NMIG prior in the function `spikeSlabGAM()` from the package of the same name.
+
+## Shrinkage Priors
+
+The `monomvn` package can be used to implement LASSO, NG, horesehoe, and ridge priors. The horseshoe+ can be implemented using `Bayereg`. The SSLASSO can be implemented using `SSLASSO()` from the package of the same name.
+
