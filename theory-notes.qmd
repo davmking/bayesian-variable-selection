@@ -22,6 +22,9 @@ Why is a Bayesian approach potentially better? Bayesian methods allow us to intr
 
 I note that the introduction to [@rockova2013] has a lot of good background on this topic, and would be useful in explaining the setup for this presentation.
 
+Another merit in this Bayesian approach: We can actually estimate the model parameter coefficients along with the estimate of which parameters should be included. This avoids the tempting but potentially problematic approach of simply selecting the most meaningful variables and removing the rest before actually computing the model, which eliminates some of the uncertainty from the model selection process [@rockova2013].
+
+
 
 # Priors
 
@@ -352,6 +355,37 @@ In BMA, you essentially have a vector of latent variables that says whether or n
 ## Best Subset Selection
 
 This is talked about extensively in [@kowal2022]. This approach de-empasizes *best* subset selection, which is often unstable under permutations of the data, and instead emphasizes *acceptable* or *good enough* subset selection, which is more stable and also simplifies the computation time. They use a modified Branch-and-Bound Algorithm (BBA) to implement this in the Bayesian setting. This approach focuses on the $\ell_0$ norm, rather than $\ell_1$ or $\ell_2$.
+
+
+# EMVS
+
+The EM Variable Selection process is a deterministic alternative to MCMC stochastic search which rapidly identifies promising candidate models. Useful in the $p > n$ setting, it frequently outperforms stochastic search from MCMC greatly in terms of computation time [@rockova2013]. EMVS uses a spike-and-slab prior, but focuses on two steps: Estimating the expected value of the latent variables given current parameter estimates, and then maximizing the likelihood with respect to the parameters using this expectation.
+
+EMVS is also useful because of its computational efficiency: It is possible to search over a much wider set of parameters effectively. You can change what your priors look like, putting (for example) more weight on the spike.
+
+Sometimes, the EM algorithm fails to converge to the global maximum if it is initialized near local modes. A recommendation is to run the algorithm for a wide choice of starting values. Additionally, you can try the deterministic annealing EM algorithm (DEAM), which uses the free energy function and starts with high temperatures to smooth away local modes, only lowering the temperature later to expose the actual posterior.
+
+## Algorithm
+
+ChatGPT prompt: "Explain, in detail, the EMVS algorithm for Bayesian variable selection. Assume I am generally familiar with concepts in Bayesian statistics, but am entirely unfamiliar with the EM algorithm."
+
+### Setup
+
+Consider the basic linear regression setting:
+
+$$
+  y = X\beta + \epsilon, \quad \epsilon \sim N(0, \sigma^2I)
+$$
+
+In this setting, $y$ is the $n \times 1$ vector of responses, $X$ is the $n \times p$ matrix of inputs, $\beta$ is the $p \times 1$ vector of coefficients, and $\sigma^2$ is the error variance. Then we can assign a spike-and-slab prior to each $\beta_j$:
+
+$$
+  \beta_j \sim (1 - \gamma_j) \phi_0(\beta_j) + \gamma_j \phi_1(\beta_j), \quad \gamma_j \in \{0, 1\}
+$$
+
+where $\gamma_j$ is an inclusion indicator for the $j$-th variable, $\phi_0$ is some function governing the spike (maybe expressed $N(0, \tau_0^2)$), and $\phi_1$ is some function governing the slab (maybe expressed $N(0, \tau_1^2)$). The prior for $\gamma_j$ is typically Bernoulli with parameter $\pi$.
+
+
 
 
 \newpage
