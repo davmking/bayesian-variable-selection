@@ -27,3 +27,11 @@ You can use `lm.spike()` from `BoomSpikeSlab` to implement spike-and-slab priors
 
 The `monomvn` package can be used to implement LASSO, NG, horesehoe, and ridge priors. The horseshoe+ can be implemented using `Bayereg`. The SSLASSO can be implemented using `SSLASSO()` from the package of the same name.
 
+## Bayesian Subset Selection
+
+Kowal wrote a package `BayesSubsets` to do exactly what we need to do. He fits a regression model using `bayeslm()` from the package of the same name, and then has good data on his GitHub page for how to use this. https://github.com/drkowal/BayesSubsets
+
+## EMVS Algorithm
+
+Similarly, Rockova wrote a package `EMVS` to do this. There is a function `EMVS()` to run the algorithm.
+
