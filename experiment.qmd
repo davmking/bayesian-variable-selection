@@ -1,0 +1,138 @@
+---
+title: "experiment"
+format: html
+---
+
+# Libraries and Data
+
+## Libraries
+
+```{r}
+#| label: libraries
+
+library(coda)
+library(MCMCpack)
+library(BayesVarSel)
+library(BMS)
+library(BoomSpikeSlab)
+library(spikeSlabGAM)
+library(bayeslm)
+library(BayesSubsets)
+#library(EMVS)  # Man
+library(tidyverse)
+```
+
+
+## Data
+
+Here is a table that describes each model and its characteristics:
+
+| Name | n | p | p_sig |  n vs. p | Description |
+|------|---|---|-------|----------|-------------|
+| Model 1 | 1000 | 10 | 3 | n >> p | Few predictors, sparse |
+| Model 2 | 1000 | 950 | 750 | n > p | n slightly > p, dense |
+| Model 3 | 1000 | 950 | 5 | n > p | n slightly > p, sparse |
+| Model 4 | 1000 | 1050 | 950 | n < p | n slightly < p, dense |
+| Model 5 | 1000 | 1050 | 5 | n < p | n slightly < p, sparse |
+| Model 6 | 1000 | 10000 | 9500 | Many predictors, dense |
+| Model 7 | 1000 | 10000 | 5 | Many predictors, sparse
+
+```{r}
+#| label: generate data
+
+set.seed(465)
+
+model_1 <- simulate_lm(1000, 10, p_sig = 3)
+model_2 <- simulate_lm(1000, 950, p_sig = 750)
+model_3 <- simulate_lm(1000, 950, p_sig = 5)
+model_4 <- simulate_lm(1000, 1050, p_sig = 950)
+model_5 <- simulate_lm(1000, 1050, p_sig = 5)
+model_6 <- simulate_lm(1000, 10000, p_sig = 9500)
+model_7 <- simulate_lm(1000, 10000, p_sig = 5)
+```
+
+## Hyperparameters
+
+```{r}
+#| label: defining hyperparameters
+
+N_SAMPLES <- 30000
+BURN_IN <- 5000
+```
+
+
+
+# Non-Prior Methods
+
+## Subset Selection
+
+```{r}
+#| label: run bayeslm and evaluate
+
+set.seed(465)
+
+X <- model_1$X
+y <- model_1$y
+
+model_1_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge"
+                       )
+
+temp <- post_predict(post_y_hat = tcrossprod(model_1_fit$beta, X),
+                    post_sigma = model_1_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+indicators_1 <- branch_and_bound(yy = fitted(model_1_fit),
+                              XX = X)
+
+accept_info <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_1,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_1_fit$beta, X))
+
+
+
+# How many subsets are in the acceptable family?
+length(accept_info$all_accept) # 76
+
+# These are the rows of `indicators` that belong to the acceptable family:
+head(accept_info$all_accept)
+
+# An example acceptable subset:
+ex_accept <- accept_info$all_accept[1]
+which(indicators[ex_accept,])
+
+# Simplest acceptable subset:
+beta_hat_small <- accept_info$beta_hat_small
+
+# Which coefficients are nonzero:
+S_small <- which(beta_hat_small != 0)
+
+# How many coefficients are nonzero:
+length(S_small) # 4
+
+# Acceptable subset that minimizes CV error:
+beta_hat_min <- accept_info$beta_hat_min
+
+# Typically much larger (and often too large...)
+sum(beta_hat_min != 0) # 5
+
+# Variable importance metrics
+vi_e <- var_imp(indicators = indicators_1,
+               all_accept = accept_info$all_accept)$vi_inc
+
+# Variables appearing in all acceptable subsets
+all_acceptable <- which(vi_e == 1) # Correct variables
+
+# Size
+length(all_acceptable) # 4
+```
+
+
+
