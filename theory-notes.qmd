@@ -386,6 +386,38 @@ $$
 where $\gamma_j$ is an inclusion indicator for the $j$-th variable, $\phi_0$ is some function governing the spike (maybe expressed $N(0, \tau_0^2)$), and $\phi_1$ is some function governing the slab (maybe expressed $N(0, \tau_1^2)$). The prior for $\gamma_j$ is typically Bernoulli with parameter $\pi$.
 
 
+### Initialization
+
+Initialize parameters, including $\gamma_j$, $\beta$, and $\sigma^2$.
+
+
+### Expectation (E) Step
+
+Calculate the posterior inclusion probabilities for each predictor:
+
+$$
+  \omega_j = \mathbb{P}(\gamma_j = 1 | y, \theta)
+$$
+
+where $\theta$ denotes the current parameter estiamtes. Using Bayes' rule, this involves
+
+$$
+  \omega_j = \frac{\pi \phi_1(\beta_j)}{\pi \phi_1(\beta_j) + (1 - \pi)\phi_0(\beta_j)}
+$$
+
+### Maximization (M) Step
+
+Update the parameter estimates by maximizing the expected complete data log-likelihood:
+
+$$
+  \hat{\beta} = \text{arg max}_\beta \mathbb{E}[\ell(\beta, \gamma | y)]
+$$
+
+### Conclusion
+
+Iterate until convergence, probably based on minimal changes in the log-likelihood. After convergence, select variables with high posterior inclusion probabilities.
+
+
 
 
 \newpage
