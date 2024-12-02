@@ -29,26 +29,26 @@ Here is a table that describes each model and its characteristics:
 
 | Name | n | p | p_sig |  n vs. p | Description |
 |------|---|---|-------|----------|-------------|
-| Model 1 | 1000 | 10 | 3 | n >> p | Few predictors, sparse |
-| Model 2 | 1000 | 950 | 750 | n > p | n slightly > p, dense |
-| Model 3 | 1000 | 950 | 5 | n > p | n slightly > p, sparse |
-| Model 4 | 1000 | 1050 | 950 | n < p | n slightly < p, dense |
-| Model 5 | 1000 | 1050 | 5 | n < p | n slightly < p, sparse |
-| Model 6 | 1000 | 10000 | 9500 | Many predictors, dense |
-| Model 7 | 1000 | 10000 | 5 | Many predictors, sparse
+| Model 1 | 100 | 10 | 3 | n >> p | Few predictors, sparse |
+| Model 2 | 100 | 95 | 75 | n > p | n slightly > p, dense |
+| Model 3 | 100 | 95 | 5 | n > p | n slightly > p, sparse |
+| Model 4 | 100 | 105 | 95 | n < p | n slightly < p, dense |
+| Model 5 | 100 | 105 | 5 | n < p | n slightly < p, sparse |
+| Model 6 | 100 | 1000 | 950 | n << p | Many predictors, dense |
+| Model 7 | 100 | 1000 | 5 | n << p | Many predictors, sparse |
 
 ```{r}
 #| label: generate data
 
 set.seed(465)
 
-model_1 <- simulate_lm(1000, 10, p_sig = 3)
-model_2 <- simulate_lm(1000, 950, p_sig = 750)
-model_3 <- simulate_lm(1000, 950, p_sig = 5)
-model_4 <- simulate_lm(1000, 1050, p_sig = 950)
-model_5 <- simulate_lm(1000, 1050, p_sig = 5)
-model_6 <- simulate_lm(1000, 10000, p_sig = 9500)
-model_7 <- simulate_lm(1000, 10000, p_sig = 5)
+model_1 <- simulate_lm(100, 10, p_sig = 3)
+model_2 <- simulate_lm(100, 95, p_sig = 75)
+model_3 <- simulate_lm(100, 95, p_sig = 5)
+model_4 <- simulate_lm(100, 105, p_sig = 95)
+model_5 <- simulate_lm(100, 105, p_sig = 5)
+model_6 <- simulate_lm(100, 1000, p_sig = 950)
+model_7 <- simulate_lm(100, 1000, p_sig = 5)
 ```
 
 ## Hyperparameters
@@ -65,6 +65,12 @@ BURN_IN <- 5000
 # Non-Prior Methods
 
 ## Subset Selection
+
+Note: For now, I am skipping the models with dense signals. I don't think it makes much sense to run them, and I think the computation time is too difficult.
+
+Note: This code needs to be run overnight. It is not currently running fast enough to be useful.
+
+### Model 1
 
 ```{r}
 #| label: run bayeslm and evaluate
@@ -88,6 +94,77 @@ post_lpd = temp$post_lpd
 
 indicators_1 <- branch_and_bound(yy = fitted(model_1_fit),
                               XX = X)
+
+accept_info <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_1,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_1_fit$beta, X))
+
+
+
+# How many subsets are in the acceptable family?
+length(accept_info$all_accept) # 127
+
+# Simplest acceptable subset:
+beta_hat_small <- accept_info$beta_hat_small
+beta_hat_small
+
+# Which coefficients are nonzero:
+S_small <- which(beta_hat_small != 0)
+S_small
+
+# How many coefficients are nonzero:
+length(S_small) # 1
+
+# Acceptable subset that minimizes CV error:
+beta_hat_min <- accept_info$beta_hat_min
+
+# Typically much larger (and often too large...)
+sum(beta_hat_min != 0) # 6
+
+# Variable importance metrics
+vi_e <- var_imp(indicators = indicators_1,
+               all_accept = accept_info$all_accept)$vi_inc
+
+# Variables appearing in all acceptable subsets
+all_acceptable <- which(vi_e == 1)
+all_acceptable
+
+# Size
+length(all_acceptable) # 1
+```
+
+With $n = 100$, we aren't picking up the right variables - the smallest subsets are just the intercept. Might need to increase the SNR or n?
+
+
+### Model 3
+
+```{r}
+#| label: run bayeslm and evaluate 3
+
+set.seed(465)
+
+X <- model_3$X
+y <- model_3$y
+
+model_3_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge"
+                       )
+
+temp <- post_predict(post_y_hat = tcrossprod(model_3_fit$beta, X),
+                    post_sigma = model_3_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+start <- Sys.time()
+indicators_3 <- branch_and_bound(yy = fitted(model_3_fit),
+                              XX = X)
+print(Sys.time() - start)
 
 accept_info <- accept_family(post_y_pred = post_y_pred,
                             post_lpd = post_lpd,
