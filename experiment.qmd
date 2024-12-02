@@ -56,8 +56,8 @@ model_7 <- simulate_lm(100, 1000, p_sig = 5)
 ```{r}
 #| label: defining hyperparameters
 
-N_SAMPLES <- 30000
-BURN_IN <- 5000
+N_SAMPLES <- 11000
+BURN_IN <- 1000
 ```
 
 
@@ -211,5 +211,170 @@ all_acceptable <- which(vi_e == 1) # Correct variables
 length(all_acceptable) # 4
 ```
 
+
+## Bayesian Model Selection
+
+### Model 1
+
+```{r}
+#| label: bms 1
+
+y <- model_1$y
+X <- model_1$X
+data <- data.frame(y = y, X[,-1])
+
+bvs_1 <- GibbsBvs(
+  y ~ .,
+  data = data,
+  prior.betas = "gZellner",
+  prior.models = "ScottBerger",
+  n.iter = N_SAMPLES - BURN_IN,
+  n.burnin = BURN_IN,
+  time.test = TRUE,
+  seed = 465
+)
+
+# Most probable model
+bvs_1$HPMbin 
+
+# Inclusion probabilities
+bvs_1$inclprob
+
+# Runtime
+bvs_1$time
+```
+
+Recovers the correct variables. Not super slow in terms of efficiency.
+
+### Model 2
+
+```{r}
+#| label: bms 2
+
+y <- model_2$y
+X <- model_2$X
+data <- data.frame(y = y, X[,-1])
+
+bvs_2 <- GibbsBvs(
+  y ~ .,
+  data = data,
+  prior.betas = "gZellner",
+  prior.models = "ScottBerger",
+  n.iter = N_SAMPLES - BURN_IN,
+  n.burnin = BURN_IN,
+  time.test = TRUE,
+  seed = 465
+)
+
+# Most probable model
+bvs_2$HPMbin 
+
+# Inclusion probabilities
+bvs_2$inclprob
+
+# Runtime
+bvs_2$time
+```
+
+Much worse runtime than Model 3 has. I think this algorithm should not be used on dense signals. It also does not correctly converge to the right subset - it kinda just says everything should be in the model.
+
+
+### Model 3
+
+```{r}
+#| label: bms 3
+
+y <- model_3$y
+X <- model_3$X
+data <- data.frame(y = y, X[,-1])
+
+bvs_3 <- GibbsBvs(
+  y ~ .,
+  data = data,
+  prior.betas = "gZellner",
+  prior.models = "ScottBerger",
+  n.iter = N_SAMPLES - BURN_IN,
+  n.burnin = BURN_IN,
+  time.test = TRUE,
+  seed = 465
+)
+
+# Most probable model
+bvs_3$HPMbin 
+
+# Inclusion probabilities
+bvs_3$inclprob
+
+# Runtime
+bvs_3$time
+```
+
+Perfect performance. Runs incredibly quickly, even though it says it shouldn't.
+
+### Model 5
+
+```{r}
+#| label: bms 5
+
+y <- model_5$y
+X <- model_5$X
+data <- data.frame(y = y, X[,-1])
+
+bvs_5 <- GibbsBvs(
+  y ~ .,
+  data = data,
+  prior.betas = "gZellner",
+  prior.models = "ScottBerger",
+  n.iter = N_SAMPLES - BURN_IN,
+  n.burnin = BURN_IN,
+  time.test = TRUE,
+  seed = 465,
+  init.model = "Null"
+)
+
+# Most probable model
+bvs_5$HPMbin 
+
+# Inclusion probabilities
+bvs_5$inclprob
+
+# Runtime
+bvs_5$time
+```
+
+Did not converge to the correct variables under random initialization (though the only ones it did include are part of the signal). Does not converge under null initialization either, though at least they have the same posterior.
+
+### Model 7
+
+```{r}
+#| label: bms 7
+
+y <- model_7$y
+X <- model_7$X
+data <- data.frame(y = y, X[,-1])
+
+bvs_7 <- GibbsBvs(
+  y ~ .,
+  data = data,
+  prior.betas = "gZellner",
+  prior.models = "ScottBerger",
+  n.iter = N_SAMPLES - BURN_IN,
+  n.burnin = BURN_IN,
+  time.test = TRUE,
+  seed = 465,
+  init.model = "Null"
+)
+
+# Most probable model
+bvs_7$HPMbin 
+
+# Inclusion probabilities
+bvs_7$inclprob
+
+# Runtime
+bvs_7$time
+```
+
+Did not converge to all of the correct variables under null initialization, but it did converge to two betas that are in the true five (and one that is not), which is reasonable-ish performance. We can do better, though.
 
 
