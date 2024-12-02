@@ -632,36 +632,6 @@ colMeans(ssvs_0_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
 
 # Coefficient estimates
 colMeans(ssvs_0_g$beta[BURN_IN:N_SAMPLES_2,-1])
-
-
-# Student
-set.seed(465)
-start <- Sys.time()
-ssvs_0_s <- lm.spike(y ~ .,
-                   data = data,
-                   niter = N_SAMPLES_2,
-                   error.distribution = "student")
-print(Sys.time() - start)
-
-ssvs_0_s$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y", nrow = 2) +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Probability of inclusion
-colMeans(ssvs_0_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-
-# Coefficient estimates
-colMeans(ssvs_0_s$beta[BURN_IN:N_SAMPLES_2,-1])
 ```
 
 Correct and reasonably fast. Gets back to the proper coefficients, which is good.
@@ -703,36 +673,6 @@ colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
 
 # Coefficient estimates
 colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1])
-
-
-# Student
-set.seed(465)
-start <- Sys.time()
-ssvs_1_s <- lm.spike(y ~ .,
-                   data = data,
-                   niter = N_SAMPLES_2,
-                   error.distribution = "student")
-print(Sys.time() - start)
-
-ssvs_1_s$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y", nrow = 2) +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Probability of inclusion
-colMeans(ssvs_1_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-
-# Coefficient estimates
-colMeans(ssvs_1_s$beta[BURN_IN:N_SAMPLES_2,-1])
 ```
 
 Both seem to miss on some of the variables in our signal, and we aren't super close to the correct coefficients in our estimates.
@@ -775,37 +715,6 @@ which(colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5) # Awful job
 
 # Coefficient estimates
 colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1])
-
-
-# Student
-#set.seed(465)
-#start <- Sys.time()
-#ssvs_2_s <- lm.spike(y ~ .,
-                   #data = data,
-                   #niter = N_SAMPLES_2,
-                   #error.distribution = "student")
-#print(Sys.time() - start)
-
-#ssvs_2_s$beta[,-1] %>% 
-  #as.data.frame() %>% 
-  #mutate(iter = row_number()) %>% 
-  #filter(iter > BURN_IN) %>% 
-  #pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  #mutate(beta = substring(beta, 2)) %>% 
-  #mutate(beta = as.integer(beta) - 1) %>% 
-  #ggplot(aes(x = iter, y = value)) +
-  #geom_line() +
-  #facet_wrap(~beta, scales = "free_y") +
-  #theme_bw() +
-  #labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  #theme(plot.title = element_text(hjust = 0.5))
-
-# Probability of inclusion
-#colMeans(ssvs_2_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-#which(colMeans(ssvs_2_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5) # Still job
-
-# Coefficient estimates
-#colMeans(ssvs_2_s$beta[BURN_IN:N_SAMPLES_2,-1])
 ```
 
 This does a truly terrible job with the dense signal - it recovers almost nothing as being greater than 0. Could we get it there by tweaking the prior? Probably.
@@ -849,40 +758,37 @@ which(colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # It doesn't 
 
 # Coefficient estimates
 colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1])
-
-
-# Student
-#set.seed(465)
-#start <- Sys.time()
-#ssvs_3_s <- lm.spike(y ~ .,
-                   #data = data,
-                   #niter = N_SAMPLES_2,
-                   #error.distribution = "student")
-#print(Sys.time() - start)
-
-#ssvs_3_s$beta[,-1] %>% 
-  #as.data.frame() %>% 
-  #mutate(iter = row_number()) %>% 
-  #filter(iter > BURN_IN) %>% 
-  #pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  #mutate(beta = substring(beta, 2)) %>% 
-  #mutate(beta = as.integer(beta) - 1) %>% 
-  #ggplot(aes(x = iter, y = value)) +
-  #geom_line() +
-  #facet_wrap(~beta, scales = "free_y") +
-  #theme_bw() +
-  #labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  #theme(plot.title = element_text(hjust = 0.5))
-
-# Probability of inclusion
-#colMeans(ssvs_3_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-#which(colMeans(ssvs_3_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Same performance as gaussian
-
-# Coefficient estimates
-#colMeans(ssvs_3_s$beta[BURN_IN:N_SAMPLES_2,-1])
 ```
 
-Not too bad with the sparse model - we would probably want to adjust the prior to have higher inclusion probabilities, because as of right now it's pushing everything pretty close to 0. However, this is otherwise a pretty strong performance, and it does ID the correct variables quickly.
+Not too bad with the sparse model - we would probably want to adjust the prior to have higher inclusion probabilities, because as of right now it's pushing everything pretty close to 0. It does ID some of the correct variables quickly, and it gets a reasonable interpretation of their coefficients. However, it also gives us some false positives.
+
+
+### Model 4
+
+```{r}
+#| label: SSVS 4
+
+y <- model_4$y
+X <- model_4$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+start <- Sys.time()
+ssvs_4_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "gaussian")
+print(Sys.time() - start)
+
+# Probability of inclusion
+colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Mixed bag - gets some of the correct variables, still mostly the ones with stronger signal.
+
+# Coefficient estimates
+colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1])
+```
+
+Does a pretty okay job, although I feel like better performance is certainly possible. We are getting somewhat close to our true coefficients in the true positives, anyway.
 
 
 ### Model 5
@@ -902,104 +808,31 @@ ssvs_5_g <- lm.spike(y ~ .,
                    error.distribution = "gaussian")
 print(Sys.time() - start)
 
-ssvs_5_g$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
 # Probability of inclusion
 colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-which(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Does a little worse - introduces false negatives and false positives here.
+which(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # About 50/50 with true and false positives, also have some false negatives.
 
 # Coefficient estimates
 colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1])
-
-
-# Student
-#set.seed(465)
-#start <- Sys.time()
-#ssvs_5_s <- lm.spike(y ~ .,
-                   #data = data,
-                   #niter = N_SAMPLES_2,
-                   #error.distribution = "student")
-#print(Sys.time() - start)
-
-#ssvs_5_s$beta[,-1] %>% 
-  #as.data.frame() %>% 
-  #mutate(iter = row_number()) %>% 
-  #filter(iter > BURN_IN) %>% 
-  #pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  #mutate(beta = substring(beta, 2)) %>% 
-  #mutate(beta = as.integer(beta) - 1) %>% 
-  #ggplot(aes(x = iter, y = value)) +
-  #geom_line() +
-  #facet_wrap(~beta, scales = "free_y") +
-  #theme_bw() +
-  #labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  #theme(plot.title = element_text(hjust = 0.5))
-
-# Probability of inclusion
-#colMeans(ssvs_5_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-#which(colMeans(ssvs_5_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Same performance as gaussian
-
-# Coefficient estimates
-#colMeans(ssvs_5_s$beta[BURN_IN:N_SAMPLES_2,-1])
 ```
 
-Definitely doing a little worse here with $n > p$. We have the introduction of false negatives as well as false positives.
-
-
-### Model 7
-
-```{r}
-#| label: SSVS 7
-
-y <- model_7$y
-X <- model_7$X
-data <- data.frame(y = y, X[,-1])
-
-set.seed(465)
-start <- Sys.time()
-ssvs_7_g <- lm.spike(y ~ .,
-                   data = data,
-                   niter = N_SAMPLES_2,
-                   error.distribution = "gaussian")
-print(Sys.time() - start)
-
-# Probability of inclusion
-colMeans(ssvs_7_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-which(colMeans(ssvs_7_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.001) # Mixed bag - about 50/50 on true vs false signal. We do ID 4 of our 5 correct signals, which is nice.
-
-# Coefficient estimates
-colMeans(ssvs_7_g$beta[BURN_IN:N_SAMPLES_2,-1])
-```
-
-Does a pretty okay job, although I feel like better performance is certainly possible. Had to remove the call for Student's because it was taking too long (had not completed 3k iterations in 3 minutes before giving up).
+Performance is a little worse, but still tolerable. Note that the coefficients are certainly getting worse now.
 
 
 ## LASSO
 
-### Model 1
+### Model 0
 
 ```{r}
-#| label: lasso 1
+#| label: lasso 0
 
-y <- model_1$y
-X <- model_1$X[,-1]
+y <- model_0$y
+X <- model_0$X[,-1]
 
 set.seed(465)
-lasso_1 <- blasso(X, y, T = N_SAMPLES_2, case = "default")
+lasso_0 <- blasso(X, y, T = N_SAMPLES, case = "default")
 
-lasso_1$beta[,-1] %>% 
+lasso_0$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1014,18 +847,55 @@ lasso_1$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_1$beta[,-1] != 0)
-which(colMeans(lasso_1$beta[,-1] != 0) > 0.5)
+colMeans(lasso_0$beta != 0)
+which(colMeans(lasso_0$beta != 0) > 0.5)
 
 # Est. coefficients
-colMeans(lasso_1$beta[,-1])
+colMeans(lasso_0$beta)
 
-# Lambda mostly stays low
+# Lambda stays incredibly low
+plot(seq(N_SAMPLES - BURN_IN), lasso_0$lambda2[(BURN_IN + 1):N_SAMPLES])
+```
+
+Correct, fast, and restores the correct coefficient values.
+
+### Model 1
+
+```{r}
+#| label: lasso 1
+
+y <- model_1$y
+X <- model_1$X[,-1]
+
+set.seed(465)
+lasso_1 <- blasso(X, y, T = N_SAMPLES, case = "default")
+
+lasso_1$beta %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(lasso_1$beta != 0)
+which(colMeans(lasso_1$beta != 0) > 0.5)
+
+# Est. coefficients
+colMeans(lasso_1$beta)
+
+# Lambda stays very low
 plot(seq(N_SAMPLES - BURN_IN), lasso_1$lambda2[(BURN_IN + 1):N_SAMPLES])
 ```
 
-This almost recovers the correct values - however, it also has a false positive included.
-
+This almost recovers the correct values - all of the correct variables, but the coefficients are a little off (because they are shrunk towards zero).
 
 ### Model 2
 
@@ -1041,7 +911,7 @@ print(start)
 lasso_2 <- blasso(X, y, T = N_SAMPLES, case = "default")
 print(Sys.time() - start)
 
-lasso_2$beta[,-1] %>% 
+lasso_2$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1056,11 +926,11 @@ lasso_2$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_2$beta[,-1] != 0)
-which(colMeans(lasso_2$beta[,-1] != 0) > 0.5) # So we're only capturing some of them
+colMeans(lasso_2$beta != 0)
+which(colMeans(lasso_2$beta != 0) > 0.5) # Should be the first 75, so we aren't capturing a bunch of them
 
 # Est. coefficients
-colMeans(lasso_2$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(lasso_2$beta) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
@@ -1070,7 +940,7 @@ plot(seq(N_SAMPLES - BURN_IN), lasso_2$lambda2[(BURN_IN + 1):N_SAMPLES])
 plot(seq(N_SAMPLES - BURN_IN), lasso_2$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-This definitely doesn't do a great job - it gives us a lot of false negatives, and only captures about half of the true negatives. It also takes far, far longer to converge than some of the other algorithms.
+This definitely doesn't do a great job - it gives us a lot of false negatives, but also has some false positives.
 
 
 ### Model 3
@@ -1087,7 +957,7 @@ print(start)
 lasso_3 <- blasso(X, y, T = N_SAMPLES, case = "default")
 print(Sys.time() - start)
 
-lasso_3$beta[,-1] %>% 
+lasso_3$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1102,11 +972,11 @@ lasso_3$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_3$beta[,-1] != 0)
-which(colMeans(lasso_3$beta[,-1] != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
+colMeans(lasso_3$beta != 0)
+which(colMeans(lasso_3$beta != 0) > 0.65) # Not terrible performance, does well with thresholding. However, there are some very persisitent false positives.
 
 # Est. coefficients
-colMeans(lasso_3$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(lasso_3$beta) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
@@ -1116,7 +986,52 @@ plot(seq(N_SAMPLES - BURN_IN), lasso_3$lambda2[(BURN_IN + 1):N_SAMPLES])
 plot(seq(N_SAMPLES - BURN_IN), lasso_3$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-LASSO performs well here - you have to threshold the probability of inclusion higher, but once you do that, the algorithm has perfect performance.
+LASSO performs well here - you have to threshold the probability of inclusion higher, but once you do that, the algorithm has strong performance. Still picking up on some false positives, and we are missing our coefficient estimates.
+
+### Model 4
+
+```{r}
+#| label: lasso 4
+
+y <- model_4$y
+X <- model_4$X[,-1]
+
+set.seed(465)
+start <- Sys.time()
+print(start)
+lasso_4 <- blasso(X, y, T = N_SAMPLES, case = "default")
+print(Sys.time() - start)
+
+lasso_4$beta %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(lasso_4$beta != 0)
+which(colMeans(lasso_4$beta != 0) > 0.65) # Thresholding it high gets it pretty close, but not perfect
+
+# Est. coefficients
+colMeans(lasso_4$beta) # Most of these are incredibly close to 0
+
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), lasso_4$lambda2[(BURN_IN + 1):N_SAMPLES])
+
+# Model size stays pretty consistent in that 50-55 range
+plot(seq(N_SAMPLES - BURN_IN), lasso_4$m[(BURN_IN + 1):N_SAMPLES])
+```
+
+Actually slightly better performance here than the previous - I think this must just be a factor of the random runs.
 
 
 ### Model 5
@@ -1133,7 +1048,7 @@ print(start)
 lasso_5 <- blasso(X, y, T = N_SAMPLES, case = "default")
 print(Sys.time() - start)
 
-lasso_5$beta[,-1] %>% 
+lasso_5$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1148,11 +1063,11 @@ lasso_5$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_5$beta[,-1] != 0)
-which(colMeans(lasso_5$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+colMeans(lasso_5$beta != 0)
+which(colMeans(lasso_5$beta != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
 
 # Est. coefficients
-colMeans(lasso_5$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(lasso_5$beta) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
@@ -1165,21 +1080,20 @@ plot(seq(N_SAMPLES - BURN_IN), lasso_5$m[(BURN_IN + 1):N_SAMPLES])
 Slightly worse performance, but it's still pretty good with high thresholding.
 
 
-### Model 7
+## NG
+
+### Model 0
 
 ```{r}
-#| label: lasso 7
+#| label: ng 1
 
-y <- model_7$y
-X <- model_7$X[,-1]
+y <- model_0$y
+X <- model_0$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
-lasso_7 <- blasso(X, y, T = N_SAMPLES, case = "default")
-print(Sys.time() - start)
+ng_0 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 
-lasso_7$beta[,-1] %>% 
+ng_0$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1194,22 +1108,18 @@ lasso_7$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_7$beta[,-1] != 0)
-which(colMeans(lasso_7$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+colMeans(ng_0$beta != 0)
+which(colMeans(ng_0$beta != 0) > 0.5)
 
 # Est. coefficients
-colMeans(lasso_7$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(ng_0$beta)
 
-
-# Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), lasso_7$lambda2[(BURN_IN + 1):N_SAMPLES])
-
-# Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), lasso_7$m[(BURN_IN + 1):N_SAMPLES])
+# Lambda stays very low
+plot(seq(N_SAMPLES - BURN_IN), ng_0$lambda2[(BURN_IN + 1):N_SAMPLES])
 ```
 
+Very well done, gets the correct variables and super close to correct coefficients.
 
-## NG
 
 ### Model 1
 
@@ -1222,7 +1132,7 @@ X <- model_1$X[,-1]
 set.seed(465)
 ng_1 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 
-ng_1$beta[,-1] %>% 
+ng_1$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1237,17 +1147,17 @@ ng_1$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(ng_1$beta[,-1] != 0)
-which(colMeans(ng_1$beta[,-1] != 0) > 0.55) # Needs a little thresholding
+colMeans(ng_1$beta != 0)
+which(colMeans(ng_1$beta != 0) > 0.55) # Needs a little thresholding
 
 # Est. coefficients
-colMeans(ng_1$beta[,-1])
+colMeans(ng_1$beta)
 
 # Lambda mostly stays low
 plot(seq(N_SAMPLES - BURN_IN), ng_1$lambda2[(BURN_IN + 1):N_SAMPLES])
 ```
 
-This almost recovers the correct values - however, it also has a false positive included.
+Gets the correct variables, but it does miss on the coefficients a good bit.
 
 
 ### Model 2
@@ -1264,7 +1174,7 @@ print(start)
 ng_2 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 print(Sys.time() - start)
 
-ng_2$beta[,-1] %>% 
+ng_2$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1279,11 +1189,11 @@ ng_2$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(ng_2$beta[,-1] != 0)
-which(colMeans(ng_2$beta[,-1] != 0) > 0.5) # So we're only capturing some of them
+colMeans(ng_2$beta != 0)
+which(colMeans(ng_2$beta != 0) > 0.5) # So we're only capturing some of them
 
 # Est. coefficients
-colMeans(ng_2$beta[,-1])
+colMeans(ng_2$beta)
 
 
 # Lambda mostly stays low
@@ -1310,7 +1220,7 @@ print(start)
 ng_3 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 print(Sys.time() - start)
 
-ng_3$beta[,-1] %>% 
+ng_3$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1325,13 +1235,13 @@ ng_3$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(ng_3$beta[,-1] != 0)
-which(colMeans(ng_3$beta[,-1] != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
+colMeans(ng_3$beta != 0)
+which(colMeans(ng_3$beta != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
 # We could threshold this as high as 94% (in this instance) and still get the correct output
 # Marginally better performance than LASSO, but might not hold up across multiple runs
 
 # Est. coefficients
-colMeans(ng_3$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(ng_3$beta) # Most of these are incredibly close to 0
 # Almost true coefficients for some, farther from true coefficients for others (b.5, e.g.)
 
 
@@ -1343,6 +1253,49 @@ plot(seq(N_SAMPLES - BURN_IN), ng_3$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
 NG performs well here - you have to threshold the probability of inclusion higher, but once you do that, the algorithm has perfect performance. Slightly better than LASSO, but extremely marginal.
+
+### Model 4
+
+```{r}
+#| label: ng 4
+
+y <- model_4$y
+X <- model_4$X[,-1]
+
+set.seed(465)
+start <- Sys.time()
+print(start)
+ng_4 <- blasso(X, y, T = N_SAMPLES, case = "ng")
+print(Sys.time() - start)
+
+ng_4$beta %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(ng_4$beta != 0)
+which(colMeans(ng_4$beta != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+
+# Est. coefficients
+colMeans(ng_4$beta) # Most of these are incredibly close to 0
+
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), ng_7$lambda2[(BURN_IN + 1):N_SAMPLES])
+
+# Model size stays pretty consistent in that 50-55 range
+plot(seq(N_SAMPLES - BURN_IN), ng_7$m[(BURN_IN + 1):N_SAMPLES])
+```
 
 
 ### Model 5
@@ -1359,7 +1312,7 @@ print(start)
 ng_5 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 print(Sys.time() - start)
 
-ng_5$beta[,-1] %>% 
+ng_5$beta %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1374,11 +1327,11 @@ ng_5$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(ng_5$beta[,-1] != 0)
-which(colMeans(ng_5$beta[,-1] != 0) > 0.7) # Have to threshold pretty high to remove random noise
+colMeans(ng_5$beta != 0)
+which(colMeans(ng_5$beta != 0) > 0.7) # Have to threshold pretty high to remove random noise
 
 # Est. coefficients
-colMeans(ng_5$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(ng_5$beta) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
@@ -1391,48 +1344,7 @@ plot(seq(N_SAMPLES - BURN_IN), ng_5$m[(BURN_IN + 1):N_SAMPLES])
 Slightly worse performance, but it's still maybe acceptable with high thresholding.
 
 
-### Model 7
 
-```{r}
-#| label: ng 7
-
-y <- model_7$y
-X <- model_7$X[,-1]
-
-set.seed(465)
-start <- Sys.time()
-print(start)
-ng_7 <- blasso(X, y, T = N_SAMPLES, case = "ng")
-print(Sys.time() - start)
-
-ng_7$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Probabilities of inclusion
-colMeans(ng_7$beta[,-1] != 0)
-which(colMeans(ng_7$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
-
-# Est. coefficients
-colMeans(ng_7$beta[,-1]) # Most of these are incredibly close to 0
-
-
-# Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), ng_7$lambda2[(BURN_IN + 1):N_SAMPLES])
-
-# Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), ng_7$m[(BURN_IN + 1):N_SAMPLES])
-```
 
 
 
