@@ -159,7 +159,7 @@ bss_0_all
 ### Model 1
 
 ```{r}
-#| label: run bayeslm and evaluate
+#| label: run bayeslm and evaluate 1
 
 set.seed(465)
 
@@ -181,45 +181,26 @@ post_lpd = temp$post_lpd
 indicators_1 <- branch_and_bound(yy = fitted(model_1_fit),
                               XX = X)
 
-accept_info <- accept_family(post_y_pred = post_y_pred,
+accept_info_1 <- accept_family(post_y_pred = post_y_pred,
                             post_lpd = post_lpd,
                             XX = X,
                             indicators = indicators_1,
                             yy = y,
                             post_y_hat = tcrossprod(model_1_fit$beta, X))
 
+# Smallest acceptable subset
+bss_1_small <- as.integer(accept_info_1$beta_hat_small[-1] != 0)
+bss_1_small
 
-
-# How many subsets are in the acceptable family?
-length(accept_info$all_accept) # 127
-
-# Simplest acceptable subset:
-beta_hat_small <- accept_info$beta_hat_small
-beta_hat_small
-
-# Which coefficients are nonzero:
-S_small <- which(beta_hat_small != 0)
-S_small
-
-# How many coefficients are nonzero:
-length(S_small) # 1
 
 # Acceptable subset that minimizes CV error:
-beta_hat_min <- accept_info$beta_hat_min
+bss_1_min <- as.integer(accept_info_1$beta_hat_min[-1] != 0)
+bss_1_min
 
-# Typically much larger (and often too large...)
-sum(beta_hat_min != 0) # 6
-
-# Variable importance metrics
-vi_e <- var_imp(indicators = indicators_1,
-               all_accept = accept_info$all_accept)$vi_inc
-
-# Variables appearing in all acceptable subsets
-all_acceptable <- which(vi_e == 1)
-all_acceptable
-
-# Size
-length(all_acceptable) # 1
+# Present in all acceptable subsets
+bss_1_all <- as.integer(var_imp(indicators = indicators_1,
+               all_accept = accept_info_1$all_accept)$vi_inc[-1] == 1)
+bss_1_all
 ```
 
 With $n = 100$, we aren't picking up the right variables - the smallest subsets are just the intercept. Might need to increase the SNR or n?
@@ -1708,9 +1689,11 @@ Order of minutes-10s of minutes.
 calc_rates <- function(cm){
   fpr <- cm[1,2] / sum(cm[1,])
   fnr <- cm[2,1] / sum(cm[2,])
-  tpr <- 1 - fpr
-  tnr <- 1 - fnr
-  return(c(TPR = tpr, TNR = tnr, FPR = fpr, FNR = fnr))
+  #tpr <- 1 - fpr
+  #tnr <- 1 - fnr
+  tpr <- cm[2,2] / sum(cm[2,])
+  tnr <- cm[1,1] / sum(cm[1,])
+  return(c(TPR = tpr, FNR = fnr, TNR = tnr, FPR = fpr))
 }
 ```
 
@@ -1745,9 +1728,6 @@ hs_0_out <- as.integer(colMeans(hs_0$beta != 0) > 0.5)
 hs_0_cm <- table(true_betas_0, hs_0_out)
 
 
-
-calc_rates(bss_0_small_cm)
-
 model_0_rates <- rbind(c(Name = "BSS - Small", calc_rates(bss_0_small_cm), Runtime = "Seconds"),
       c(Name = "BSS - Min", calc_rates(bss_0_min_cm), Runtime = "Seconds"),
       c(Name = "BSS - All", calc_rates(bss_0_all_cm), Runtime = "Seconds"),
@@ -1761,6 +1741,51 @@ model_0_rates <- rbind(c(Name = "BSS - Small", calc_rates(bss_0_small_cm), Runti
 
 save(model_0_rates, file = "model_0_rates.RData")
 kable(model_0_rates, digits = 3)
+```
+
+### Model 1
+
+```{r}
+#| label: tpr fpr model 1
+
+true_betas_1 <- model_1$beta_true[2:11]
+true_betas_1 <- as.integer(true_betas_1 != 0)
+
+bss_1_small_cm <- table(true_betas_1, bss_1_small)
+bss_1_min_cm <- table(true_betas_1, bss_1_min)
+bss_1_all_cm <- table(true_betas_1, bss_1_all)
+
+bvs_1_cm <- table(true_betas_1, bvs_1$HPMbin)
+
+bma_1_out <- as.integer(estimates.bma(bma_1, order.by.pip = FALSE)[,1] > 0.5)
+bma_1_cm <- table(true_betas_1, bma_1_out)
+
+ssvs_1_out <- as.integer(colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
+ssvs_1_cm <- table(true_betas_1, ssvs_1_out)
+
+lasso_1_out <- as.integer(colMeans(lasso_1$beta != 0) > 0.5)
+lasso_1_cm <- table(true_betas_1, lasso_1_out)
+
+ng_1_out <- as.integer(colMeans(ng_1$beta != 0) > 0.5)
+ng_1_cm <- table(true_betas_1, ng_1_out)
+
+hs_1_out <- as.integer(colMeans(hs_1$beta != 0) > 0.5)
+hs_1_cm <- table(true_betas_1, hs_1_out)
+
+
+model_1_rates <- rbind(c(Name = "BSS - Small", calc_rates(bss_1_small_cm), Runtime = "Seconds"),
+      c(Name = "BSS - Min", calc_rates(bss_1_min_cm), Runtime = "Seconds"),
+      c(Name = "BSS - All", calc_rates(bss_1_all_cm), Runtime = "Seconds"),
+      c(Name = "BMS", calc_rates(bvs_1_cm), Runtime = "Seconds"),
+      c(Name = "BMA", calc_rates(bma_1_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", calc_rates(ssvs_1_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", calc_rates(lasso_1_cm), Runtime = "Seconds"),
+      c(Name = "Normal-Gamma", calc_rates(ng_1_cm), Runtime = "Seconds"),
+      c(Name = "Horseshoe", calc_rates(hs_1_cm), Runtime = "Seconds")
+  )
+
+save(model_1_rates, file = "model_1_rates.RData")
+kable(model_1_rates, digits = 3)
 ```
 
 
