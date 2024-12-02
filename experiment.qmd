@@ -502,3 +502,326 @@ summary(bma_7)
 Again, this really doesn't do too great. It wants to flag a lot of regressors, and none of them are actually correct.
 
 
+# Prior Methods
+
+## SSVS
+
+### Model 1
+
+```{r}
+#| label: SSVS 1
+
+y <- model_1$y
+X <- model_1$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+start <- Sys.time()
+ssvs_1_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "gaussian")
+print(Sys.time() - start)
+
+ssvs_1_g$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y", nrow = 2) +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+
+# Coefficient estimates
+colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1])
+
+
+# Student
+set.seed(465)
+start <- Sys.time()
+ssvs_1_s <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "student")
+print(Sys.time() - start)
+
+ssvs_1_s$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y", nrow = 2) +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_1_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+
+# Coefficient estimates
+colMeans(ssvs_1_s$beta[BURN_IN:N_SAMPLES_2,-1])
+```
+
+The student's distribution definitely does a better job at getting to the true coefficient values, and it keeps out the variables we don't want just as effectively.
+
+
+### Model 2
+
+```{r}
+#| label: SSVS 2
+
+y <- model_2$y
+X <- model_2$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+start <- Sys.time()
+ssvs_2_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "gaussian")
+print(Sys.time() - start)
+
+ssvs_2_g$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5) # Awful job
+
+# Coefficient estimates
+colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1])
+
+
+# Student
+set.seed(465)
+start <- Sys.time()
+ssvs_2_s <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "student")
+print(Sys.time() - start)
+
+ssvs_2_s$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_2_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_2_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5) # Still job
+
+# Coefficient estimates
+colMeans(ssvs_2_s$beta[BURN_IN:N_SAMPLES_2,-1])
+```
+
+This does a truly terrible job with the dense signal - it recovers almost nothing as being greater than 0. Could we get it there by tweaking the prior? Probably.
+
+
+### Model 3
+
+```{r}
+#| label: SSVS 3
+
+y <- model_3$y
+X <- model_3$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+start <- Sys.time()
+ssvs_3_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "gaussian")
+print(Sys.time() - start)
+
+ssvs_3_g$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # It doesn't give us many whp, but it definitely IDs the strongest candidates first
+# Probably would perform better with a smarter prior specification
+
+# Coefficient estimates
+colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1])
+
+
+# Student
+set.seed(465)
+start <- Sys.time()
+ssvs_3_s <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "student")
+print(Sys.time() - start)
+
+ssvs_3_s$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_3_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_3_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Same performance as gaussian
+
+# Coefficient estimates
+colMeans(ssvs_3_s$beta[BURN_IN:N_SAMPLES_2,-1])
+```
+
+Not too bad with the sparse model - we would probably want to adjust the prior to have higher inclusion probabilities, because as of right now it's pushing everything pretty close to 0. However, this is otherwise a pretty strong performance, and it does ID the correct variables quickly.
+
+
+### Model 5
+
+```{r}
+#| label: SSVS 5
+
+y <- model_5$y
+X <- model_5$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+start <- Sys.time()
+ssvs_5_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "gaussian")
+print(Sys.time() - start)
+
+ssvs_5_g$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Does a little worse - introduces false negatives and false positives here.
+
+# Coefficient estimates
+colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1])
+
+
+# Student
+set.seed(465)
+start <- Sys.time()
+ssvs_5_s <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "student")
+print(Sys.time() - start)
+
+ssvs_5_s$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 2)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probability of inclusion
+colMeans(ssvs_5_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_5_s$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # Same performance as gaussian
+
+# Coefficient estimates
+colMeans(ssvs_5_s$beta[BURN_IN:N_SAMPLES_2,-1])
+```
+
+Definitely doing a little worse here with $n > p$. We have the introduction of false negatives as well as false positives.
+
+
+### Model 7
+
+```{r}
+#| label: SSVS 7
+
+y <- model_7$y
+X <- model_7$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+start <- Sys.time()
+ssvs_7_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES_2,
+                   error.distribution = "gaussian")
+print(Sys.time() - start)
+
+# Probability of inclusion
+colMeans(ssvs_7_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
+which(colMeans(ssvs_7_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.001) # Mixed bag - about 50/50 on true vs false signal. We do ID 4 of our 5 correct signals, which is nice.
+
+# Coefficient estimates
+colMeans(ssvs_7_g$beta[BURN_IN:N_SAMPLES_2,-1])
+```
+
+Does a pretty okay job, although I feel like better performance is certainly possible. Had to remove the call for Student's because it was taking too long (had not completed 3k iterations in 3 minutes before giving up).
+
+
