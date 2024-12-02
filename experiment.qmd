@@ -1203,7 +1203,7 @@ plot(seq(N_SAMPLES - BURN_IN), ng_2$lambda2[(BURN_IN + 1):N_SAMPLES])
 plot(seq(N_SAMPLES - BURN_IN), ng_2$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-This definitely doesn't do a great job - it gives us a lot of false negatives, and only captures about half of the true negatives. It also takes far, far longer to converge than some of the other algorithms.
+This definitely doesn't do a great job - it gives us a lot of false negatives, and only captures about half of the true negatives.
 
 
 ### Model 3
@@ -1236,13 +1236,11 @@ ng_3$beta %>%
 
 # Probabilities of inclusion
 colMeans(ng_3$beta != 0)
-which(colMeans(ng_3$beta != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
-# We could threshold this as high as 94% (in this instance) and still get the correct output
-# Marginally better performance than LASSO, but might not hold up across multiple runs
+which(colMeans(ng_3$beta != 0) > 0.7) # Not terrible performance, does a better job if you threshold it high
 
 # Est. coefficients
 colMeans(ng_3$beta) # Most of these are incredibly close to 0
-# Almost true coefficients for some, farther from true coefficients for others (b.5, e.g.)
+# Shrinkage still affecting our coefficients
 
 
 # Lambda mostly stays low
@@ -1284,18 +1282,20 @@ ng_4$beta %>%
 
 # Probabilities of inclusion
 colMeans(ng_4$beta != 0)
-which(colMeans(ng_4$beta != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+which(colMeans(ng_4$beta != 0) > 0.65) # Thresholding it high gets it pretty close, but not perfect
 
 # Est. coefficients
 colMeans(ng_4$beta) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), ng_7$lambda2[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_4$lambda2[(BURN_IN + 1):N_SAMPLES])
 
 # Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), ng_7$m[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_4$m[(BURN_IN + 1):N_SAMPLES])
 ```
+
+Does pretty well - maybe slightly better than with $n > p$ in the previous example, though again these are close. Still having some issues with the true pos/neg, but at least the coefficients are pretty close here.
 
 
 ### Model 5
