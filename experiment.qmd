@@ -108,6 +108,73 @@ Note: For now, I am skipping the models with dense signals. I don't think it mak
 
 Note: This code needs to be run overnight. It is not currently running fast enough to be useful.
 
+### Model 0
+
+```{r}
+#| label: run bayeslm and evaluate
+
+set.seed(465)
+
+X <- model_0$X
+y <- model_0$y
+
+model_0_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge"
+                       )
+
+temp <- post_predict(post_y_hat = tcrossprod(model_0_fit$beta, X),
+                    post_sigma = model_0_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+indicators_0 <- branch_and_bound(yy = fitted(model_0_fit),
+                              XX = X)
+
+accept_info_0 <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_0,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_0_fit$beta, X))
+
+
+
+# How many subsets are in the acceptable family?
+#length(accept_info$all_accept) # 127
+
+# Simplest acceptable subset:
+#beta_hat_small <- accept_info$beta_hat_small
+#beta_hat_small
+
+# Which coefficients are nonzero:
+bss_0_small <- which(accept_info_0$beta_hat_small[-1] != 0)
+bss_0_small
+
+# How many coefficients are nonzero:
+#length(S_small) # 1
+
+# Acceptable subset that minimizes CV error:
+bss_0_min <- which(accept_info_0$beta_hat_min[-1] != 0)
+bss_0_min
+
+# Typically much larger (and often too large...)
+sum(beta_hat_min != 0) # 6
+
+# Variable importance metrics
+vi_e <- var_imp(indicators = indicators_1,
+               all_accept = accept_info$all_accept)$vi_inc
+
+# Variables appearing in all acceptable subsets
+all_acceptable <- which(vi_e == 1)
+all_acceptable
+
+# Size
+length(all_acceptable) # 1
+```
+
 ### Model 1
 
 ```{r}
@@ -1659,12 +1726,26 @@ Order of minutes-10s of minutes.
 ```{r}
 #| label: tpr fpr model 0
 
-true_betas <- model_0$beta_true[2:11]
-true_betas <- as.integer(true_betas != 0)
+true_betas_0 <- model_0$beta_true[2:11]
+true_betas_0 <- as.integer(true_betas_0 != 0)
 
-# Subset Selection
-bvs_0_cm <- table(true_betas, bvs_0$HPMbin)
+# Put subset selection here
+bvs_0_cm <- table(true_betas_0, bvs_0$HPMbin)
 
+bma_0_out <- as.integer(estimates.bma(bma_0, order.by.pip = FALSE)[,1] > 0.5)
+bma_0_cm <- table(true_betas_0, bma_0_out)
+
+ssvs_0_out <- as.integer(colMeans(ssvs_0_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
+ssvs_0_cm <- table(true_betas_0, ssvs_0_out)
+
+lasso_0_out <- as.integer(colMeans(lasso_0$beta != 0) > 0.5)
+lasso_0_cm <- table(true_betas_0, lasso_0_out)
+
+ng_0_out <- as.integer(colMeans(ng_0$beta != 0) > 0.5)
+ng_0_cm <- table(true_betas_0, ng_0_out)
+
+hs_0_out <- as.integer(colMeans(hs_0$beta != 0) > 0.5)
+ng_0_cm <- table(true_betas_0, hs_0_out)
 ```
 
 
