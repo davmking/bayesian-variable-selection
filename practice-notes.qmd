@@ -25,7 +25,7 @@ You can use `lm.spike()` from `BoomSpikeSlab` to implement spike-and-slab priors
 
 ## Shrinkage Priors
 
-The `monomvn` package can be used to implement LASSO, NG, horsehoe, and ridge priors. The horseshoe+ can be implemented using `Bayereg`. The SSLASSO can be implemented using `SSLASSO()` from the package of the same name.
+The `monomvn` package can be used to implement LASSO, NG, horseshoe, and ridge priors. The horseshoe+ can be implemented using `Bayereg`. The SSLASSO can be implemented using `SSLASSO()` from the package of the same name.
 
 ## Bayesian Subset Selection
 
