@@ -1048,3 +1048,226 @@ plot(seq(N_SAMPLES - BURN_IN), lasso_7$lambda2[(BURN_IN + 1):N_SAMPLES])
 plot(seq(N_SAMPLES - BURN_IN), lasso_7$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
+
+## NG
+
+### Model 1
+
+```{r}
+#| label: ng 1
+
+y <- model_1$y
+X <- model_1$X
+
+set.seed(465)
+ng_1 <- blasso(X, y, T = N_SAMPLES, case = "ng")
+
+ng_1$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(ng_1$beta[,-1] != 0)
+which(colMeans(ng_1$beta[,-1] != 0) > 0.55) # Needs a little thresholding
+
+# Est. coefficients
+colMeans(ng_1$beta[,-1])
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), ng_1$lambda2[(BURN_IN + 1):N_SAMPLES])
+```
+
+This almost recovers the correct values - however, it also has a false positive included.
+
+
+### Model 2
+
+```{r}
+#| label: ng 2
+
+y <- model_2$y
+X <- model_2$X
+
+set.seed(465)
+start <- Sys.time()
+print(start)
+ng_2 <- blasso(X, y, T = N_SAMPLES, case = "ng")
+print(Sys.time() - start)
+
+ng_2$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(ng_2$beta[,-1] != 0)
+which(colMeans(ng_2$beta[,-1] != 0) > 0.5) # So we're only capturing some of them
+
+# Est. coefficients
+colMeans(ng_2$beta[,-1])
+
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), ng_2$lambda2[(BURN_IN + 1):N_SAMPLES])
+
+# Model size stays pretty consistent in that 45-50 range
+plot(seq(N_SAMPLES - BURN_IN), ng_2$m[(BURN_IN + 1):N_SAMPLES])
+```
+
+This definitely doesn't do a great job - it gives us a lot of false negatives, and only captures about half of the true negatives. It also takes far, far longer to converge than some of the other algorithms.
+
+
+### Model 3
+
+```{r}
+#| label: lasso 3
+
+y <- model_3$y
+X <- model_3$X
+
+set.seed(465)
+start <- Sys.time()
+print(start)
+lasso_3 <- blasso(X, y, T = N_SAMPLES, case = "default")
+print(Sys.time() - start)
+
+lasso_3$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(lasso_3$beta[,-1] != 0)
+which(colMeans(lasso_3$beta[,-1] != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
+
+# Est. coefficients
+colMeans(lasso_3$beta[,-1]) # Most of these are incredibly close to 0
+
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), lasso_3$lambda2[(BURN_IN + 1):N_SAMPLES])
+
+# Model size stays pretty consistent in that 45-50 range
+plot(seq(N_SAMPLES - BURN_IN), lasso_3$m[(BURN_IN + 1):N_SAMPLES])
+```
+
+LASSO performs well here - you have to threshold the probability of inclusion higher, but once you do that, the algorithm has perfect performance.
+
+
+### Model 5
+
+```{r}
+#| label: lasso 5
+
+y <- model_5$y
+X <- model_5$X
+
+set.seed(465)
+start <- Sys.time()
+print(start)
+lasso_5 <- blasso(X, y, T = N_SAMPLES, case = "default")
+print(Sys.time() - start)
+
+lasso_5$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(lasso_5$beta[,-1] != 0)
+which(colMeans(lasso_5$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+
+# Est. coefficients
+colMeans(lasso_5$beta[,-1]) # Most of these are incredibly close to 0
+
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), lasso_5$lambda2[(BURN_IN + 1):N_SAMPLES])
+
+# Model size stays pretty consistent in that 50-55 range
+plot(seq(N_SAMPLES - BURN_IN), lasso_5$m[(BURN_IN + 1):N_SAMPLES])
+```
+
+Slightly worse performance, but it's still pretty good with high thresholding.
+
+
+### Model 7
+
+```{r}
+#| label: lasso 7
+
+y <- model_7$y
+X <- model_7$X
+
+set.seed(465)
+start <- Sys.time()
+print(start)
+lasso_7 <- blasso(X, y, T = N_SAMPLES, case = "default")
+print(Sys.time() - start)
+
+lasso_7$beta[,-1] %>% 
+  as.data.frame() %>% 
+  mutate(iter = row_number()) %>% 
+  filter(iter > BURN_IN) %>% 
+  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+  mutate(beta = substring(beta, 3)) %>% 
+  mutate(beta = as.integer(beta) - 1) %>% 
+  ggplot(aes(x = iter, y = value)) +
+  geom_line() +
+  facet_wrap(~beta, scales = "free_y") +
+  theme_bw() +
+  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Probabilities of inclusion
+colMeans(lasso_7$beta[,-1] != 0)
+which(colMeans(lasso_7$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+
+# Est. coefficients
+colMeans(lasso_7$beta[,-1]) # Most of these are incredibly close to 0
+
+
+# Lambda mostly stays low
+plot(seq(N_SAMPLES - BURN_IN), lasso_7$lambda2[(BURN_IN + 1):N_SAMPLES])
+
+# Model size stays pretty consistent in that 50-55 range
+plot(seq(N_SAMPLES - BURN_IN), lasso_7$m[(BURN_IN + 1):N_SAMPLES])
+```
+
