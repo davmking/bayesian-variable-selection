@@ -49,29 +49,42 @@ model_3 <- simulate_lm(100, 95, p_sig = 8)
 model_4 <- simulate_lm(100, 105, p_sig = 8)
 model_5 <- simulate_lm(100, 1000, p_sig = 8)
 
-
+# Set the first 3 coefficients to be (3, 2, -2), and rescale the response
+# Retain the original residuals in doing so
+# Note: This should be justified. Residuals are just the error term, and this should be independent of the betas
+# Particularly since it is zero-mean
 BETA_REPLACE <- c(3, 2, -2)
-
-X <- model_0$X
-y <- model_0$y
-beta <- model_0$beta_true
-true_y <- model_0$Ey_true
-
-
-cbind(true_y, y, X %*% beta)
-
-colMeans(X)
 
 resids_0 <- model_0$Ey_true - model_0$y
 model_0$beta_true[2:4] <- BETA_REPLACE
 model_0$Ey_true <- model_0$X %*% model_0$beta_true
 model_0$y <- model_0$Ey_true + resids_0
 
+resids_1 <- model_1$Ey_true - model_1$y
+model_1$beta_true[2:4] <- BETA_REPLACE
+model_1$Ey_true <- model_1$X %*% model_1$beta_true
+model_1$y <- model_1$Ey_true + resids_1
 
-model_0$beta_true[2:4] <- model_0$beta_true[2:4] * c(3, 2, 2)
 
-new_true_y <- X %*% model_0$beta_true
-new_y <- new_true_y + resids
+resids_2 <- model_2$Ey_true - model_2$y
+model_2$beta_true[2:4] <- BETA_REPLACE
+model_2$Ey_true <- model_2$X %*% model_2$beta_true
+model_2$y <- model_2$Ey_true + resids_2
+
+resids_3 <- model_3$Ey_true - model_3$y
+model_3$beta_true[2:4] <- BETA_REPLACE
+model_3$Ey_true <- model_3$X %*% model_3$beta_true
+model_3$y <- model_3$Ey_true + resids_3
+
+resids_4 <- model_4$Ey_true - model_4$y
+model_4$beta_true[2:4] <- BETA_REPLACE
+model_4$Ey_true <- model_4$X %*% model_4$beta_true
+model_4$y <- model_4$Ey_true + resids_4
+
+resids_5 <- model_5$Ey_true - model_5$y
+model_5$beta_true[2:4] <- BETA_REPLACE
+model_5$Ey_true <- model_5$X %*% model_5$beta_true
+model_5$y <- model_5$Ey_true + resids_5
 ```
 
 ## Hyperparameters
