@@ -395,7 +395,7 @@ set.seed(465)
 bma_1 <- bms(data,
              burn = BURN_IN,
              iter = N_SAMPLES_2,
-             mcmc = "revljump")
+             mcmc = "rev.jump")
 
 estimates.bma(bma_1, order.by.pip = FALSE) # Correct
 which(estimates.bma(bma_1, order.by.pip = FALSE)[,1] > 0.5)
@@ -419,7 +419,7 @@ set.seed(465)
 bma_2 <- bms(data,
              burn = BURN_IN,
              iter = N_SAMPLES_2,
-             mcmc = "revljump")
+             mcmc = "rev.jump")
 
 estimates.bma(bma_2, order.by.pip = FALSE)
 which(estimates.bma(bma_2, order.by.pip = FALSE)[,1] > 0.5) # Includes all predictors
@@ -428,4 +428,77 @@ summary(bma_2)
 ```
 
 Once again, does not do well when we run it on a dense signal. Might want to stop doing that.
+
+
+### Model 3
+
+```{r}
+#| label: BMA 3
+
+y <- model_3$y
+X <- model_3$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+bma_3 <- bms(data,
+             burn = BURN_IN,
+             iter = N_SAMPLES_2,
+             mcmc = "rev.jump")
+
+estimates.bma(bma_3, order.by.pip = FALSE)
+which(estimates.bma(bma_3, order.by.pip = FALSE)[,1] > 0.5) # Includes all predictors
+
+summary(bma_3)
+```
+
+Technically, this got all of our predictors, but it also included several false positives, which is not great for us.
+
+
+### Model 5
+
+```{r}
+#| label: BMA 5
+
+y <- model_5$y
+X <- model_5$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+bma_5 <- bms(data,
+             burn = BURN_IN,
+             iter = N_SAMPLES_2,
+             mcmc = "rev.jump")
+
+estimates.bma(bma_5, order.by.pip = FALSE)
+which(estimates.bma(bma_5, order.by.pip = FALSE)[,1] > 0.5) # Includes all predictors
+
+summary(bma_5)
+```
+
+This performs incredibly poorly when $n > p$, even by a little bit. That's very important to note here.
+
+
+### Model 7
+
+```{r}
+#| label: BMA 7
+
+y <- model_7$y
+X <- model_7$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+bma_7 <- bms(data,
+             burn = BURN_IN,
+             iter = N_SAMPLES_2,
+             mcmc = "rev.jump")
+
+estimates.bma(bma_7, order.by.pip = FALSE)
+which(estimates.bma(bma_7, order.by.pip = FALSE)[,1] > 0.5) # Includes several predictors, but doesn't get a single one right
+
+summary(bma_7)
+```
+
+Again, this really doesn't do too great. It wants to flag a lot of regressors, and none of them are actually correct.
+
 
