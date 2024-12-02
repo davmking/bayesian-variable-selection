@@ -1788,7 +1788,245 @@ save(model_1_rates, file = "model_1_rates.RData")
 kable(model_1_rates, digits = 3)
 ```
 
+### Model 2
+
+```{r}
+#| label: tpr fpr model 2
+
+true_betas_2 <- model_2$beta_true[-1]
+true_betas_2 <- as.integer(true_betas_2 != 0)
+
+#bss_1_small_cm <- table(true_betas_1, bss_1_small)
+#bss_1_min_cm <- table(true_betas_1, bss_1_min)
+#bss_1_all_cm <- table(true_betas_1, bss_1_all)
+
+bvs_2_cm <- table(true_betas_2, bvs_2$HPMbin)
+
+bma_2_out <- as.integer(estimates.bma(bma_2, order.by.pip = FALSE)[,1] > 0.5)
+bma_2_cm <- table(true_betas_2, bma_2_out)
+
+ssvs_2_out <- as.integer(colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
+ssvs_2_cm <- table(true_betas_2, ssvs_2_out)
+ssvs_2_cm <- cbind(ssvs_2_cm, c(0, 0))
+
+lasso_2_out <- as.integer(colMeans(lasso_2$beta != 0) > 0.5)
+lasso_2_cm <- table(true_betas_2, lasso_2_out)
+
+ng_2_out <- as.integer(colMeans(ng_2$beta != 0) > 0.5)
+ng_2_cm <- table(true_betas_2, ng_2_out)
+
+hs_2_out <- as.integer(colMeans(hs_2$beta != 0) > 0.5)
+hs_2_cm <- table(true_betas_2, hs_2_out)
+
+
+model_2_rates <- rbind(#c(Name = "BSS - Small", calc_rates(bss_1_small_cm), Runtime = "Seconds"),
+      #c(Name = "BSS - Min", calc_rates(bss_1_min_cm), Runtime = "Seconds"),
+      #c(Name = "BSS - All", calc_rates(bss_1_all_cm), Runtime = "Seconds"),
+      c(Name = "BMS", calc_rates(bvs_2_cm), Runtime = "Seconds"),
+      c(Name = "BMA", calc_rates(bma_2_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", calc_rates(ssvs_2_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", calc_rates(lasso_2_cm), Runtime = "Seconds"),
+      c(Name = "Normal-Gamma", calc_rates(ng_2_cm), Runtime = "Seconds"),
+      c(Name = "Horseshoe", calc_rates(hs_2_cm), Runtime = "Seconds")
+  )
+
+save(model_2_rates, file = "model_2_rates.RData")
+kable(model_2_rates, digits = 3)
+```
+
 
 ## Recovery of True Coefficients (MSE)
+
+
+
+
+
+# Long-Term Code Runs
+
+```{r}
+#| label: long-term code runs
+
+y <- model_5$y
+X <- model_5$X
+data <- data.frame(y = y, X[,-1])
+
+# SSVS
+set.seed(465)
+ssvs_start <- Sys.time()
+ssvs_5_g <- lm.spike(y ~ .,
+                   data = data,
+                   niter = N_SAMPLES,
+                   error.distribution = "gaussian")
+ssvs_end <- Sys.time()
+
+save(ssvs_5_g, file = "ssvs_5_g.RData")
+save(c(ssvs_start, ssvs_end), file = "ssvs_5_runtime.RData")
+print(ssvs_end)
+
+
+X <- model_5$X[,-1]
+
+# LASSO
+set.seed(465)
+lasso_start <- Sys.time()
+lasso_5 <- blasso(X, y, T = N_SAMPLES, case = "default")
+lasso_end <- Sys.time()
+
+save(lasso_5, file = "lasso_5.RData")
+save(c(lasso_start, lasso_end), file = "lasso_5_runtime.RData")
+print(lasso_end)
+
+
+# NG
+set.seed(465)
+ng_start <- Sys.time()
+ng_5 <- blasso(X, y, T = N_SAMPLES, case = "ng")
+ng_end <- Sys.time()
+
+save(ng_5, file = "ng_5.RData")
+save(c(ng_start, ng_end), file = "ng_5_runtime.RData")
+print(ng_end)
+
+
+# Horseshoe
+set.seed(465)
+hs_start <- Sys.time()
+hs_5 <- blasso(X, y, T = N_SAMPLES, case = "hs")
+hs_end <- Sys.time()
+
+save(hs_5, file = "hs_5.RData")
+save(c(hs_start, hs_end), file = "hs_5_runtime.RData")
+print(hs_end)
+
+
+# Subset Selection
+# Model 2
+set.seed(465)
+X <- model_2$X
+y <- model_2$y
+model_2_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge")
+temp <- post_predict(post_y_hat = tcrossprod(model_2_fit$beta, X),
+                    post_sigma = model_2_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+bss_2_start <- Sys.time()
+indicators_2 <- branch_and_bound(yy = fitted(model_2_fit),
+                              XX = X)
+bss_2_midpoint <- Sys.time()
+accept_info_2 <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_2,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_2_fit$beta, X))
+bss_2_end <- Sys.time()
+
+save(indicators_2, file = "indicators_2.RData")
+save(accept_info_2, file = "accept_info_2.RData")
+save(c(bss_2_start, bss_2_midpoint, bss_2_end), file = "bss_2_runtime.RData")
+print(bss_2_end)
+
+
+# Model 3
+set.seed(465)
+X <- model_3$X
+y <- model_3$y
+model_3_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge")
+temp <- post_predict(post_y_hat = tcrossprod(model_3_fit$beta, X),
+                    post_sigma = model_3_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+bss_3_start <- Sys.time()
+indicators_3 <- branch_and_bound(yy = fitted(model_3_fit),
+                              XX = X)
+bss_3_midpoint <- Sys.time()
+accept_info_3 <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_3,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_3_fit$beta, X))
+bss_3_end <- Sys.time()
+
+save(indicators_3, file = "indicators_3.RData")
+save(accept_info_3, file = "accept_info_3.RData")
+save(c(bss_3_start, bss_3_midpoint, bss_3_end), file = "bss_3_runtime.RData")
+print(bss_3_end)
+
+
+# Model 4
+set.seed(465)
+X <- model_4$X
+y <- model_4$y
+model_4_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge")
+temp <- post_predict(post_y_hat = tcrossprod(model_4_fit$beta, X),
+                    post_sigma = model_4_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+bss_4_start <- Sys.time()
+indicators_4 <- branch_and_bound(yy = fitted(model_4_fit),
+                              XX = X)
+bss_4_midpoint <- Sys.time()
+accept_info_4 <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_4,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_4_fit$beta, X))
+bss_4_end <- Sys.time()
+
+save(indicators_4, file = "indicators_4.RData")
+save(accept_info_4, file = "accept_info_4.RData")
+save(c(bss_4_start, bss_4_midpoint, bss_4_end), file = "bss_4_runtime.RData")
+print(bss_4_end)
+
+
+# Model 5
+set.seed(465)
+X <- model_5$X
+y <- model_5$y
+model_5_fit <- bayeslm(y ~ X[,-1],
+                       N = N_SAMPLES,
+                       burnin = BURN_IN,
+                       prior = "ridge")
+temp <- post_predict(post_y_hat = tcrossprod(model_5_fit$beta, X),
+                    post_sigma = model_5_fit$sigma,
+                    yy = y)
+post_y_pred = temp$post_y_pred
+post_lpd = temp$post_lpd
+
+bss_5_start <- Sys.time()
+indicators_5 <- branch_and_bound(yy = fitted(model_5_fit),
+                              XX = X)
+bss_5_midpoint <- Sys.time()
+accept_info_5 <- accept_family(post_y_pred = post_y_pred,
+                            post_lpd = post_lpd,
+                            XX = X,
+                            indicators = indicators_5,
+                            yy = y,
+                            post_y_hat = tcrossprod(model_5_fit$beta, X))
+bss_5_end <- Sys.time()
+
+save(indicators_5, file = "indicators_5.RData")
+save(accept_info_5, file = "accept_info_5.RData")
+save(c(bss_5_start, bss_5_midpoint, bss_5_end), file = "bss_5_runtime.RData")
+print(bss_5_end)
+```
+
 
 
