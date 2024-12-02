@@ -21,6 +21,7 @@ library(BayesSubsets)
 library(monomvn)
 #library(EMVS)  # Man
 library(tidyverse)
+library(knitr)
 ```
 
 
@@ -140,39 +141,19 @@ accept_info_0 <- accept_family(post_y_pred = post_y_pred,
                             yy = y,
                             post_y_hat = tcrossprod(model_0_fit$beta, X))
 
-
-
-# How many subsets are in the acceptable family?
-#length(accept_info$all_accept) # 127
-
-# Simplest acceptable subset:
-#beta_hat_small <- accept_info$beta_hat_small
-#beta_hat_small
-
-# Which coefficients are nonzero:
-bss_0_small <- which(accept_info_0$beta_hat_small[-1] != 0)
+# Smallest acceptable subset
+bss_0_small <- as.integer(accept_info_0$beta_hat_small[-1] != 0)
 bss_0_small
 
-# How many coefficients are nonzero:
-#length(S_small) # 1
 
 # Acceptable subset that minimizes CV error:
-bss_0_min <- which(accept_info_0$beta_hat_min[-1] != 0)
+bss_0_min <- as.integer(accept_info_0$beta_hat_min[-1] != 0)
 bss_0_min
 
-# Typically much larger (and often too large...)
-sum(beta_hat_min != 0) # 6
-
-# Variable importance metrics
-vi_e <- var_imp(indicators = indicators_1,
-               all_accept = accept_info$all_accept)$vi_inc
-
-# Variables appearing in all acceptable subsets
-all_acceptable <- which(vi_e == 1)
-all_acceptable
-
-# Size
-length(all_acceptable) # 1
+# Present in all acceptable subsets
+bss_0_all <- as.integer(var_imp(indicators = indicators_0,
+               all_accept = accept_info_0$all_accept)$vi_inc[-1] == 1)
+bss_0_all
 ```
 
 ### Model 1
@@ -1721,6 +1702,19 @@ Order of minutes-10s of minutes.
 
 ## True/False Positive Rates
 
+```{r}
+#| label: function to calculate rates
+
+calc_rates <- function(cm){
+  fpr <- cm[1,2] / sum(cm[1,])
+  fnr <- cm[2,1] / sum(cm[2,])
+  tpr <- 1 - fpr
+  tnr <- 1 - fnr
+  return(c(TPR = tpr, TNR = tnr, FPR = fpr, FNR = fnr))
+}
+```
+
+
 ### Model 0
 
 ```{r}
@@ -1729,7 +1723,10 @@ Order of minutes-10s of minutes.
 true_betas_0 <- model_0$beta_true[2:11]
 true_betas_0 <- as.integer(true_betas_0 != 0)
 
-# Put subset selection here
+bss_0_small_cm <- table(true_betas_0, bss_0_small)
+bss_0_min_cm <- table(true_betas_0, bss_0_min)
+bss_0_all_cm <- table(true_betas_0, bss_0_all)
+
 bvs_0_cm <- table(true_betas_0, bvs_0$HPMbin)
 
 bma_0_out <- as.integer(estimates.bma(bma_0, order.by.pip = FALSE)[,1] > 0.5)
@@ -1745,7 +1742,25 @@ ng_0_out <- as.integer(colMeans(ng_0$beta != 0) > 0.5)
 ng_0_cm <- table(true_betas_0, ng_0_out)
 
 hs_0_out <- as.integer(colMeans(hs_0$beta != 0) > 0.5)
-ng_0_cm <- table(true_betas_0, hs_0_out)
+hs_0_cm <- table(true_betas_0, hs_0_out)
+
+
+
+calc_rates(bss_0_small_cm)
+
+model_0_rates <- rbind(c(Name = "BSS - Small", calc_rates(bss_0_small_cm), Runtime = "Seconds"),
+      c(Name = "BSS - Min", calc_rates(bss_0_min_cm), Runtime = "Seconds"),
+      c(Name = "BSS - All", calc_rates(bss_0_all_cm), Runtime = "Seconds"),
+      c(Name = "BMS", calc_rates(bvs_0_cm), Runtime = "Seconds"),
+      c(Name = "BMA", calc_rates(bma_0_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", calc_rates(ssvs_0_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", calc_rates(lasso_0_cm), Runtime = "Seconds"),
+      c(Name = "Normal-Gamma", calc_rates(ng_0_cm), Runtime = "Seconds"),
+      c(Name = "Horseshoe", calc_rates(hs_0_cm), Runtime = "Seconds")
+  )
+
+save(model_0_rates, file = "model_0_rates.RData")
+kable(model_0_rates, digits = 3)
 ```
 
 
