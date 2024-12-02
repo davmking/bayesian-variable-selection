@@ -58,6 +58,8 @@ model_7 <- simulate_lm(100, 1000, p_sig = 5)
 
 N_SAMPLES <- 11000
 BURN_IN <- 1000
+
+N_SAMPLES_2 <- 31000
 ```
 
 
@@ -377,4 +379,53 @@ bvs_7$time
 
 Did not converge to all of the correct variables under null initialization, but it did converge to two betas that are in the true five (and one that is not), which is reasonable-ish performance. We can do better, though.
 
+
+## Bayesian Model Averaging
+
+### Model 1
+
+```{r}
+#| label: BMA 1
+
+y <- model_1$y
+X <- model_1$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+bma_1 <- bms(data,
+             burn = BURN_IN,
+             iter = N_SAMPLES_2,
+             mcmc = "revljump")
+
+estimates.bma(bma_1, order.by.pip = FALSE) # Correct
+which(estimates.bma(bma_1, order.by.pip = FALSE)[,1] > 0.5)
+
+summary(bma_1)
+```
+
+Correct and very fast.
+
+
+### Model 2
+
+```{r}
+#| label: BMA 2
+
+y <- model_2$y
+X <- model_2$X
+data <- data.frame(y = y, X[,-1])
+
+set.seed(465)
+bma_2 <- bms(data,
+             burn = BURN_IN,
+             iter = N_SAMPLES_2,
+             mcmc = "revljump")
+
+estimates.bma(bma_2, order.by.pip = FALSE)
+which(estimates.bma(bma_2, order.by.pip = FALSE)[,1] > 0.5) # Includes all predictors
+
+summary(bma_2)
+```
+
+Once again, does not do well when we run it on a dense signal. Might want to stop doing that.
 
