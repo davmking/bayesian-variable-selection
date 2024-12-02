@@ -43,13 +43,20 @@ Here is a table that describes each model and its characteristics:
 
 set.seed(465)
 
-model_1 <- simulate_lm(100, 10, p_sig = 3)
+#model_1 <- simulate_lm(100, 10, p_sig = 3)
+#model_2 <- simulate_lm(100, 95, p_sig = 75)
+#model_3 <- simulate_lm(100, 95, p_sig = 5)
+#model_4 <- simulate_lm(100, 105, p_sig = 95)
+#model_5 <- simulate_lm(100, 105, p_sig = 5)
+#model_6 <- simulate_lm(100, 1000, p_sig = 950)
+#model_7 <- simulate_lm(100, 1000, p_sig = 5)
+
+model_0 <- simulate_lm(100, 10, p_sig = 3)
+model_1 <- simulate_lm(100, 10, p_sig = 8)
 model_2 <- simulate_lm(100, 95, p_sig = 75)
-model_3 <- simulate_lm(100, 95, p_sig = 5)
-model_4 <- simulate_lm(100, 105, p_sig = 95)
-model_5 <- simulate_lm(100, 105, p_sig = 5)
-model_6 <- simulate_lm(100, 1000, p_sig = 950)
-model_7 <- simulate_lm(100, 1000, p_sig = 5)
+model_3 <- simulate_lm(100, 95, p_sig = 8)
+model_4 <- simulate_lm(100, 105, p_sig = 8)
+model_5 <- simulate_lm(100, 1000, p_sig = 8)
 ```
 
 ## Hyperparameters
@@ -834,7 +841,7 @@ Does a pretty okay job, although I feel like better performance is certainly pos
 #| label: lasso 1
 
 y <- model_1$y
-X <- model_1$X
+X <- model_1$X[,-1]
 
 set.seed(465)
 lasso_1 <- blasso(X, y, T = N_SAMPLES_2, case = "default")
@@ -873,7 +880,7 @@ This almost recovers the correct values - however, it also has a false positive 
 #| label: lasso 2
 
 y <- model_2$y
-X <- model_2$X
+X <- model_2$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
@@ -919,7 +926,7 @@ This definitely doesn't do a great job - it gives us a lot of false negatives, a
 #| label: lasso 3
 
 y <- model_3$y
-X <- model_3$X
+X <- model_3$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
@@ -965,7 +972,7 @@ LASSO performs well here - you have to threshold the probability of inclusion hi
 #| label: lasso 5
 
 y <- model_5$y
-X <- model_5$X
+X <- model_5$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
@@ -1011,7 +1018,7 @@ Slightly worse performance, but it's still pretty good with high thresholding.
 #| label: lasso 7
 
 y <- model_7$y
-X <- model_7$X
+X <- model_7$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
@@ -1057,7 +1064,7 @@ plot(seq(N_SAMPLES - BURN_IN), lasso_7$m[(BURN_IN + 1):N_SAMPLES])
 #| label: ng 1
 
 y <- model_1$y
-X <- model_1$X
+X <- model_1$X[,-1]
 
 set.seed(465)
 ng_1 <- blasso(X, y, T = N_SAMPLES, case = "ng")
@@ -1096,7 +1103,7 @@ This almost recovers the correct values - however, it also has a false positive 
 #| label: ng 2
 
 y <- model_2$y
-X <- model_2$X
+X <- model_2$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
@@ -1139,18 +1146,18 @@ This definitely doesn't do a great job - it gives us a lot of false negatives, a
 ### Model 3
 
 ```{r}
-#| label: lasso 3
+#| label: ng 3
 
 y <- model_3$y
-X <- model_3$X
+X <- model_3$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
 print(start)
-lasso_3 <- blasso(X, y, T = N_SAMPLES, case = "default")
+ng_3 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 print(Sys.time() - start)
 
-lasso_3$beta[,-1] %>% 
+ng_3$beta[,-1] %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1165,38 +1172,41 @@ lasso_3$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_3$beta[,-1] != 0)
-which(colMeans(lasso_3$beta[,-1] != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
+colMeans(ng_3$beta[,-1] != 0)
+which(colMeans(ng_3$beta[,-1] != 0) > 0.75) # Not terrible performance, does a perfect job if you threshold it high
+# We could threshold this as high as 94% (in this instance) and still get the correct output
+# Marginally better performance than LASSO, but might not hold up across multiple runs
 
 # Est. coefficients
-colMeans(lasso_3$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(ng_3$beta[,-1]) # Most of these are incredibly close to 0
+# Almost true coefficients for some, farther from true coefficients for others (b.5, e.g.)
 
 
 # Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), lasso_3$lambda2[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_3$lambda2[(BURN_IN + 1):N_SAMPLES])
 
 # Model size stays pretty consistent in that 45-50 range
-plot(seq(N_SAMPLES - BURN_IN), lasso_3$m[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_3$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-LASSO performs well here - you have to threshold the probability of inclusion higher, but once you do that, the algorithm has perfect performance.
+NG performs well here - you have to threshold the probability of inclusion higher, but once you do that, the algorithm has perfect performance. Slightly better than LASSO, but extremely marginal.
 
 
 ### Model 5
 
 ```{r}
-#| label: lasso 5
+#| label: ng 5
 
 y <- model_5$y
-X <- model_5$X
+X <- model_5$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
 print(start)
-lasso_5 <- blasso(X, y, T = N_SAMPLES, case = "default")
+ng_5 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 print(Sys.time() - start)
 
-lasso_5$beta[,-1] %>% 
+ng_5$beta[,-1] %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1211,38 +1221,38 @@ lasso_5$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_5$beta[,-1] != 0)
-which(colMeans(lasso_5$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+colMeans(ng_5$beta[,-1] != 0)
+which(colMeans(ng_5$beta[,-1] != 0) > 0.7) # Have to threshold pretty high to remove random noise
 
 # Est. coefficients
-colMeans(lasso_5$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(ng_5$beta[,-1]) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), lasso_5$lambda2[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_5$lambda2[(BURN_IN + 1):N_SAMPLES])
 
 # Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), lasso_5$m[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_5$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-Slightly worse performance, but it's still pretty good with high thresholding.
+Slightly worse performance, but it's still maybe acceptable with high thresholding.
 
 
 ### Model 7
 
 ```{r}
-#| label: lasso 7
+#| label: ng 7
 
 y <- model_7$y
-X <- model_7$X
+X <- model_7$X[,-1]
 
 set.seed(465)
 start <- Sys.time()
 print(start)
-lasso_7 <- blasso(X, y, T = N_SAMPLES, case = "default")
+ng_7 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 print(Sys.time() - start)
 
-lasso_7$beta[,-1] %>% 
+ng_7$beta[,-1] %>% 
   as.data.frame() %>% 
   mutate(iter = row_number()) %>% 
   filter(iter > BURN_IN) %>% 
@@ -1257,17 +1267,83 @@ lasso_7$beta[,-1] %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
-colMeans(lasso_7$beta[,-1] != 0)
-which(colMeans(lasso_7$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
+colMeans(ng_7$beta[,-1] != 0)
+which(colMeans(ng_7$beta[,-1] != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
 
 # Est. coefficients
-colMeans(lasso_7$beta[,-1]) # Most of these are incredibly close to 0
+colMeans(ng_7$beta[,-1]) # Most of these are incredibly close to 0
 
 
 # Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), lasso_7$lambda2[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_7$lambda2[(BURN_IN + 1):N_SAMPLES])
 
 # Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), lasso_7$m[(BURN_IN + 1):N_SAMPLES])
+plot(seq(N_SAMPLES - BURN_IN), ng_7$m[(BURN_IN + 1):N_SAMPLES])
 ```
+
+
+
+
+
+
+# Performance Summary
+
+## Runtime (Order of Magnitude)
+
+### Non-Prior Methods
+
+#### Subset Selection (BBA)
+
+Order of hours.
+
+#### Bayesian Model Selection
+
+Order of seconds-minutes.
+
+#### Bayesian Model Averaging
+
+Order of seconds.
+
+### Prior Methods
+
+#### SSVS
+
+Order of seconds-minutes for normally distributed errors, add in another order of magnitude for student-distributed errors.
+
+#### LASSO
+
+Order of minutes-10s of minutes.
+
+#### NG
+
+Order of minutes-10s of minutes.
+
+#### Horseshoe
+
+
+
+## True/False Positive Rates
+
+### Non-Prior Methods
+
+#### Subset Selection (BBA)
+
+#### Bayesian Model Selection
+
+#### Bayesian Model Averaging
+
+
+### Prior Methods
+
+#### SSVS
+
+#### LASSO
+
+#### NG
+
+#### Horseshoe
+
+
+## Recovery of True Coefficients (MSE)
+
 
