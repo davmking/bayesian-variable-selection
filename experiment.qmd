@@ -50,11 +50,28 @@ model_4 <- simulate_lm(100, 105, p_sig = 8)
 model_5 <- simulate_lm(100, 1000, p_sig = 8)
 
 
-model_0$beta_true[2:4] <- model_0$beta_true[2:4] * c(3, 2, 2)
-model_0$X[,2:4] <- model_0$X[,2:4] * c(3, 2, 2)
+BETA_REPLACE <- c(3, 2, -2)
 
 X <- model_0$X
 y <- model_0$y
+beta <- model_0$beta_true
+true_y <- model_0$Ey_true
+
+
+cbind(true_y, y, X %*% beta)
+
+colMeans(X)
+
+resids_0 <- model_0$Ey_true - model_0$y
+model_0$beta_true[2:4] <- BETA_REPLACE
+model_0$Ey_true <- model_0$X %*% model_0$beta_true
+model_0$y <- model_0$Ey_true + resids_0
+
+
+model_0$beta_true[2:4] <- model_0$beta_true[2:4] * c(3, 2, 2)
+
+new_true_y <- X %*% model_0$beta_true
+new_y <- new_true_y + resids
 ```
 
 ## Hyperparameters
