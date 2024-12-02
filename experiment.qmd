@@ -1860,7 +1860,8 @@ ssvs_5_g <- lm.spike(y ~ .,
 ssvs_end <- Sys.time()
 
 save(ssvs_5_g, file = "ssvs_5_g.RData")
-save(c(ssvs_start, ssvs_end), file = "ssvs_5_runtime.RData")
+ssvs_5_runtime <- c(ssvs_start, ssvs_end)
+save(ssvs_5_runtime, file = "ssvs_5_runtime.RData")
 print(ssvs_end)
 
 
@@ -1873,7 +1874,8 @@ lasso_5 <- blasso(X, y, T = N_SAMPLES, case = "default")
 lasso_end <- Sys.time()
 
 save(lasso_5, file = "lasso_5.RData")
-save(c(lasso_start, lasso_end), file = "lasso_5_runtime.RData")
+lasso_5_runtime <- c(lasso_start, lasso_end)
+save(lasso_5_runtime, file = "lasso_5_runtime.RData")
 print(lasso_end)
 
 
@@ -1884,7 +1886,8 @@ ng_5 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 ng_end <- Sys.time()
 
 save(ng_5, file = "ng_5.RData")
-save(c(ng_start, ng_end), file = "ng_5_runtime.RData")
+ng_5_runtime <- c(ng_start, ng_end)
+save(ng_5_runtime, file = "ng_5_runtime.RData")
 print(ng_end)
 
 
@@ -1895,7 +1898,8 @@ hs_5 <- blasso(X, y, T = N_SAMPLES, case = "hs")
 hs_end <- Sys.time()
 
 save(hs_5, file = "hs_5.RData")
-save(c(hs_start, hs_end), file = "hs_5_runtime.RData")
+hs_5_runtime <- c(hs_start, hs_end)
+save(hs_5_runtime, file = "hs_5_runtime.RData")
 print(hs_end)
 
 
@@ -1928,7 +1932,8 @@ bss_2_end <- Sys.time()
 
 save(indicators_2, file = "indicators_2.RData")
 save(accept_info_2, file = "accept_info_2.RData")
-save(c(bss_2_start, bss_2_midpoint, bss_2_end), file = "bss_2_runtime.RData")
+bss_2_runtime <- c(bss_2_start, bss_2_midpoint, bss_2_end)
+save(bss_2_runtime, file = "bss_2_runtime.RData")
 print(bss_2_end)
 
 
@@ -1960,7 +1965,8 @@ bss_3_end <- Sys.time()
 
 save(indicators_3, file = "indicators_3.RData")
 save(accept_info_3, file = "accept_info_3.RData")
-save(c(bss_3_start, bss_3_midpoint, bss_3_end), file = "bss_3_runtime.RData")
+bss_3_runtime <- c(bss_3_start, bss_3_midpoint, bss_3_end)
+save(bss_3_runtime, file = "bss_3_runtime.RData")
 print(bss_3_end)
 
 
@@ -1992,7 +1998,8 @@ bss_4_end <- Sys.time()
 
 save(indicators_4, file = "indicators_4.RData")
 save(accept_info_4, file = "accept_info_4.RData")
-save(c(bss_4_start, bss_4_midpoint, bss_4_end), file = "bss_4_runtime.RData")
+bss_4_runtime <- c(bss_4_start, bss_4_midpoint, bss_4_end)
+save(bss_4_runtime, file = "bss_4_runtime.RData")
 print(bss_4_end)
 
 
@@ -2024,7 +2031,8 @@ bss_5_end <- Sys.time()
 
 save(indicators_5, file = "indicators_5.RData")
 save(accept_info_5, file = "accept_info_5.RData")
-save(c(bss_5_start, bss_5_midpoint, bss_5_end), file = "bss_5_runtime.RData")
+bss_5_runtime <- c(bss_5_start, bss_5_midpoint, bss_5_end)
+save(bss_5_runtime, file = "bss_5_runtime.RData")
 print(bss_5_end)
 ```
 
