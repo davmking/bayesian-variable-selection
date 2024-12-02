@@ -1467,7 +1467,7 @@ plot(seq(N_SAMPLES - BURN_IN), ng_2$lambda2[(BURN_IN + 1):N_SAMPLES])
 plot(seq(N_SAMPLES - BURN_IN), hs_2$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-This definitely doesn't do a great job - it gives us a lot of false negatives, and only captures about half of the true negatives.
+Once again, not doing well on dense signals.
 
 
 ### Model 3
@@ -1500,14 +1500,13 @@ hs_3$beta %>%
 
 # Probabilities of inclusion
 colMeans(hs_3$beta != 0)
-which(colMeans(hs_3$beta != 0) > 0.7) # Not terrible performance, does a better job if you threshold it high
+which(colMeans(hs_3$beta != 0) > 0.65) # Not terrible performance, does a better job if you threshold it high
 
 # Est. coefficients
-colMeans(hs_3$beta) # Most of these are incredibly close to 0
-# Shrinkage still affecting our coefficients
+colMeans(hs_3$beta) # Not recovering coefficients super well
 
 
-# Lambda mostly stays low
+# Lambda mostly stays low, looccasional spikes
 plot(seq(N_SAMPLES - BURN_IN), hs_3$lambda2[(BURN_IN + 1):N_SAMPLES])
 
 # Model size stays pretty consistent in that 45-50 range
@@ -1546,10 +1545,10 @@ hs_4$beta %>%
 
 # Probabilities of inclusion
 colMeans(hs_4$beta != 0)
-which(colMeans(hs_4$beta != 0) > 0.65) # Thresholding it high gets it pretty close, but not perfect
+which(colMeans(hs_4$beta != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect. Worse performance
 
 # Est. coefficients
-colMeans(hs_4$beta) # Most of these are incredibly close to 0
+colMeans(hs_4$beta) # Closer to accurate
 
 
 # Lambda mostly stays low
@@ -1559,7 +1558,7 @@ plot(seq(N_SAMPLES - BURN_IN), hs_4$lambda2[(BURN_IN + 1):N_SAMPLES])
 plot(seq(N_SAMPLES - BURN_IN), hs_4$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
-Does pretty well - maybe slightly better than with $n > p$ in the previous example, though again these are close. Still having some issues with the true pos/neg, but at least the coefficients are pretty close here.
+Does alright, though definitely worse than the $n > p$ in the previous example. Captures fewer true positives, but can be thresholded to remove false positives pretty effectively. For the coefficients that it captures correctly, it does a better job of getting the right coefficients (or close to).
 
 
 ### Model 5
@@ -1649,28 +1648,24 @@ Order of minutes-10s of minutes.
 
 #### Horseshoe
 
+Order of minutes-10s of minutes.
+
 
 
 ## True/False Positive Rates
 
-### Non-Prior Methods
+### Model 0
 
-#### Subset Selection (BBA)
+```{r}
+#| label: tpr fpr model 0
 
-#### Bayesian Model Selection
+true_betas <- model_0$beta_true[2:11]
+true_betas <- as.integer(true_betas != 0)
 
-#### Bayesian Model Averaging
+# Subset Selection
+bvs_0_cm <- table(true_betas, bvs_0$HPMbin)
 
-
-### Prior Methods
-
-#### SSVS
-
-#### LASSO
-
-#### NG
-
-#### Horseshoe
+```
 
 
 ## Recovery of True Coefficients (MSE)
