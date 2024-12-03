@@ -248,7 +248,7 @@ bvs_0 <- GibbsBvs(
   prior.models = "ScottBerger",
   n.iter = N_SAMPLES - BURN_IN,
   n.burnin = BURN_IN,
-  time.test = TRUE,
+  time.test = FALSE,
   seed = 465
 )
 
@@ -280,7 +280,7 @@ bvs_1 <- GibbsBvs(
   prior.models = "ScottBerger",
   n.iter = N_SAMPLES - BURN_IN,
   n.burnin = BURN_IN,
-  time.test = TRUE,
+  time.test = FALSE,
   seed = 465
 )
 
@@ -312,7 +312,7 @@ bvs_2 <- GibbsBvs(
   prior.models = "ScottBerger",
   n.iter = N_SAMPLES - BURN_IN,
   n.burnin = BURN_IN,
-  time.test = TRUE,
+  time.test = FALSE,
   seed = 465
 )
 
@@ -345,7 +345,7 @@ bvs_3 <- GibbsBvs(
   prior.models = "ScottBerger",
   n.iter = N_SAMPLES - BURN_IN,
   n.burnin = BURN_IN,
-  time.test = TRUE,
+  time.test = FALSE,
   seed = 465
 )
 
@@ -377,7 +377,7 @@ bvs_4 <- GibbsBvs(
   prior.models = "ScottBerger",
   n.iter = N_SAMPLES - BURN_IN,
   n.burnin = BURN_IN,
-  time.test = TRUE,
+  time.test = FALSE,
   seed = 465,
   init.model = "Null"
 )
@@ -410,7 +410,7 @@ bvs_5 <- GibbsBvs(
   prior.models = "ScottBerger",
   n.iter = N_SAMPLES - BURN_IN,
   n.burnin = BURN_IN,
-  time.test = TRUE,
+  time.test = FALSE,
   seed = 465,
   init.model = "Null"
 )
