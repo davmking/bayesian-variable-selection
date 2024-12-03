@@ -23,6 +23,7 @@ library(monomvn)
 library(tidyverse)
 library(knitr)
 library(pROC)
+library(EMVS) # installed from CRAN archive version 1.2.1
 ```
 
 
@@ -572,6 +573,232 @@ summary(bma_5)
 ```
 
 Again, this really doesn't do too great. Doesn't get any of the true regressors correct, but thinks we should have a model with ~90 regressors. Posterior for model size is extremely concentrated at this value.
+
+
+## EMVS
+
+```{r}
+#| label: vars to try
+
+v0_try <- c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1)
+```
+
+
+### Model 0
+
+```{r}
+#| label: emvs model 0
+
+X <- model_0$X[,-1]
+y <- model_0$y
+
+set.seed(465)
+emvs_0 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X)
+)
+
+# Estimates: very close to expectation
+emvs_0$betas
+
+# Inclusion probabilites: accurate
+emvs_0$prob_inclusion
+emvs_0$prob_inclusion > 0.5
+rowSums(emvs_0$prob_inclusion > 0.5)
+
+# Iterations to converge
+emvs_0$niters
+```
+
+
+### Model 1
+
+```{r}
+#| label: emvs model 1
+
+X <- model_1$X[,-1]
+y <- model_1$y
+
+set.seed(465)
+emvs_1 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X)
+)
+
+# Estimates: very close to expectation
+emvs_1$betas
+
+# Inclusion probabilites: accurate
+emvs_1$prob_inclusion
+emvs_1$prob_inclusion > 0.5
+rowSums(emvs_1$prob_inclusion > 0.5)
+
+# Iterations to converge
+emvs_1$niters
+```
+
+Somewhat worse performance here.
+
+
+### Model 2
+
+```{r}
+#| label: emvs model 2
+
+X <- model_2$X[,-1]
+y <- model_2$y
+
+set.seed(465)
+emvs_2 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X)
+)
+
+# Estimates: very close to expectation
+emvs_2$betas
+
+# Inclusion probabilites: accurate
+emvs_2$prob_inclusion
+emvs_2$prob_inclusion > 0.5
+rowSums(emvs_2$prob_inclusion > 0.5)
+
+# Iterations to converge
+emvs_2$niters
+```
+
+### Model 3
+
+```{r}
+#| label: emvs model 3
+
+X <- model_3$X[,-1]
+y <- model_3$y
+
+set.seed(465)
+emvs_3 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X)
+)
+
+# Estimates: very close to expectation
+emvs_3$betas
+
+# Inclusion probabilites: accurate
+emvs_3$prob_inclusion
+emvs_3$prob_inclusion > 0.5
+rowSums(emvs_3$prob_inclusion > 0.5)
+
+# Iterations to converge
+emvs_3$niters
+```
+
+### Model 4
+
+```{r}
+#| label: emvs model 4
+
+X <- model_4$X[,-1]
+y <- model_4$y
+
+set.seed(465)
+emvs_4 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X)
+)
+
+# Estimates: very close to expectation
+emvs_4$betas
+
+# Inclusion probabilites: accurate
+emvs_4$prob_inclusion
+emvs_4$prob_inclusion > 0.5
+rowSums(emvs_4$prob_inclusion > 0.5)
+
+# Iterations to converge
+emvs_4$niters
+```
+
+### Model 5
+
+```{r}
+#| label: emvs model 5
+
+X <- model_5$X[,-1]
+y <- model_5$y
+
+set.seed(465)
+emvs_5 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X)
+)
+
+# Estimates: very close to expectation
+emvs_5$betas
+
+# Inclusion probabilites: accurate
+emvs_5$prob_inclusion
+emvs_5$prob_inclusion > 0.5
+rowSums(emvs_5$prob_inclusion > 0.5)
+
+# Iterations to converge
+emvs_5$niters
+```
+
+
 
 # Prior Methods
 
