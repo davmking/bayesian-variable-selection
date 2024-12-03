@@ -24,6 +24,7 @@ library(tidyverse)
 library(knitr)
 library(pROC)
 library(EMVS) # installed from CRAN archive version 1.2.1
+library(viridis)
 ```
 
 
@@ -2219,6 +2220,580 @@ kable(model_5_rates, digits = 3)
 
 
 ## Recovery of True Coefficients (MSE)
+
+BMS does not actually give us coefficient estimates - it just tells us what coefficients it thinks should be included.
+
+### Model 0
+
+
+```{r}
+#| label: true coefficients model 0
+
+bma_0_est <- estimates.bma(bma_0, order.by.pip = FALSE)[,2]
+emvs_0_est <- emvs_0$betas[1,]
+ssvs_0_est <- colMeans(ssvs_0_g$beta[BURN_IN:N_SAMPLES_2,-1])
+lasso_0_est <- colMeans(lasso_0$beta[BURN_IN:N_SAMPLES,])
+ng_0_est <- colMeans(ng_0$beta[BURN_IN:N_SAMPLES,])
+hs_0_est <- colMeans(hs_0$beta[BURN_IN:N_SAMPLES,])
+
+true_betas_0
+beta_vals_0 <- model_0$beta_true[-1]
+
+data.frame(true_values = beta_vals_0[which(true_betas_0 == 1)],
+           BMA = bma_0_est[which(true_betas_0 == 1)],
+           EMVS = emvs_0_est[which(true_betas_0 == 1)],
+           SSVS = ssvs_0_est[which(true_betas_0 == 1)],
+           Truth = beta_vals_0[which(true_betas_0 == 1)],
+           LASSO = lasso_0_est[which(true_betas_0 == 1)],
+           Normal.Gamma = ng_0_est[which(true_betas_0 == 1)],
+           Horseshoe = hs_0_est[which(true_betas_0 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 0 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+
+data.frame(true_values = beta_vals_0[which(true_betas_0 == 1)],
+           BMA = bma_0_est[which(true_betas_0 == 1)],
+           EMVS = emvs_0_est[which(true_betas_0 == 1)],
+           SSVS = ssvs_0_est[which(true_betas_0 == 1)],
+           LASSO = lasso_0_est[which(true_betas_0 == 1)],
+           Normal.Gamma = ng_0_est[which(true_betas_0 == 1)],
+           Horseshoe = hs_0_est[which(true_betas_0 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# Just looking at true coefficients, BMA is the best
+
+data.frame(true_values = beta_vals_0,
+           BMA = bma_0_est,
+           EMVS = emvs_0_est,
+           SSVS = ssvs_0_est,
+           LASSO = lasso_0_est,
+           Normal.Gamma = ng_0_est,
+           Horseshoe = hs_0_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# Looking at all coefficients, BMA is still the best
+
+
+data.frame(true_values = beta_vals_0,
+           BMA = bma_0_est,
+           EMVS = emvs_0_est,
+           SSVS = ssvs_0_est,
+           Truth = beta_vals_0,
+           LASSO = lasso_0_est,
+           Normal.Gamma = ng_0_est,
+           Horseshoe = hs_0_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 0 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+```
+
+
+### Model 1
+
+```{r}
+#| label: true coefficients model 1
+
+bma_1_est <- estimates.bma(bma_1, order.by.pip = FALSE)[,2]
+emvs_1_est <- emvs_1$betas[1,]
+ssvs_1_est <- colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1])
+lasso_1_est <- colMeans(lasso_1$beta[BURN_IN:N_SAMPLES,])
+ng_1_est <- colMeans(ng_1$beta[BURN_IN:N_SAMPLES,])
+hs_1_est <- colMeans(hs_1$beta[BURN_IN:N_SAMPLES,])
+
+beta_vals_1 <- model_1$beta_true[-1]
+
+data.frame(true_values = beta_vals_1[which(true_betas_1 == 1)],
+           BMA = bma_1_est[which(true_betas_1 == 1)],
+           EMVS = emvs_1_est[which(true_betas_1 == 1)],
+           Truth = beta_vals_1[which(true_betas_1 == 1)],
+           SSVS = ssvs_1_est[which(true_betas_1 == 1)],
+           LASSO = lasso_1_est[which(true_betas_1 == 1)],
+           Normal.Gamma = ng_1_est[which(true_betas_1 == 1)],
+           Horseshoe = hs_1_est[which(true_betas_1 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 1 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+# Everything is having shrinkage issues except for coefficients at -1
+# Is this possibly an issue with the intercept?
+
+data.frame(true_values = beta_vals_1[which(true_betas_1 == 1)],
+           BMA = bma_1_est[which(true_betas_1 == 1)],
+           EMVS = emvs_1_est[which(true_betas_1 == 1)],
+           SSVS = ssvs_1_est[which(true_betas_1 == 1)],
+           LASSO = lasso_1_est[which(true_betas_1 == 1)],
+           Normal.Gamma = ng_1_est[which(true_betas_1 == 1)],
+           Horseshoe = hs_1_est[which(true_betas_1 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# EMVS gets the closest
+
+data.frame(true_values = beta_vals_1,
+           BMA = bma_1_est,
+           EMVS = emvs_1_est,
+           SSVS = ssvs_1_est,
+           LASSO = lasso_1_est,
+           Normal.Gamma = ng_1_est,
+           Horseshoe = hs_1_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# EVMS remains the best
+
+data.frame(true_values = beta_vals_1,
+           BMA = bma_1_est,
+           EMVS = emvs_1_est,
+           SSVS = ssvs_1_est,
+           Truth = beta_vals_1,
+           LASSO = lasso_1_est,
+           Normal.Gamma = ng_1_est,
+           Horseshoe = hs_1_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 1 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+```
+
+### Model 2
+
+```{r}
+#| label: true coefficients model 2
+
+bma_2_est <- estimates.bma(bma_2, order.by.pip = FALSE)[,2]
+emvs_2_est <- emvs_2$betas[1,]
+ssvs_2_est <- colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1])
+lasso_2_est <- colMeans(lasso_2$beta[BURN_IN:N_SAMPLES,])
+ng_2_est <- colMeans(ng_2$beta[BURN_IN:N_SAMPLES,])
+hs_2_est <- colMeans(hs_2$beta[BURN_IN:N_SAMPLES,])
+
+beta_vals_2 <- model_2$beta_true[-1]
+
+data.frame(true_values = beta_vals_2[which(true_betas_2 == 1)],
+           BMA = bma_2_est[which(true_betas_2 == 1)],
+           EMVS = emvs_2_est[which(true_betas_2 == 1)],
+           SSVS = ssvs_2_est[which(true_betas_2 == 1)],
+           Truth = beta_vals_2[which(true_betas_2 == 1)],
+           LASSO = lasso_2_est[which(true_betas_2 == 1)],
+           Normal.Gamma = ng_2_est[which(true_betas_2 == 1)],
+           Horseshoe = hs_2_est[which(true_betas_2 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>%
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 2 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+
+data.frame(true_values = beta_vals_2[which(true_betas_2 == 1)],
+           BMA = bma_2_est[which(true_betas_2 == 1)],
+           EMVS = emvs_2_est[which(true_betas_2 == 1)],
+           SSVS = ssvs_2_est[which(true_betas_2 == 1)],
+           LASSO = lasso_2_est[which(true_betas_2 == 1)],
+           Normal.Gamma = ng_2_est[which(true_betas_2 == 1)],
+           Horseshoe = hs_2_est[which(true_betas_2 == 1)]) %>%
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# LASSO gets the closest
+
+
+data.frame(true_values = beta_vals_2,
+           BMA = bma_2_est,
+           EMVS = emvs_2_est,
+           SSVS = ssvs_2_est,
+           LASSO = lasso_2_est,
+           Normal.Gamma = ng_2_est,
+           Horseshoe = hs_2_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# LASSO remains the best
+
+data.frame(true_values = beta_vals_2,
+           BMA = bma_2_est,
+           EMVS = emvs_2_est,
+           SSVS = ssvs_2_est,
+           Truth = beta_vals_2,
+           LASSO = lasso_2_est,
+           Normal.Gamma = ng_2_est,
+           Horseshoe = hs_2_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>%
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 2 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+```
+
+### Model 3
+
+```{r}
+#| label: true coefficients model 3
+
+bma_3_est <- estimates.bma(bma_3, order.by.pip = FALSE)[,2]
+emvs_3_est <- emvs_3$betas[1,]
+ssvs_3_est <- colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1])
+lasso_3_est <- colMeans(lasso_3$beta[BURN_IN:N_SAMPLES,])
+ng_3_est <- colMeans(ng_3$beta[BURN_IN:N_SAMPLES,])
+hs_3_est <- colMeans(hs_3$beta[BURN_IN:N_SAMPLES,])
+
+beta_vals_3 <- model_3$beta_true[-1]
+
+data.frame(true_values = beta_vals_3[which(true_betas_3 == 1)],
+           BMA = bma_3_est[which(true_betas_3 == 1)],
+           EMVS = emvs_3_est[which(true_betas_3 == 1)],
+           Truth = beta_vals_3[which(true_betas_3 == 1)],
+           SSVS = ssvs_3_est[which(true_betas_3 == 1)],
+           LASSO = lasso_3_est[which(true_betas_3 == 1)],
+           Normal.Gamma = ng_3_est[which(true_betas_3 == 1)],
+           Horseshoe = hs_3_est[which(true_betas_3 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 3 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+
+data.frame(true_values = beta_vals_3[which(true_betas_3 == 1)],
+           BMA = bma_3_est[which(true_betas_3 == 1)],
+           EMVS = emvs_3_est[which(true_betas_3 == 1)],
+           SSVS = ssvs_3_est[which(true_betas_3 == 1)],
+           LASSO = lasso_3_est[which(true_betas_3 == 1)],
+           Normal.Gamma = ng_3_est[which(true_betas_3 == 1)],
+           Horseshoe = hs_3_est[which(true_betas_3 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# EMVS gets the closest
+
+
+data.frame(true_values = beta_vals_3,
+           BMA = bma_3_est,
+           EMVS = emvs_3_est,
+           SSVS = ssvs_3_est,
+           LASSO = lasso_3_est,
+           Normal.Gamma = ng_3_est,
+           Horseshoe = hs_3_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# Horseshoe is the best when we include everything
+
+
+data.frame(true_values = beta_vals_3,
+           BMA = bma_3_est,
+           EMVS = emvs_3_est,
+           SSVS = ssvs_3_est,
+           Truth = beta_vals_3,
+           LASSO = lasso_3_est,
+           Normal.Gamma = ng_3_est,
+           Horseshoe = hs_3_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 3 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+```
+
+### Model 4
+
+```{r}
+#| label: true coefficients model 4
+
+bma_4_est <- estimates.bma(bma_4, order.by.pip = FALSE)[,2]
+emvs_4_est <- emvs_4$betas[1,]
+ssvs_4_est <- colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1])
+lasso_4_est <- colMeans(lasso_4$beta[BURN_IN:N_SAMPLES,])
+ng_4_est <- colMeans(ng_4$beta[BURN_IN:N_SAMPLES,])
+hs_4_est <- colMeans(hs_4$beta[BURN_IN:N_SAMPLES,])
+
+beta_vals_4 <- model_4$beta_true[-1]
+
+data.frame(true_values = beta_vals_4[which(true_betas_4 == 1)],
+           BMA = bma_4_est[which(true_betas_4 == 1)],
+           EMVS = emvs_4_est[which(true_betas_4 == 1)],
+           Truth = beta_vals_4[which(true_betas_4 == 1)],
+           SSVS = ssvs_4_est[which(true_betas_4 == 1)],
+           LASSO = lasso_4_est[which(true_betas_4 == 1)],
+           Normal.Gamma = ng_4_est[which(true_betas_4 == 1)],
+           Horseshoe = hs_4_est[which(true_betas_4 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 4 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+
+data.frame(true_values = beta_vals_4[which(true_betas_4 == 1)],
+           BMA = bma_4_est[which(true_betas_4 == 1)],
+           EMVS = emvs_4_est[which(true_betas_4 == 1)],
+           SSVS = ssvs_4_est[which(true_betas_4 == 1)],
+           LASSO = lasso_4_est[which(true_betas_4 == 1)],
+           Normal.Gamma = ng_4_est[which(true_betas_4 == 1)],
+           Horseshoe = hs_4_est[which(true_betas_4 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# EMVS gets the closest
+
+
+data.frame(true_values = beta_vals_4,
+           BMA = bma_4_est,
+           EMVS = emvs_4_est,
+           SSVS = ssvs_4_est,
+           LASSO = lasso_4_est,
+           Normal.Gamma = ng_4_est,
+           Horseshoe = hs_4_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# Horseshoe is the best when we include everything
+
+
+data.frame(true_values = beta_vals_4,
+           BMA = bma_4_est,
+           EMVS = emvs_4_est,
+           SSVS = ssvs_4_est,
+           Truth = beta_vals_4,
+           LASSO = lasso_4_est,
+           Normal.Gamma = ng_4_est,
+           Horseshoe = hs_4_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 4 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+```
+
+### Model 5
+
+```{r}
+#| label: true coefficients model 5
+
+bma_5_est <- estimates.bma(bma_5, order.by.pip = FALSE)[,2]
+emvs_5_est <- emvs_5$betas[1,]
+ssvs_5_est <- colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES,-1])
+lasso_5_est <- colMeans(lasso_5$beta[BURN_IN:N_SAMPLES,])
+ng_5_est <- colMeans(ng_5$beta[BURN_IN:N_SAMPLES,])
+hs_5_est <- colMeans(hs_5$beta[BURN_IN:N_SAMPLES,])
+
+beta_vals_5 <- model_5$beta_true[-1]
+
+data.frame(true_values = beta_vals_5[which(true_betas_5 == 1)],
+           BMA = bma_5_est[which(true_betas_5 == 1)],
+           EMVS = emvs_5_est[which(true_betas_5 == 1)],
+           Truth = beta_vals_5[which(true_betas_5 == 1)],
+           SSVS = ssvs_5_est[which(true_betas_5 == 1)],
+           LASSO = lasso_5_est[which(true_betas_5 == 1)],
+           Normal.Gamma = ng_5_est[which(true_betas_5 == 1)],
+           Horseshoe = hs_5_est[which(true_betas_5 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 5 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+
+data.frame(true_values = beta_vals_5[which(true_betas_5 == 1)],
+           BMA = bma_5_est[which(true_betas_5 == 1)],
+           EMVS = emvs_5_est[which(true_betas_5 == 1)],
+           SSVS = ssvs_5_est[which(true_betas_5 == 1)],
+           LASSO = lasso_5_est[which(true_betas_5 == 1)],
+           Normal.Gamma = ng_5_est[which(true_betas_5 == 1)],
+           Horseshoe = hs_5_est[which(true_betas_5 == 1)]) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# EMVS gets the closest
+
+
+data.frame(true_values = beta_vals_5,
+           BMA = bma_5_est,
+           EMVS = emvs_5_est,
+           SSVS = ssvs_5_est,
+           LASSO = lasso_5_est,
+           Normal.Gamma = ng_5_est,
+           Horseshoe = hs_5_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model)) %>% 
+  group_by(Model) %>% 
+  summarize(MSE = mean((Estimate - true_values)^2)) %>% 
+  ungroup() %>% 
+  arrange(MSE) %>% 
+  kable(digits = 3)
+# Pretty much a four-way tie
+
+
+data.frame(true_values = beta_vals_5,
+           BMA = bma_5_est,
+           EMVS = emvs_5_est,
+           SSVS = ssvs_5_est,
+           Truth = beta_vals_5,
+           LASSO = lasso_5_est,
+           Normal.Gamma = ng_5_est,
+           Horseshoe = hs_5_est) %>% 
+  pivot_longer(-true_values, names_to = "Model", values_to = "Estimate") %>% 
+  mutate(Model = if_else(Model == "Normal.Gamma", "Normal-Gamma", Model),
+         true_values = factor(true_values)) %>% 
+  group_by(Model, true_values) %>%
+  summarize(Estimate = mean(Estimate)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
+  geom_col(position = "dodge") + 
+  theme_bw() +
+  labs(x = "True Coefficient", title = "Model 5 Estimates") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+```
+
 
 
 
