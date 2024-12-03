@@ -1,7 +1,9 @@
 ---
 title: "Bayesian Methods of Variable Selection"
 author: "Dav King"
-format: revealjs
+format: 
+  revealjs:
+    css: styles.css
 ---
 
 ## Motivation: Why Variable Selection?
