@@ -1249,6 +1249,55 @@ Order of minutes-10s of minutes.
 
 ## Thresholding
 
+### Model 2
+
+```{r}
+#| label: thresholding model 2
+
+N_2 <- sum(true_betas_2 == 0)
+P_2 <- sum(true_betas_2 == 1)
+
+# SSVS
+ssvs_2_roc <- roc(true_betas_2,
+                  colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0))
+plot(ssvs_2_roc)
+ssvs_2_tpr <- ssvs_2_roc$sensitivities
+ssvs_2_fpr <- 1 - ssvs_2_roc$specificities
+ssvs_2_error <- (ssvs_2_fpr * N_2 + (1 - ssvs_2_tpr) * P_2) / (P_2 + N_2)
+ssvs_2_threshold <- ssvs_2_roc$thresholds[which.min(ssvs_2_error)]
+ssvs_2_threshold
+
+# LASSO
+lasso_2_roc <- roc(true_betas_2,
+                  colMeans(lasso_2$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(lasso_2_roc)
+lasso_2_tpr <- lasso_2_roc$sensitivities
+lasso_2_fpr <- 1 - lasso_2_roc$specificities
+lasso_2_error <- (lasso_2_fpr * N_2 + (1 - lasso_2_tpr) * P_2) / (P_2 + N_2)
+lasso_2_threshold <- lasso_2_roc$thresholds[which.min(lasso_2_error)]
+lasso_2_threshold
+
+# NG
+ng_2_roc <- roc(true_betas_2,
+                  colMeans(ng_2$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(ng_2_roc)
+ng_2_tpr <- ng_2_roc$sensitivities
+ng_2_fpr <- 1 - ng_2_roc$specificities
+ng_2_error <- (ng_2_fpr * N_2 + (1 - ng_2_tpr) * P_2) / (P_2 + N_2)
+ng_2_threshold <- ng_2_roc$thresholds[which.min(ng_2_error)]
+ng_2_threshold
+
+# Horseshoe
+hs_2_roc <- roc(true_betas_2,
+                  colMeans(hs_2$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(hs_2_roc)
+hs_2_tpr <- hs_2_roc$sensitivities
+hs_2_fpr <- 1 - hs_2_roc$specificities
+hs_2_error <- (hs_2_fpr * N_2 + (1 - hs_2_tpr) * P_2) / (P_2 + N_2)
+hs_2_threshold <- hs_2_roc$thresholds[which.min(hs_2_error)]
+hs_2_threshold
+```
+
 ### Model 3
 
 ```{r}
@@ -1296,6 +1345,104 @@ hs_3_fpr <- 1 - hs_3_roc$specificities
 hs_3_error <- (hs_3_fpr * N_3 + (1 - hs_3_tpr) * P_3) / (P_3 + N_3)
 hs_3_threshold <- hs_3_roc$thresholds[which.min(hs_3_error)]
 hs_3_threshold
+```
+
+### Model 4
+
+```{r}
+#| label: thresholding model 4
+
+N_4 <- sum(true_betas_4 == 0)
+P_4 <- sum(true_betas_4 == 1)
+
+# SSVS
+ssvs_4_roc <- roc(true_betas_4,
+                  colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0))
+plot(ssvs_4_roc)
+ssvs_4_tpr <- ssvs_4_roc$sensitivities
+ssvs_4_fpr <- 1 - ssvs_4_roc$specificities
+ssvs_4_error <- (ssvs_4_fpr * N_4 + (1 - ssvs_4_tpr) * P_4) / (P_4 + N_4)
+ssvs_4_threshold <- ssvs_4_roc$thresholds[which.min(ssvs_4_error)]
+ssvs_4_threshold
+
+# LASSO
+lasso_4_roc <- roc(true_betas_4,
+                  colMeans(lasso_4$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(lasso_4_roc)
+lasso_4_tpr <- lasso_4_roc$sensitivities
+lasso_4_fpr <- 1 - lasso_4_roc$specificities
+lasso_4_error <- (lasso_4_fpr * N_4 + (1 - lasso_4_tpr) * P_4) / (P_4 + N_4)
+lasso_4_threshold <- lasso_4_roc$thresholds[which.min(lasso_4_error)]
+lasso_4_threshold
+
+# NG
+ng_4_roc <- roc(true_betas_4,
+                  colMeans(ng_4$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(ng_4_roc)
+ng_4_tpr <- ng_4_roc$sensitivities
+ng_4_fpr <- 1 - ng_4_roc$specificities
+ng_4_error <- (ng_4_fpr * N_4 + (1 - ng_4_tpr) * P_4) / (P_4 + N_4)
+ng_4_threshold <- ng_4_roc$thresholds[which.min(ng_4_error)]
+ng_4_threshold
+
+# Horseshoe
+hs_4_roc <- roc(true_betas_4,
+                  colMeans(hs_4$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(hs_4_roc)
+hs_4_tpr <- hs_4_roc$sensitivities
+hs_4_fpr <- 1 - hs_4_roc$specificities
+hs_4_error <- (hs_4_fpr * N_4 + (1 - hs_4_tpr) * P_4) / (P_4 + N_4)
+hs_4_threshold <- hs_4_roc$thresholds[which.min(hs_4_error)]
+hs_4_threshold
+```
+
+### Model 5
+
+```{r}
+#| label: thresholding model 5
+
+N_5 <- sum(true_betas_5 == 0)
+P_5 <- sum(true_betas_5 == 1)
+
+# SSVS
+ssvs_5_roc <- roc(true_betas_5,
+                  colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES,-1] != 0))
+plot(ssvs_5_roc)
+ssvs_5_tpr <- ssvs_5_roc$sensitivities
+ssvs_5_fpr <- 1 - ssvs_5_roc$specificities
+ssvs_5_error <- (ssvs_5_fpr * N_5 + (1 - ssvs_5_tpr) * P_5) / (P_5 + N_5)
+ssvs_5_threshold <- ssvs_5_roc$thresholds[which.min(ssvs_5_error)]
+ssvs_5_threshold
+
+# LASSO
+lasso_5_roc <- roc(true_betas_5,
+                  colMeans(lasso_5$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(lasso_5_roc)
+lasso_5_tpr <- lasso_5_roc$sensitivities
+lasso_5_fpr <- 1 - lasso_5_roc$specificities
+lasso_5_error <- (lasso_5_fpr * N_5 + (1 - lasso_5_tpr) * P_5) / (P_5 + N_5)
+lasso_5_threshold <- lasso_5_roc$thresholds[which.min(lasso_5_error)]
+lasso_5_threshold
+
+# NG
+ng_5_roc <- roc(true_betas_5,
+                  colMeans(ng_5$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(ng_5_roc)
+ng_5_tpr <- ng_5_roc$sensitivities
+ng_5_fpr <- 1 - ng_5_roc$specificities
+ng_5_error <- (ng_5_fpr * N_5 + (1 - ng_5_tpr) * P_5) / (P_5 + N_5)
+ng_5_threshold <- ng_5_roc$thresholds[which.min(ng_5_error)]
+ng_5_threshold
+
+# Horseshoe
+hs_5_roc <- roc(true_betas_5,
+                  colMeans(hs_5$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(hs_5_roc)
+hs_5_tpr <- hs_5_roc$sensitivities
+hs_5_fpr <- 1 - hs_5_roc$specificities
+hs_5_error <- (hs_5_fpr * N_5 + (1 - hs_5_tpr) * P_5) / (P_5 + N_5)
+hs_5_threshold <- hs_5_roc$thresholds[which.min(hs_5_error)]
+hs_5_threshold
 ```
 
 
@@ -1473,6 +1620,8 @@ save(model_2_rates, file = "model_2_rates.RData")
 kable(model_2_rates, digits = 3)
 ```
 
+I'm leaving out the thresholding here - they just want to pick all or none of the variables, which is kinda boring. Once again, it's just bad performance.
+
 ### Model 3
 
 ```{r}
@@ -1553,15 +1702,23 @@ bma_4_cm <- table(true_betas_4, bma_4_out)
 
 ssvs_4_out <- as.integer(colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
 ssvs_4_cm <- table(true_betas_4, ssvs_4_out)
+ssvs_4_thresholded <- as.integer(colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > ssvs_4_threshold)
+ssvs_4_thresh_cm <- table(true_betas_4, ssvs_4_thresholded)
 
 lasso_4_out <- as.integer(colMeans(lasso_4$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 lasso_4_cm <- table(true_betas_4, lasso_4_out)
+lasso_4_thresholded <- as.integer(colMeans(lasso_4$beta[BURN_IN:N_SAMPLES,] != 0) > lasso_4_threshold)
+lasso_4_thresh_cm <- table(true_betas_4, lasso_4_thresholded)
 
 ng_4_out <- as.integer(colMeans(ng_4$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 ng_4_cm <- table(true_betas_4, ng_4_out)
+ng_4_thresholded <- as.integer(colMeans(ng_4$beta[BURN_IN:N_SAMPLES,] != 0) > ng_4_threshold)
+ng_4_thresh_cm <- table(true_betas_4, ng_4_thresholded)
 
 hs_4_out <- as.integer(colMeans(hs_4$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_4_cm <- table(true_betas_4, hs_4_out)
+hs_4_thresholded <- as.integer(colMeans(hs_4$beta[BURN_IN:N_SAMPLES,] != 0) > hs_4_threshold)
+hs_4_thresh_cm <- table(true_betas_4, hs_4_thresholded)
 
 
 model_4_rates <- rbind(
@@ -1569,14 +1726,26 @@ model_4_rates <- rbind(
         calc_rates(bvs_4_cm), Runtime = "Seconds"),
       c(Name = "BMA", Size = sum(bma_4_out),
         calc_rates(bma_4_cm), Runtime = "Seconds"),
-      c(Name = "SSVS", Size = sum(ssvs_4_out),
+      c(Name = "SSVS, p = 0.5", Size = sum(ssvs_4_out),
         calc_rates(ssvs_4_cm), Runtime = "Seconds"),
-      c(Name = "LASSO", Size = sum(lasso_4_out),
+      c(Name = paste("SSVS, p =", round(ssvs_4_threshold, 3)),
+        Size = sum(ssvs_4_thresholded),
+        calc_rates(ssvs_4_thresh_cm), runtime = "Seconds"),
+      c(Name = "LASSO, p = 0.5", Size = sum(lasso_4_out),
         calc_rates(lasso_4_cm), Runtime = "Minutes"),
-      c(Name = "Normal-Gamma", Size = sum(ng_4_out),
+      c(Name = paste("LASSO, p =", round(lasso_4_threshold, 3)),
+        Size = sum(lasso_4_thresholded),
+        calc_rates(lasso_4_thresh_cm), runtime = "Minutes"),
+      c(Name = "Normal-Gamma, p = 0.5", Size = sum(ng_4_out),
         calc_rates(ng_4_cm), Runtime = "Minutes"),
-      c(Name = "Horseshoe", Size = sum(hs_4_out),
-        calc_rates(hs_4_cm), Runtime = "Minutes")
+      c(Name = paste("Normal-Gamma, p =", round(ng_4_threshold, 3)),
+        Size = sum(ng_4_thresholded),
+        calc_rates(ng_4_thresh_cm), runtime = "Minutes"),
+      c(Name = "Horseshoe, p = 0.5", Size = sum(hs_4_out),
+        calc_rates(hs_4_cm), Runtime = "Minutes"),
+      c(Name = paste("Horseshoe, p =", round(hs_4_threshold, 3)),
+        Size = sum(hs_4_thresholded),
+        calc_rates(hs_4_thresh_cm), runtime = "Minutes")
   )
 
 save(model_4_rates, file = "model_4_rates.RData")
@@ -1599,15 +1768,23 @@ bma_5_cm <- table(true_betas_5, bma_5_out)
 
 ssvs_5_out <- as.integer(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES,-1] != 0) > 0.5)
 ssvs_5_cm <- table(true_betas_5, ssvs_5_out)
+ssvs_5_thresholded <- as.integer(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES,-1] != 0) > ssvs_5_threshold)
+ssvs_5_thresh_cm <- table(true_betas_5, ssvs_5_thresholded)
 
 lasso_5_out <- as.integer(colMeans(lasso_5$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 lasso_5_cm <- table(true_betas_5, lasso_5_out)
+lasso_5_thresholded <- as.integer(colMeans(lasso_5$beta[BURN_IN:N_SAMPLES,] != 0) > lasso_5_threshold)
+lasso_5_thresh_cm <- table(true_betas_5, lasso_5_thresholded)
 
 ng_5_out <- as.integer(colMeans(ng_5$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 ng_5_cm <- table(true_betas_5, ng_5_out)
+ng_5_thresholded <- as.integer(colMeans(ng_5$beta[BURN_IN:N_SAMPLES,] != 0) > ng_5_threshold)
+ng_5_thresh_cm <- table(true_betas_5, ng_5_thresholded)
 
 hs_5_out <- as.integer(colMeans(hs_5$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_5_cm <- table(true_betas_5, hs_5_out)
+hs_5_thresholded <- as.integer(colMeans(hs_5$beta[BURN_IN:N_SAMPLES,] != 0) > hs_5_threshold)
+hs_5_thresh_cm <- table(true_betas_5, hs_5_thresholded)
 
 
 model_5_rates <- rbind(
@@ -1615,14 +1792,26 @@ model_5_rates <- rbind(
         calc_rates(bvs_5_cm), Runtime = "Minutes"),
       c(Name = "BMA", Size = sum(bma_5_out),
         calc_rates(bma_5_cm), Runtime = "Seconds"),
-      c(Name = "SSVS", Size = sum(ssvs_5_out),
+      c(Name = "SSVS, p = 0.5", Size = sum(ssvs_5_out),
         calc_rates(ssvs_5_cm), Runtime = "Minutes"),
-      c(Name = "LASSO", Size = sum(lasso_5_out),
+      c(Name = paste("SSVS, p =", round(ssvs_5_threshold, 3)),
+        Size = sum(ssvs_5_thresholded),
+        calc_rates(ssvs_5_thresh_cm), runtime = "Minutes"),
+      c(Name = "LASSO, p = 0.5", Size = sum(lasso_5_out),
         calc_rates(lasso_5_cm), Runtime = "Hours"),
-      c(Name = "Normal-Gamma", Size = sum(ng_5_out),
+      c(Name = paste("LASSO, p =", round(lasso_5_threshold, 3)),
+        Size = sum(lasso_5_thresholded),
+        calc_rates(lasso_5_thresh_cm), runtime = "Hours"),
+      c(Name = "Normal-Gamma, p = 0.5", Size = sum(ng_5_out),
         calc_rates(ng_5_cm), Runtime = "Hours"),
-      c(Name = "Horseshoe", Size = sum(hs_5_out),
-        calc_rates(hs_5_cm), Runtime = "Hours")
+      c(Name = paste("Normal-Gamma, p =", round(ng_5_threshold, 3)),
+        Size = sum(ng_5_thresholded),
+        calc_rates(ng_5_thresh_cm), runtime = "Hours"),
+      c(Name = "Horseshoe, p = 0.5", Size = sum(hs_5_out),
+        calc_rates(hs_5_cm), Runtime = "Hours"),
+      c(Name = paste("Horseshoe, p =", round(hs_5_threshold, 3)),
+        Size = sum(hs_5_thresholded),
+        calc_rates(hs_5_thresh_cm), runtime = "Hours")
   )
 
 save(model_5_rates, file = "model_5_rates.RData")
