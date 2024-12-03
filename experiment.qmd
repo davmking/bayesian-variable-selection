@@ -22,6 +22,7 @@ library(monomvn)
 #library(EMVS)  # Man
 library(tidyverse)
 library(knitr)
+library(pROC)
 ```
 
 
@@ -1246,6 +1247,59 @@ Order of minutes-10s of minutes.
 
 
 
+## Thresholding
+
+### Model 3
+
+```{r}
+#| label: thresholding model 3
+
+N_3 <- sum(true_betas_3 == 0)
+P_3 <- sum(true_betas_3 == 1)
+
+# SSVS
+ssvs_3_roc <- roc(true_betas_3,
+                  colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0))
+plot(ssvs_3_roc)
+ssvs_3_tpr <- ssvs_3_roc$sensitivities
+ssvs_3_fpr <- 1 - ssvs_3_roc$specificities
+ssvs_3_error <- (ssvs_3_fpr * N_3 + (1 - ssvs_3_tpr) * P_3) / (P_3 + N_3)
+ssvs_3_threshold <- ssvs_3_roc$thresholds[which.min(ssvs_3_error)]
+ssvs_3_threshold
+
+# LASSO
+lasso_3_roc <- roc(true_betas_3,
+                  colMeans(lasso_3$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(lasso_3_roc)
+lasso_3_tpr <- lasso_3_roc$sensitivities
+lasso_3_fpr <- 1 - lasso_3_roc$specificities
+lasso_3_error <- (lasso_3_fpr * N_3 + (1 - lasso_3_tpr) * P_3) / (P_3 + N_3)
+lasso_3_threshold <- lasso_3_roc$thresholds[which.min(lasso_3_error)]
+lasso_3_threshold
+
+# NG
+ng_3_roc <- roc(true_betas_3,
+                  colMeans(ng_3$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(ng_3_roc)
+ng_3_tpr <- ng_3_roc$sensitivities
+ng_3_fpr <- 1 - ng_3_roc$specificities
+ng_3_error <- (ng_3_fpr * N_3 + (1 - ng_3_tpr) * P_3) / (P_3 + N_3)
+ng_3_threshold <- ng_3_roc$thresholds[which.min(ng_3_error)]
+ng_3_threshold
+
+# Horseshoe
+hs_3_roc <- roc(true_betas_3,
+                  colMeans(hs_3$beta[(BURN_IN + 1):N_SAMPLES,] != 0))
+plot(hs_3_roc)
+hs_3_tpr <- hs_3_roc$sensitivities
+hs_3_fpr <- 1 - hs_3_roc$specificities
+hs_3_error <- (hs_3_fpr * N_3 + (1 - hs_3_tpr) * P_3) / (P_3 + N_3)
+hs_3_threshold <- hs_3_roc$thresholds[which.min(hs_3_error)]
+hs_3_threshold
+```
+
+
+
 ## True/False Positive Rates
 
 ```{r}
@@ -1258,7 +1312,7 @@ calc_rates <- function(cm){
   #tnr <- 1 - fnr
   tpr <- cm[2,2] / sum(cm[2,])
   tnr <- cm[1,1] / sum(cm[1,])
-  return(c(TPR = tpr, FNR = fnr, TNR = tnr, FPR = fpr))
+  return(c(TPR = tpr, FNR = fnr, FPR = fpr, TNR = tnr))
 }
 ```
 
@@ -1283,25 +1337,35 @@ bma_0_cm <- table(true_betas_0, bma_0_out)
 ssvs_0_out <- as.integer(colMeans(ssvs_0_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
 ssvs_0_cm <- table(true_betas_0, ssvs_0_out)
 
-lasso_0_out <- as.integer(colMeans(lasso_0$beta != 0) > 0.5)
+lasso_0_out <- as.integer(colMeans(lasso_0$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 lasso_0_cm <- table(true_betas_0, lasso_0_out)
 
-ng_0_out <- as.integer(colMeans(ng_0$beta != 0) > 0.5)
+ng_0_out <- as.integer(colMeans(ng_0$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 ng_0_cm <- table(true_betas_0, ng_0_out)
 
-hs_0_out <- as.integer(colMeans(hs_0$beta != 0) > 0.5)
+hs_0_out <- as.integer(colMeans(hs_0$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_0_cm <- table(true_betas_0, hs_0_out)
 
 
-model_0_rates <- rbind(c(Name = "BSS - Small", calc_rates(bss_0_small_cm), Runtime = "Seconds"),
-      c(Name = "BSS - Min", calc_rates(bss_0_min_cm), Runtime = "Seconds"),
-      c(Name = "BSS - All", calc_rates(bss_0_all_cm), Runtime = "Seconds"),
-      c(Name = "BMS", calc_rates(bvs_0_cm), Runtime = "Seconds"),
-      c(Name = "BMA", calc_rates(bma_0_cm), Runtime = "Seconds"),
-      c(Name = "SSVS", calc_rates(ssvs_0_cm), Runtime = "Seconds"),
-      c(Name = "LASSO", calc_rates(lasso_0_cm), Runtime = "Seconds"),
-      c(Name = "Normal-Gamma", calc_rates(ng_0_cm), Runtime = "Seconds"),
-      c(Name = "Horseshoe", calc_rates(hs_0_cm), Runtime = "Seconds")
+model_0_rates <- rbind(
+      c(Name = "BSS - Small", Size = sum(bss_0_small),
+        calc_rates(bss_0_small_cm), Runtime = "Seconds"),
+      c(Name = "BSS - Min", Size = sum(bss_0_min),
+        calc_rates(bss_0_min_cm), Runtime = "Seconds"),
+      c(Name = "BSS - All", Size = sum(bss_0_all),
+        calc_rates(bss_0_all_cm), Runtime = "Seconds"),
+      c(Name = "BMS", Size = sum(bvs_0$HPMbin),
+        calc_rates(bvs_0_cm), Runtime = "Seconds"),
+      c(Name = "BMA", Size = sum(bma_0_out),
+        calc_rates(bma_0_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", Size = sum(ssvs_0_out),
+        calc_rates(ssvs_0_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", Size = sum(lasso_0_out),
+        calc_rates(lasso_0_cm), Runtime = "Seconds"),
+      c(Name = "Normal-Gamma", Size = sum(ng_0_out),
+        calc_rates(ng_0_cm), Runtime = "Seconds"),
+      c(Name = "Horseshoe", Size = sum(hs_0_out),
+        calc_rates(hs_0_cm), Runtime = "Seconds")
   )
 
 save(model_0_rates, file = "model_0_rates.RData")
@@ -1328,25 +1392,35 @@ bma_1_cm <- table(true_betas_1, bma_1_out)
 ssvs_1_out <- as.integer(colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
 ssvs_1_cm <- table(true_betas_1, ssvs_1_out)
 
-lasso_1_out <- as.integer(colMeans(lasso_1$beta != 0) > 0.5)
+lasso_1_out <- as.integer(colMeans(lasso_1$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 lasso_1_cm <- table(true_betas_1, lasso_1_out)
 
-ng_1_out <- as.integer(colMeans(ng_1$beta != 0) > 0.5)
+ng_1_out <- as.integer(colMeans(ng_1$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 ng_1_cm <- table(true_betas_1, ng_1_out)
 
-hs_1_out <- as.integer(colMeans(hs_1$beta != 0) > 0.5)
+hs_1_out <- as.integer(colMeans(hs_1$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_1_cm <- table(true_betas_1, hs_1_out)
 
 
-model_1_rates <- rbind(c(Name = "BSS - Small", calc_rates(bss_1_small_cm), Runtime = "Seconds"),
-      c(Name = "BSS - Min", calc_rates(bss_1_min_cm), Runtime = "Seconds"),
-      c(Name = "BSS - All", calc_rates(bss_1_all_cm), Runtime = "Seconds"),
-      c(Name = "BMS", calc_rates(bvs_1_cm), Runtime = "Seconds"),
-      c(Name = "BMA", calc_rates(bma_1_cm), Runtime = "Seconds"),
-      c(Name = "SSVS", calc_rates(ssvs_1_cm), Runtime = "Seconds"),
-      c(Name = "LASSO", calc_rates(lasso_1_cm), Runtime = "Seconds"),
-      c(Name = "Normal-Gamma", calc_rates(ng_1_cm), Runtime = "Seconds"),
-      c(Name = "Horseshoe", calc_rates(hs_1_cm), Runtime = "Seconds")
+model_1_rates <- rbind(
+      c(Name = "BSS - Small", Size = sum(bss_1_small),
+        calc_rates(bss_1_small_cm), Runtime = "Seconds"),
+      c(Name = "BSS - Min", Size = sum(bss_1_min),
+        calc_rates(bss_1_min_cm), Runtime = "Seconds"),
+      c(Name = "BSS - All", Size = sum(bss_1_all),
+        calc_rates(bss_1_all_cm), Runtime = "Seconds"),
+      c(Name = "BMS", Size = sum(bvs_1$HPMbin),
+        calc_rates(bvs_1_cm), Runtime = "Seconds"),
+      c(Name = "BMA", Size = sum(bma_1_out),
+        calc_rates(bma_1_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", Size = sum(ssvs_1_out),
+        calc_rates(ssvs_1_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", Size = sum(lasso_1_out),
+        calc_rates(lasso_1_cm), Runtime = "Seconds"),
+      c(Name = "Normal-Gamma", Size = sum(ng_1_out),
+        calc_rates(ng_1_cm), Runtime = "Seconds"),
+      c(Name = "Horseshoe", Size = sum(hs_1_out),
+        calc_rates(hs_1_cm), Runtime = "Seconds")
   )
 
 save(model_1_rates, file = "model_1_rates.RData")
@@ -1361,10 +1435,6 @@ kable(model_1_rates, digits = 3)
 true_betas_2 <- model_2$beta_true[-1]
 true_betas_2 <- as.integer(true_betas_2 != 0)
 
-#bss_1_small_cm <- table(true_betas_1, bss_1_small)
-#bss_1_min_cm <- table(true_betas_1, bss_1_min)
-#bss_1_all_cm <- table(true_betas_1, bss_1_all)
-
 bvs_2_cm <- table(true_betas_2, bvs_2$HPMbin)
 
 bma_2_out <- as.integer(estimates.bma(bma_2, order.by.pip = FALSE)[,1] > 0.5)
@@ -1374,30 +1444,191 @@ ssvs_2_out <- as.integer(colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 
 ssvs_2_cm <- table(true_betas_2, ssvs_2_out)
 ssvs_2_cm <- cbind(ssvs_2_cm, c(0, 0))
 
-lasso_2_out <- as.integer(colMeans(lasso_2$beta != 0) > 0.5)
+lasso_2_out <- as.integer(colMeans(lasso_2$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 lasso_2_cm <- table(true_betas_2, lasso_2_out)
 
-ng_2_out <- as.integer(colMeans(ng_2$beta != 0) > 0.5)
+ng_2_out <- as.integer(colMeans(ng_2$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 ng_2_cm <- table(true_betas_2, ng_2_out)
 
-hs_2_out <- as.integer(colMeans(hs_2$beta != 0) > 0.5)
+hs_2_out <- as.integer(colMeans(hs_2$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_2_cm <- table(true_betas_2, hs_2_out)
 
 
-model_2_rates <- rbind(#c(Name = "BSS - Small", calc_rates(bss_1_small_cm), Runtime = "Seconds"),
-      #c(Name = "BSS - Min", calc_rates(bss_1_min_cm), Runtime = "Seconds"),
-      #c(Name = "BSS - All", calc_rates(bss_1_all_cm), Runtime = "Seconds"),
-      c(Name = "BMS", calc_rates(bvs_2_cm), Runtime = "Seconds"),
-      c(Name = "BMA", calc_rates(bma_2_cm), Runtime = "Seconds"),
-      c(Name = "SSVS", calc_rates(ssvs_2_cm), Runtime = "Seconds"),
-      c(Name = "LASSO", calc_rates(lasso_2_cm), Runtime = "Seconds"),
-      c(Name = "Normal-Gamma", calc_rates(ng_2_cm), Runtime = "Seconds"),
-      c(Name = "Horseshoe", calc_rates(hs_2_cm), Runtime = "Seconds")
+model_2_rates <- rbind(
+      c(Name = "BMS", Size = sum(bvs_2$HPMbin),
+        calc_rates(bvs_2_cm), Runtime = "Seconds"),
+      c(Name = "BMA", Size = sum(bma_2_out),
+        calc_rates(bma_2_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", Size = sum(ssvs_2_out),
+        calc_rates(ssvs_2_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", Size = sum(lasso_2_out),
+        calc_rates(lasso_2_cm), Runtime = "Minutes"),
+      c(Name = "Normal-Gamma", Size = sum(ng_2_out),
+        calc_rates(ng_2_cm), Runtime = "Minutes"),
+      c(Name = "Horseshoe", Size = sum(hs_2_out),
+        calc_rates(hs_2_cm), Runtime = "Minutes")
   )
 
 save(model_2_rates, file = "model_2_rates.RData")
 kable(model_2_rates, digits = 3)
 ```
+
+### Model 3
+
+```{r}
+#| label: tpr fpr model 3
+
+true_betas_3 <- model_3$beta_true[-1]
+true_betas_3 <- as.integer(true_betas_3 != 0)
+
+bvs_3_cm <- table(true_betas_3, bvs_3$HPMbin)
+
+bma_3_out <- as.integer(estimates.bma(bma_3, order.by.pip = FALSE)[,1] > 0.5)
+bma_3_cm <- table(true_betas_3, bma_3_out)
+
+ssvs_3_out <- as.integer(colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
+ssvs_3_cm <- table(true_betas_3, ssvs_3_out)
+ssvs_3_thresholded <- as.integer(colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > ssvs_3_threshold)
+ssvs_3_thresh_cm <- table(true_betas_3, ssvs_3_thresholded)
+
+lasso_3_out <- as.integer(colMeans(lasso_3$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+lasso_3_cm <- table(true_betas_3, lasso_3_out)
+lasso_3_thresholded <- as.integer(colMeans(lasso_3$beta[BURN_IN:N_SAMPLES,] != 0) > lasso_3_threshold)
+lasso_3_thresh_cm <- table(true_betas_3, lasso_3_thresholded)
+
+ng_3_out <- as.integer(colMeans(ng_3$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+ng_3_cm <- table(true_betas_3, ng_3_out)
+ng_3_thresholded <- as.integer(colMeans(ng_3$beta[BURN_IN:N_SAMPLES,] != 0) > ng_3_threshold)
+ng_3_thresh_cm <- table(true_betas_3, ng_3_thresholded)
+
+hs_3_out <- as.integer(colMeans(hs_3$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+hs_3_cm <- table(true_betas_3, hs_3_out)
+hs_3_thresholded <- as.integer(colMeans(hs_3$beta[BURN_IN:N_SAMPLES,] != 0) > hs_3_threshold)
+hs_3_thresh_cm <- table(true_betas_3, hs_3_thresholded)
+
+
+model_3_rates <- rbind(
+      c(Name = "BMS", Size = sum(bvs_3$HPMbin),
+        calc_rates(bvs_3_cm), Runtime = "Seconds"),
+      c(Name = "BMA", Size = sum(bma_3_out),
+        calc_rates(bma_3_cm), Runtime = "Seconds"),
+      c(Name = "SSVS, p = 0.5", Size = sum(ssvs_3_out),
+        calc_rates(ssvs_3_cm), Runtime = "Seconds"),
+      c(Name = paste("SSVS, p =", round(ssvs_3_threshold, 3)),
+        Size = sum(ssvs_3_thresholded),
+        calc_rates(ssvs_3_thresh_cm), runtime = "Seconds"),
+      c(Name = "LASSO, p = 0.5", Size = sum(lasso_3_out),
+        calc_rates(lasso_3_cm), Runtime = "Minutes"),
+      c(Name = paste("LASSO, p =", round(lasso_3_threshold, 3)),
+        Size = sum(lasso_3_thresholded),
+        calc_rates(lasso_3_thresh_cm), runtime = "Minutes"),
+      c(Name = "Normal-Gamma, p = 0.5", Size = sum(ng_3_out),
+        calc_rates(ng_3_cm), Runtime = "Minutes"),
+      c(Name = paste("Normal-Gamma, p =", round(ng_3_threshold, 3)),
+        Size = sum(ng_3_thresholded),
+        calc_rates(ng_3_thresh_cm), runtime = "Minutes"),
+      c(Name = "Horseshoe, p = 0.5", Size = sum(hs_3_out),
+        calc_rates(hs_3_cm), Runtime = "Minutes"),
+      c(Name = paste("Horseshoe, p =", round(hs_3_threshold, 3)),
+        Size = sum(hs_3_thresholded),
+        calc_rates(hs_3_thresh_cm), runtime = "Minutes")
+  )
+
+save(model_3_rates, file = "model_3_rates.RData")
+kable(model_3_rates, digits = 3)
+```
+
+### Model 4
+
+```{r}
+#| label: tpr fpr model 4
+
+true_betas_4 <- model_4$beta_true[-1]
+true_betas_4 <- as.integer(true_betas_4 != 0)
+
+bvs_4_cm <- table(true_betas_4, bvs_4$HPMbin)
+
+bma_4_out <- as.integer(estimates.bma(bma_4, order.by.pip = FALSE)[,1] > 0.5)
+bma_4_cm <- table(true_betas_4, bma_4_out)
+
+ssvs_4_out <- as.integer(colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.5)
+ssvs_4_cm <- table(true_betas_4, ssvs_4_out)
+
+lasso_4_out <- as.integer(colMeans(lasso_4$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+lasso_4_cm <- table(true_betas_4, lasso_4_out)
+
+ng_4_out <- as.integer(colMeans(ng_4$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+ng_4_cm <- table(true_betas_4, ng_4_out)
+
+hs_4_out <- as.integer(colMeans(hs_4$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+hs_4_cm <- table(true_betas_4, hs_4_out)
+
+
+model_4_rates <- rbind(
+      c(Name = "BMS", Size = sum(bvs_4$HPMbin),
+        calc_rates(bvs_4_cm), Runtime = "Seconds"),
+      c(Name = "BMA", Size = sum(bma_4_out),
+        calc_rates(bma_4_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", Size = sum(ssvs_4_out),
+        calc_rates(ssvs_4_cm), Runtime = "Seconds"),
+      c(Name = "LASSO", Size = sum(lasso_4_out),
+        calc_rates(lasso_4_cm), Runtime = "Minutes"),
+      c(Name = "Normal-Gamma", Size = sum(ng_4_out),
+        calc_rates(ng_4_cm), Runtime = "Minutes"),
+      c(Name = "Horseshoe", Size = sum(hs_4_out),
+        calc_rates(hs_4_cm), Runtime = "Minutes")
+  )
+
+save(model_4_rates, file = "model_4_rates.RData")
+kable(model_4_rates, digits = 3)
+```
+
+
+### Model 5
+
+```{r}
+#| label: tpr fpr model 5
+
+true_betas_5 <- model_5$beta_true[-1]
+true_betas_5 <- as.integer(true_betas_5 != 0)
+
+bvs_5_cm <- table(true_betas_5, bvs_5$HPMbin)
+
+bma_5_out <- as.integer(estimates.bma(bma_5, order.by.pip = FALSE)[,1] > 0.5)
+bma_5_cm <- table(true_betas_5, bma_5_out)
+
+ssvs_5_out <- as.integer(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES,-1] != 0) > 0.5)
+ssvs_5_cm <- table(true_betas_5, ssvs_5_out)
+
+lasso_5_out <- as.integer(colMeans(lasso_5$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+lasso_5_cm <- table(true_betas_5, lasso_5_out)
+
+ng_5_out <- as.integer(colMeans(ng_5$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+ng_5_cm <- table(true_betas_5, ng_5_out)
+
+hs_5_out <- as.integer(colMeans(hs_5$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
+hs_5_cm <- table(true_betas_5, hs_5_out)
+
+
+model_5_rates <- rbind(
+      c(Name = "BMS", Size = sum(bvs_5$HPMbin),
+        calc_rates(bvs_5_cm), Runtime = "Minutes"),
+      c(Name = "BMA", Size = sum(bma_5_out),
+        calc_rates(bma_5_cm), Runtime = "Seconds"),
+      c(Name = "SSVS", Size = sum(ssvs_5_out),
+        calc_rates(ssvs_5_cm), Runtime = "Minutes"),
+      c(Name = "LASSO", Size = sum(lasso_5_out),
+        calc_rates(lasso_5_cm), Runtime = "Hours"),
+      c(Name = "Normal-Gamma", Size = sum(ng_5_out),
+        calc_rates(ng_5_cm), Runtime = "Hours"),
+      c(Name = "Horseshoe", Size = sum(hs_5_out),
+        calc_rates(hs_5_cm), Runtime = "Hours")
+  )
+
+save(model_5_rates, file = "model_5_rates.RData")
+kable(model_5_rates, digits = 3)
+```
+
 
 
 ## Recovery of True Coefficients (MSE)
