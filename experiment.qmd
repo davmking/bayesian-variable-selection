@@ -99,6 +99,30 @@ BURN_IN <- 1000
 N_SAMPLES_2 <- 31000
 ```
 
+## Helpers
+
+```{r}
+#| label: plot betas function
+
+# Note: Pass it only the variables you want plotted, i.e. exclude intercept
+plot_betas <- function(betas){
+  betas %>% 
+    as.data.frame() %>% 
+    mutate(iter = row_number()) %>% 
+    filter(iter > BURN_IN) %>% 
+    pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
+    mutate(beta = substring(beta, 2)) %>% 
+    mutate(beta = as.integer(beta) - 1) %>% 
+    ggplot(aes(x = iter, y = value)) +
+    geom_line() +
+    facet_wrap(~beta, scales = "free_y", nrow = 2) +
+    theme_bw() +
+    labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
+    theme(plot.title = element_text(hjust = 0.5))
+}
+```
+
+
 
 
 # Non-Prior Methods
@@ -204,79 +228,6 @@ bss_1_all
 ```
 
 With $n = 100$, we aren't picking up the right variables - the smallest subsets are just the intercept. Might need to increase the SNR or n?
-
-
-### Model 3
-
-```{r}
-#| label: run bayeslm and evaluate 3
-
-set.seed(465)
-
-X <- model_3$X
-y <- model_3$y
-
-model_3_fit <- bayeslm(y ~ X[,-1],
-                       N = N_SAMPLES,
-                       burnin = BURN_IN,
-                       prior = "ridge"
-                       )
-
-temp <- post_predict(post_y_hat = tcrossprod(model_3_fit$beta, X),
-                    post_sigma = model_3_fit$sigma,
-                    yy = y)
-post_y_pred = temp$post_y_pred
-post_lpd = temp$post_lpd
-
-start <- Sys.time()
-indicators_3 <- branch_and_bound(yy = fitted(model_3_fit),
-                              XX = X)
-print(Sys.time() - start)
-
-accept_info <- accept_family(post_y_pred = post_y_pred,
-                            post_lpd = post_lpd,
-                            XX = X,
-                            indicators = indicators_1,
-                            yy = y,
-                            post_y_hat = tcrossprod(model_1_fit$beta, X))
-
-
-
-# How many subsets are in the acceptable family?
-length(accept_info$all_accept) # 76
-
-# These are the rows of `indicators` that belong to the acceptable family:
-head(accept_info$all_accept)
-
-# An example acceptable subset:
-ex_accept <- accept_info$all_accept[1]
-which(indicators[ex_accept,])
-
-# Simplest acceptable subset:
-beta_hat_small <- accept_info$beta_hat_small
-
-# Which coefficients are nonzero:
-S_small <- which(beta_hat_small != 0)
-
-# How many coefficients are nonzero:
-length(S_small) # 4
-
-# Acceptable subset that minimizes CV error:
-beta_hat_min <- accept_info$beta_hat_min
-
-# Typically much larger (and often too large...)
-sum(beta_hat_min != 0) # 5
-
-# Variable importance metrics
-vi_e <- var_imp(indicators = indicators_1,
-               all_accept = accept_info$all_accept)$vi_inc
-
-# Variables appearing in all acceptable subsets
-all_acceptable <- which(vi_e == 1) # Correct variables
-
-# Size
-length(all_acceptable) # 4
-```
 
 
 ## Bayesian Model Selection
@@ -642,20 +593,6 @@ ssvs_0_g <- lm.spike(y ~ .,
                    error.distribution = "gaussian")
 print(Sys.time() - start)
 
-ssvs_0_g$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y", nrow = 2) +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
 # Probability of inclusion
 colMeans(ssvs_0_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
 
@@ -683,20 +620,6 @@ ssvs_1_g <- lm.spike(y ~ .,
                    error.distribution = "gaussian")
 print(Sys.time() - start)
 
-ssvs_1_g$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y", nrow = 2) +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
 # Probability of inclusion
 colMeans(ssvs_1_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
 
@@ -717,26 +640,17 @@ X <- model_2$X
 data <- data.frame(y = y, X[,-1])
 
 set.seed(465)
-start <- Sys.time()
+ssvs_2_start <- Sys.time()
 ssvs_2_g <- lm.spike(y ~ .,
                    data = data,
                    niter = N_SAMPLES_2,
                    error.distribution = "gaussian")
-print(Sys.time() - start)
+ssvs_2_end <- Sys.time()
+print(ssvs_2_end)
 
-ssvs_2_g$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(ssvs_2_g, file = "ssvs_2_g.RData")
+ssvs_2_runtime <- c(ssvs_2_start, ssvs_2_end)
+save(ssvs_2_runtime, file = "ssvs_2_runtime.RData")
 
 # Probability of inclusion
 colMeans(ssvs_2_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
@@ -759,26 +673,17 @@ X <- model_3$X
 data <- data.frame(y = y, X[,-1])
 
 set.seed(465)
-start <- Sys.time()
+ssvs_3_start <- Sys.time()
 ssvs_3_g <- lm.spike(y ~ .,
                    data = data,
                    niter = N_SAMPLES_2,
                    error.distribution = "gaussian")
-print(Sys.time() - start)
+ssvs_3_end <- Sys.time()
+print(ssvs_3_end)
 
-ssvs_3_g$beta[,-1] %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 2)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "SSVS Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(ssvs_3_g, file = "ssvs_3_g.RData")
+ssvs_3_runtime <- c(ssvs_3_start, ssvs_3_end)
+save(ssvs_3_runtime, file = "ssvs_3_runtime.RData")
 
 # Probability of inclusion
 colMeans(ssvs_3_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
@@ -802,12 +707,17 @@ X <- model_4$X
 data <- data.frame(y = y, X[,-1])
 
 set.seed(465)
-start <- Sys.time()
+ssvs_4_start <- Sys.time()
 ssvs_4_g <- lm.spike(y ~ .,
                    data = data,
                    niter = N_SAMPLES_2,
                    error.distribution = "gaussian")
-print(Sys.time() - start)
+ssvs_4_end <- Sys.time()
+print(ssvs_4_end)
+
+save(ssvs_4_g, file = "ssvs_4_g.RData")
+ssvs_4_runtime <- c(ssvs_4_start, ssvs_4_end)
+save(ssvs_4_runtime, file = "ssvs_4_runtime.RData")
 
 # Probability of inclusion
 colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
