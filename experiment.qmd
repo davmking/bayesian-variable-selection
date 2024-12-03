@@ -1454,6 +1454,10 @@ Order of seconds-minutes.
 
 Order of seconds.
 
+#### EMVS
+
+Order of fractional seconds.
+
 ### Prior Methods
 
 #### SSVS
@@ -1476,6 +1480,20 @@ Order of minutes-10s of minutes.
 
 ## Thresholding
 
+```{r}
+#| label: helper function
+
+find_optimal_threshold <- function(emvs, idx, true_betas, N, P){
+  roc_obj <- roc(true_betas, emvs$prob_inclusion[idx,])
+  tpr <- roc_obj$sensitivities
+  fpr <- 1 - roc_obj$specificities
+  error <- (fpr * N + (1 - tpr) * P) / (P + N)
+  threshold <- roc_obj$thresholds[which.min(error)]
+  return(list(threshold = threshold, error = error[which.min(error)]))
+}
+```
+
+
 ### Model 2
 
 ```{r}
@@ -1483,6 +1501,16 @@ Order of minutes-10s of minutes.
 
 N_2 <- sum(true_betas_2 == 0)
 P_2 <- sum(true_betas_2 == 1)
+
+# BMA
+bma_2_roc <- roc(true_betas_2,
+                 estimates.bma(bma_2, order.by.pip = FALSE)[,1])
+plot(bma_2_roc)
+bma_2_tpr <- bma_2_roc$sensitivities
+bma_2_fpr <- 1 - bma_2_roc$specificities
+bma_2_error <- (bma_2_fpr * N_2 + (1 - bma_2_tpr) * P_2) / (P_2 + N_2)
+bma_2_threshold <- bma_2_roc$thresholds[which.min(bma_2_error)]
+bma_2_threshold
 
 # SSVS
 ssvs_2_roc <- roc(true_betas_2,
@@ -1523,6 +1551,24 @@ hs_2_fpr <- 1 - hs_2_roc$specificities
 hs_2_error <- (hs_2_fpr * N_2 + (1 - hs_2_tpr) * P_2) / (P_2 + N_2)
 hs_2_threshold <- hs_2_roc$thresholds[which.min(hs_2_error)]
 hs_2_threshold
+
+
+
+# EMVS
+emvs_2_error <- Inf
+emvs_2_idx <- NA
+emvs_2_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_2, i, true_betas_2, N_2, P_2)
+  if(temp$error < emvs_2_error){
+    emvs_2_error <- temp$error
+    emvs_2_idx <- i
+    emvs_2_thresh <- temp$threshold
+  }
+}
+emvs_2_error
+emvs_2_idx
+emvs_2_thresh
 ```
 
 ### Model 3
@@ -1532,6 +1578,16 @@ hs_2_threshold
 
 N_3 <- sum(true_betas_3 == 0)
 P_3 <- sum(true_betas_3 == 1)
+
+# BMA
+bma_3_roc <- roc(true_betas_3,
+                 estimates.bma(bma_3, order.by.pip = FALSE)[,1])
+plot(bma_3_roc)
+bma_3_tpr <- bma_3_roc$sensitivities
+bma_3_fpr <- 1 - bma_3_roc$specificities
+bma_3_error <- (bma_3_fpr * N_3 + (1 - bma_3_tpr) * P_3) / (P_3 + N_3)
+bma_3_threshold <- bma_3_roc$thresholds[which.min(bma_3_error)]
+bma_3_threshold
 
 # SSVS
 ssvs_3_roc <- roc(true_betas_3,
@@ -1572,6 +1628,22 @@ hs_3_fpr <- 1 - hs_3_roc$specificities
 hs_3_error <- (hs_3_fpr * N_3 + (1 - hs_3_tpr) * P_3) / (P_3 + N_3)
 hs_3_threshold <- hs_3_roc$thresholds[which.min(hs_3_error)]
 hs_3_threshold
+
+# EMVS
+emvs_3_error <- Inf
+emvs_3_idx <- NA
+emvs_3_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_3, i, true_betas_3, N_3, P_3)
+  if(temp$error < emvs_3_error){
+    emvs_3_error <- temp$error
+    emvs_3_idx <- i
+    emvs_3_thresh <- temp$threshold
+  }
+}
+emvs_3_error
+emvs_3_idx
+emvs_3_thresh
 ```
 
 ### Model 4
@@ -1581,6 +1653,16 @@ hs_3_threshold
 
 N_4 <- sum(true_betas_4 == 0)
 P_4 <- sum(true_betas_4 == 1)
+
+# BMA
+bma_4_roc <- roc(true_betas_4,
+                 estimates.bma(bma_4, order.by.pip = FALSE)[,1])
+plot(bma_4_roc)
+bma_4_tpr <- bma_4_roc$sensitivities
+bma_4_fpr <- 1 - bma_4_roc$specificities
+bma_4_error <- (bma_4_fpr * N_4 + (1 - bma_4_tpr) * P_4) / (P_4 + N_4)
+bma_4_threshold <- bma_4_roc$thresholds[which.min(bma_4_error)]
+bma_4_threshold
 
 # SSVS
 ssvs_4_roc <- roc(true_betas_4,
@@ -1621,6 +1703,22 @@ hs_4_fpr <- 1 - hs_4_roc$specificities
 hs_4_error <- (hs_4_fpr * N_4 + (1 - hs_4_tpr) * P_4) / (P_4 + N_4)
 hs_4_threshold <- hs_4_roc$thresholds[which.min(hs_4_error)]
 hs_4_threshold
+
+# EMVS
+emvs_4_error <- Inf
+emvs_4_idx <- NA
+emvs_4_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_4, i, true_betas_4, N_4, P_4)
+  if(temp$error < emvs_4_error){
+    emvs_4_error <- temp$error
+    emvs_4_idx <- i
+    emvs_4_thresh <- temp$threshold
+  }
+}
+emvs_4_error
+emvs_4_idx
+emvs_4_thresh
 ```
 
 ### Model 5
@@ -1630,6 +1728,16 @@ hs_4_threshold
 
 N_5 <- sum(true_betas_5 == 0)
 P_5 <- sum(true_betas_5 == 1)
+
+# BMA
+bma_5_roc <- roc(true_betas_5,
+                 estimates.bma(bma_5, order.by.pip = FALSE)[,1])
+plot(bma_5_roc)
+bma_5_tpr <- bma_5_roc$sensitivities
+bma_5_fpr <- 1 - bma_5_roc$specificities
+bma_5_error <- (bma_5_fpr * N_5 + (1 - bma_5_tpr) * P_5) / (P_5 + N_5)
+bma_5_threshold <- bma_5_roc$thresholds[which.min(bma_5_error)]
+bma_5_threshold
 
 # SSVS
 ssvs_5_roc <- roc(true_betas_5,
@@ -1670,6 +1778,23 @@ hs_5_fpr <- 1 - hs_5_roc$specificities
 hs_5_error <- (hs_5_fpr * N_5 + (1 - hs_5_tpr) * P_5) / (P_5 + N_5)
 hs_5_threshold <- hs_5_roc$thresholds[which.min(hs_5_error)]
 hs_5_threshold
+
+
+# EMVS
+emvs_5_error <- Inf
+emvs_5_idx <- NA
+emvs_5_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_error){
+    emvs_5_error <- temp$error
+    emvs_5_idx <- i
+    emvs_5_thresh <- temp$threshold
+  }
+}
+emvs_5_error
+emvs_5_idx
+emvs_5_thresh
 ```
 
 
@@ -1720,6 +1845,10 @@ ng_0_cm <- table(true_betas_0, ng_0_out)
 hs_0_out <- as.integer(colMeans(hs_0$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_0_cm <- table(true_betas_0, hs_0_out)
 
+# No real need for thresholding here, it's obvious what performs best
+emvs_0_out <- as.integer(emvs_0$prob_inclusion[1,] > 0.5)
+emvs_0_cm <- table(true_betas_0, emvs_0_out)
+
 
 model_0_rates <- rbind(
       c(Name = "BSS - Small", Size = sum(bss_0_small),
@@ -1739,7 +1868,9 @@ model_0_rates <- rbind(
       c(Name = "Normal-Gamma", Size = sum(ng_0_out),
         calc_rates(ng_0_cm), Runtime = "Seconds"),
       c(Name = "Horseshoe", Size = sum(hs_0_out),
-        calc_rates(hs_0_cm), Runtime = "Seconds")
+        calc_rates(hs_0_cm), Runtime = "Seconds"),
+      c(Name = "EMVS", Size = sum(emvs_0_out),
+        calc_rates(emvs_0_cm), Runtime = "Milliseconds")
   )
 
 save(model_0_rates, file = "model_0_rates.RData")
@@ -1775,6 +1906,9 @@ ng_1_cm <- table(true_betas_1, ng_1_out)
 hs_1_out <- as.integer(colMeans(hs_1$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_1_cm <- table(true_betas_1, hs_1_out)
 
+emvs_1_out <- as.integer(emvs_1$prob_inclusion[1,] > 0.5)
+emvs_1_cm <- table(true_betas_1, emvs_1_out)
+
 
 model_1_rates <- rbind(
       c(Name = "BSS - Small", Size = sum(bss_1_small),
@@ -1794,7 +1928,9 @@ model_1_rates <- rbind(
       c(Name = "Normal-Gamma", Size = sum(ng_1_out),
         calc_rates(ng_1_cm), Runtime = "Seconds"),
       c(Name = "Horseshoe", Size = sum(hs_1_out),
-        calc_rates(hs_1_cm), Runtime = "Seconds")
+        calc_rates(hs_1_cm), Runtime = "Seconds"),
+      c(Name = "EMVS", Size = sum(emvs_1_out),
+        calc_rates(emvs_1_cm), Runtime = "Milliseconds")
   )
 
 save(model_1_rates, file = "model_1_rates.RData")
@@ -1827,6 +1963,9 @@ ng_2_cm <- table(true_betas_2, ng_2_out)
 hs_2_out <- as.integer(colMeans(hs_2$beta[BURN_IN:N_SAMPLES,] != 0) > 0.5)
 hs_2_cm <- table(true_betas_2, hs_2_out)
 
+emvs_2_out <- as.integer(emvs_2$prob_inclusion[1,] > 0.5)
+emvs_2_cm <- table(true_betas_2, emvs_2_out)
+
 
 model_2_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_2$HPMbin),
@@ -1840,7 +1979,9 @@ model_2_rates <- rbind(
       c(Name = "Normal-Gamma", Size = sum(ng_2_out),
         calc_rates(ng_2_cm), Runtime = "Minutes"),
       c(Name = "Horseshoe", Size = sum(hs_2_out),
-        calc_rates(hs_2_cm), Runtime = "Minutes")
+        calc_rates(hs_2_cm), Runtime = "Minutes"),
+      c(Name = "EMVS", Size = sum(emvs_2_out),
+        calc_rates(emvs_2_cm), runtime = "Milliseconds")
   )
 
 save(model_2_rates, file = "model_2_rates.RData")
@@ -1882,6 +2023,11 @@ hs_3_cm <- table(true_betas_3, hs_3_out)
 hs_3_thresholded <- as.integer(colMeans(hs_3$beta[BURN_IN:N_SAMPLES,] != 0) > hs_3_threshold)
 hs_3_thresh_cm <- table(true_betas_3, hs_3_thresholded)
 
+emvs_3_out <- as.integer(emvs_3$prob_inclusion[emvs_3_idx,] > 0.5)
+emvs_3_cm <- table(true_betas_3, emvs_3_out)
+emvs_3_thresholded <- as.integer(emvs_3$prob_inclusion[emvs_3_idx,] > emvs_3_thresh)
+emvs_3_thresh_cm <- table(true_betas_3, emvs_3_thresholded)
+
 
 model_3_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_3$HPMbin),
@@ -1907,7 +2053,12 @@ model_3_rates <- rbind(
         calc_rates(hs_3_cm), Runtime = "Minutes"),
       c(Name = paste("Horseshoe, p =", round(hs_3_threshold, 3)),
         Size = sum(hs_3_thresholded),
-        calc_rates(hs_3_thresh_cm), runtime = "Minutes")
+        calc_rates(hs_3_thresh_cm), runtime = "Minutes"),
+      c(Name = "EMVS, p = 0.5", Size = sum(emvs_3_out),
+        calc_rates(emvs_3_cm), Runtime = "Milliseconds"),
+      c(Name = paste("EMVS, p =", round(emvs_3_thresh, 3)),
+        Size = sum(emvs_3_thresholded),
+        calc_rates(emvs_3_thresh_cm), runtime = "Milliseconds")
   )
 
 save(model_3_rates, file = "model_3_rates.RData")
@@ -1947,6 +2098,11 @@ hs_4_cm <- table(true_betas_4, hs_4_out)
 hs_4_thresholded <- as.integer(colMeans(hs_4$beta[BURN_IN:N_SAMPLES,] != 0) > hs_4_threshold)
 hs_4_thresh_cm <- table(true_betas_4, hs_4_thresholded)
 
+emvs_4_out <- as.integer(emvs_4$prob_inclusion[emvs_4_idx,] > 0.5)
+emvs_4_cm <- table(true_betas_4, emvs_4_out)
+emvs_4_thresholded <- as.integer(emvs_4$prob_inclusion[emvs_4_idx,] > emvs_4_thresh)
+emvs_4_thresh_cm <- table(true_betas_4, emvs_4_thresholded)
+
 
 model_4_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_4$HPMbin),
@@ -1972,7 +2128,12 @@ model_4_rates <- rbind(
         calc_rates(hs_4_cm), Runtime = "Minutes"),
       c(Name = paste("Horseshoe, p =", round(hs_4_threshold, 3)),
         Size = sum(hs_4_thresholded),
-        calc_rates(hs_4_thresh_cm), runtime = "Minutes")
+        calc_rates(hs_4_thresh_cm), runtime = "Minutes"),
+      c(Name = "EMVS, p = 0.5", Size = sum(emvs_4_out),
+        calc_rates(emvs_4_cm), Runtime = "Milliseconds"),
+      c(Name = paste("EMVS, p =", round(emvs_4_thresh, 3)),
+        Size = sum(emvs_4_thresholded),
+        calc_rates(emvs_4_thresh_cm), runtime = "Milliseconds")
   )
 
 save(model_4_rates, file = "model_4_rates.RData")
@@ -2013,6 +2174,11 @@ hs_5_cm <- table(true_betas_5, hs_5_out)
 hs_5_thresholded <- as.integer(colMeans(hs_5$beta[BURN_IN:N_SAMPLES,] != 0) > hs_5_threshold)
 hs_5_thresh_cm <- table(true_betas_5, hs_5_thresholded)
 
+emvs_5_out <- as.integer(emvs_5$prob_inclusion[emvs_5_idx,] > 0.5)
+emvs_5_cm <- table(true_betas_5, emvs_5_out)
+emvs_5_thresholded <- as.integer(emvs_5$prob_inclusion[emvs_5_idx,] > emvs_5_thresh)
+emvs_5_thresh_cm <- table(true_betas_5, emvs_5_thresholded)
+
 
 model_5_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_5$HPMbin),
@@ -2038,7 +2204,12 @@ model_5_rates <- rbind(
         calc_rates(hs_5_cm), Runtime = "Hours"),
       c(Name = paste("Horseshoe, p =", round(hs_5_threshold, 3)),
         Size = sum(hs_5_thresholded),
-        calc_rates(hs_5_thresh_cm), runtime = "Hours")
+        calc_rates(hs_5_thresh_cm), runtime = "Hours"),
+      c(Name = "EMVS, p = 0.5", Size = sum(emvs_5_out),
+        calc_rates(emvs_5_cm), Runtime = "Milliseconds"),
+      c(Name = paste("EMVS, p =", round(emvs_5_thresh, 3)),
+        Size = sum(emvs_5_thresholded),
+        calc_rates(emvs_5_thresh_cm), runtime = "Milliseconds")
   )
 
 save(model_5_rates, file = "model_5_rates.RData")
