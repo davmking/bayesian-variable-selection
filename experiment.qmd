@@ -730,34 +730,6 @@ colMeans(ssvs_4_g$beta[BURN_IN:N_SAMPLES_2,-1])
 Does a pretty okay job, although I feel like better performance is certainly possible. We are getting somewhat close to our true coefficients in the true positives, anyway.
 
 
-### Model 5
-
-```{r}
-#| label: SSVS 5
-
-y <- model_5$y
-X <- model_5$X
-data <- data.frame(y = y, X[,-1])
-
-set.seed(465)
-start <- Sys.time()
-ssvs_5_g <- lm.spike(y ~ .,
-                   data = data,
-                   niter = N_SAMPLES_2,
-                   error.distribution = "gaussian")
-print(Sys.time() - start)
-
-# Probability of inclusion
-colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0)
-which(colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1] != 0) > 0.01) # About 50/50 with true and false positives, also have some false negatives.
-
-# Coefficient estimates
-colMeans(ssvs_5_g$beta[BURN_IN:N_SAMPLES_2,-1])
-```
-
-Performance is a little worse, but still tolerable. Note that the coefficients are certainly getting worse now.
-
-
 ## LASSO
 
 ### Model 0
@@ -770,20 +742,6 @@ X <- model_0$X[,-1]
 
 set.seed(465)
 lasso_0 <- blasso(X, y, T = N_SAMPLES, case = "default")
-
-lasso_0$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
 colMeans(lasso_0$beta != 0)
@@ -809,20 +767,6 @@ X <- model_1$X[,-1]
 set.seed(465)
 lasso_1 <- blasso(X, y, T = N_SAMPLES, case = "default")
 
-lasso_1$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
 # Probabilities of inclusion
 colMeans(lasso_1$beta != 0)
 which(colMeans(lasso_1$beta != 0) > 0.5)
@@ -845,24 +789,14 @@ y <- model_2$y
 X <- model_2$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+lasso_2_start <- Sys.time()
 lasso_2 <- blasso(X, y, T = N_SAMPLES, case = "default")
-print(Sys.time() - start)
+lasso_2_end <- Sys.time()
+print(lasso_2_end)
 
-lasso_2$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(lasso_2, file = "lasso_2.RData")
+lasso_2_runtime <- c(lasso_2_start, lasso_2_end)
+save(lasso_2_runtime, file = "lasso_2_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(lasso_2$beta != 0)
@@ -891,24 +825,14 @@ y <- model_3$y
 X <- model_3$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+lasso_3_start <- Sys.time()
 lasso_3 <- blasso(X, y, T = N_SAMPLES, case = "default")
-print(Sys.time() - start)
+lasso_3_end <- Sys.time()
+print(lasso_3_end)
 
-lasso_3$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(lasso_3, file = "lasso_3.RData")
+lasso_3_runtime <- c(lasso_3_start, lasso_3_end)
+save(lasso_3_runtime, file = "lasso_3_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(lasso_3$beta != 0)
@@ -936,24 +860,14 @@ y <- model_4$y
 X <- model_4$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+lasso_4_start <- Sys.time()
 lasso_4 <- blasso(X, y, T = N_SAMPLES, case = "default")
-print(Sys.time() - start)
+lasso_4_end <- Sys.time()
+print(lasso_4_end)
 
-lasso_4$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(lasso_4, file = "lasso_4.RData")
+lasso_4_runtime <- c(lasso_4_start, lasso_4_end)
+save(lasso_4_runtime, file = "lasso_4_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(lasso_4$beta != 0)
@@ -973,52 +887,6 @@ plot(seq(N_SAMPLES - BURN_IN), lasso_4$m[(BURN_IN + 1):N_SAMPLES])
 Actually slightly better performance here than the previous - I think this must just be a factor of the random runs.
 
 
-### Model 5
-
-```{r}
-#| label: lasso 5
-
-y <- model_5$y
-X <- model_5$X[,-1]
-
-set.seed(465)
-start <- Sys.time()
-print(start)
-lasso_5 <- blasso(X, y, T = N_SAMPLES, case = "default")
-print(Sys.time() - start)
-
-lasso_5$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "LASSO Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Probabilities of inclusion
-colMeans(lasso_5$beta != 0)
-which(colMeans(lasso_5$beta != 0) > 0.7) # Thresholding it high gets it pretty close, but not perfect
-
-# Est. coefficients
-colMeans(lasso_5$beta) # Most of these are incredibly close to 0
-
-
-# Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), lasso_5$lambda2[(BURN_IN + 1):N_SAMPLES])
-
-# Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), lasso_5$m[(BURN_IN + 1):N_SAMPLES])
-```
-
-Slightly worse performance, but it's still pretty good with high thresholding.
-
-
 ## NG
 
 ### Model 0
@@ -1031,20 +899,6 @@ X <- model_0$X[,-1]
 
 set.seed(465)
 ng_0 <- blasso(X, y, T = N_SAMPLES, case = "ng")
-
-ng_0$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "NG Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
 colMeans(ng_0$beta != 0)
@@ -1071,20 +925,6 @@ X <- model_1$X[,-1]
 set.seed(465)
 ng_1 <- blasso(X, y, T = N_SAMPLES, case = "ng")
 
-ng_1$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "NG Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
 # Probabilities of inclusion
 colMeans(ng_1$beta != 0)
 which(colMeans(ng_1$beta != 0) > 0.55) # Needs a little thresholding
@@ -1108,24 +948,14 @@ y <- model_2$y
 X <- model_2$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+ng_2_start <- Sys.time()
 ng_2 <- blasso(X, y, T = N_SAMPLES, case = "ng")
-print(Sys.time() - start)
+ng_2_end <- Sys.time()
+print(ng_2_end)
 
-ng_2$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "NG Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(ng_2, file = "ng_2.RData")
+ng_2_runtime <- c(ng_2_start, ng_2_end)
+save(ng_2_runtime, file = "ng_2_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(ng_2$beta != 0)
@@ -1154,24 +984,14 @@ y <- model_3$y
 X <- model_3$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+ng_3_start <- Sys.time()
 ng_3 <- blasso(X, y, T = N_SAMPLES, case = "ng")
-print(Sys.time() - start)
+ng_3_end <- Sys.time()
+print(ng_3_end)
 
-ng_3$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "NG Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(ng_3, file = "ng_3.RData")
+ng_3_runtime <- c(ng_3_start, ng_3_end)
+save(ng_3_runtime, file = "ng_3_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(ng_3$beta != 0)
@@ -1200,24 +1020,14 @@ y <- model_4$y
 X <- model_4$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+ng_4_start <- Sys.time()
 ng_4 <- blasso(X, y, T = N_SAMPLES, case = "ng")
-print(Sys.time() - start)
+ng_4_end <- Sys.time()
+print(ng_4_end)
 
-ng_4$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "NG Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(ng_4, file = "ng_4.RData")
+ng_4_runtime <- c(ng_4_start, ng_4_end)
+save(ng_4_runtime, file = "ng_4_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(ng_4$beta != 0)
@@ -1237,52 +1047,6 @@ plot(seq(N_SAMPLES - BURN_IN), ng_4$m[(BURN_IN + 1):N_SAMPLES])
 Does pretty well - maybe slightly better than with $n > p$ in the previous example, though again these are close. Still having some issues with the true pos/neg, but at least the coefficients are pretty close here.
 
 
-### Model 5
-
-```{r}
-#| label: ng 5
-
-y <- model_5$y
-X <- model_5$X[,-1]
-
-set.seed(465)
-start <- Sys.time()
-print(start)
-ng_5 <- blasso(X, y, T = N_SAMPLES, case = "ng")
-print(Sys.time() - start)
-
-ng_5$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "NG Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Probabilities of inclusion
-colMeans(ng_5$beta != 0)
-which(colMeans(ng_5$beta != 0) > 0.7) # Have to threshold pretty high to remove random noise
-
-# Est. coefficients
-colMeans(ng_5$beta) # Most of these are incredibly close to 0
-
-
-# Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), ng_5$lambda2[(BURN_IN + 1):N_SAMPLES])
-
-# Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), ng_5$m[(BURN_IN + 1):N_SAMPLES])
-```
-
-Slightly worse performance, but it's still maybe acceptable with high thresholding.
-
-
 ## Horseshoe
 
 ### Model 0
@@ -1295,20 +1059,6 @@ X <- model_0$X[,-1]
 
 set.seed(465)
 hs_0 <- blasso(X, y, T = N_SAMPLES, case = "hs")
-
-hs_0$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "Horseshoe Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
 
 # Probabilities of inclusion
 colMeans(hs_0$beta != 0)
@@ -1335,20 +1085,6 @@ X <- model_1$X[,-1]
 set.seed(465)
 hs_1 <- blasso(X, y, T = N_SAMPLES, case = "hs")
 
-hs_1$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "Horseshoe Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
 # Probabilities of inclusion
 colMeans(hs_1$beta != 0)
 which(colMeans(ng_1$beta != 0) > 0.55) # Needs a little thresholding
@@ -1372,24 +1108,14 @@ y <- model_2$y
 X <- model_2$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+hs_2_start <- Sys.time()
 hs_2 <- blasso(X, y, T = N_SAMPLES, case = "hs")
-print(Sys.time() - start)
+hs_2_end <- Sys.time()
+print(hs_2_end)
 
-hs_2$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "Horseshoe Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(hs_2, file = "hs_2.RData")
+hs_2_runtime <- c(hs_2_start, hs_2_end)
+save(hs_2_runtime, file = "hs_2_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(hs_2$beta != 0)
@@ -1418,24 +1144,14 @@ y <- model_3$y
 X <- model_3$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+hs_3_start <- Sys.time()
 hs_3 <- blasso(X, y, T = N_SAMPLES, case = "hs")
-print(Sys.time() - start)
+hs_3_end <- Sys.time()
+print(hs_3_end)
 
-hs_3$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "Horseshoe Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(hs_3, file = "hs_3.RData")
+hs_3_runtime <- c(hs_3_start, hs_3_end)
+save(hs_3_runtime, file = "hs_3_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(hs_3$beta != 0)
@@ -1463,24 +1179,14 @@ y <- model_4$y
 X <- model_4$X[,-1]
 
 set.seed(465)
-start <- Sys.time()
-print(start)
+hs_4_start <- Sys.time()
 hs_4 <- blasso(X, y, T = N_SAMPLES, case = "hs")
-print(Sys.time() - start)
+hs_4_end <- Sys.time()
+print(hs_4_end)
 
-hs_4$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "Horseshoe Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
+save(hs_4, file = "hs_4.RData")
+hs_4_runtime <- c(hs_4_start, hs_4_end)
+save(hs_4_runtime, file = "hs_4_runtime.RData")
 
 # Probabilities of inclusion
 colMeans(hs_4$beta != 0)
@@ -1498,57 +1204,6 @@ plot(seq(N_SAMPLES - BURN_IN), hs_4$m[(BURN_IN + 1):N_SAMPLES])
 ```
 
 Does alright, though definitely worse than the $n > p$ in the previous example. Captures fewer true positives, but can be thresholded to remove false positives pretty effectively. For the coefficients that it captures correctly, it does a better job of getting the right coefficients (or close to).
-
-
-### Model 5
-
-```{r}
-#| label: hs 5
-
-y <- model_5$y
-X <- model_5$X[,-1]
-
-set.seed(465)
-start <- Sys.time()
-print(start)
-hs_5 <- blasso(X, y, T = N_SAMPLES, case = "hs")
-print(Sys.time() - start)
-
-hs_5$beta %>% 
-  as.data.frame() %>% 
-  mutate(iter = row_number()) %>% 
-  filter(iter > BURN_IN) %>% 
-  pivot_longer(-iter, names_to = "beta", values_to = "value") %>% 
-  mutate(beta = substring(beta, 3)) %>% 
-  mutate(beta = as.integer(beta) - 1) %>% 
-  ggplot(aes(x = iter, y = value)) +
-  geom_line() +
-  facet_wrap(~beta, scales = "free_y") +
-  theme_bw() +
-  labs(x = "Iteration", y = "Beta Value", title = "Horseshoe Progression") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Probabilities of inclusion
-colMeans(hs_5$beta != 0)
-which(colMeans(hs_5$beta != 0) > 0.7) # Have to threshold pretty high to remove random noise
-
-# Est. coefficients
-colMeans(hs_5$beta) # Most of these are incredibly close to 0
-
-
-# Lambda mostly stays low
-plot(seq(N_SAMPLES - BURN_IN), hs_5$lambda2[(BURN_IN + 1):N_SAMPLES])
-
-# Model size stays pretty consistent in that 50-55 range
-plot(seq(N_SAMPLES - BURN_IN), hs_5$m[(BURN_IN + 1):N_SAMPLES])
-```
-
-Slightly worse performance, but it's still maybe acceptable with high thresholding.
-
-
-
-
-
 
 
 
