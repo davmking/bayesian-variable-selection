@@ -100,18 +100,70 @@ $$
 
 ## Bayesian Model Selection (BMS)
 
-Define a binary variable $\gamma = \gamma_1, \dots, \gamma_p$, where $\gamma_i$ represents the inclusion of $\beta_i$ in the current model $\mathcal{M}_\gamma$. Then the entire model space $\mathcal{M}$ can be represented as different realizations of $\gamma$.
-
-When we run the MCMC sampler, propose new values of $\gamma$ at each step along with $\beta$ and $\mathbf{Y}$, and accept/reject the proposal according to the likelihood ratio between the proposed and current models. This generates a posterior distribution for $\gamma$. The regions of high posterior density highlight the $\beta$s with a higher probability of being included in the model.
-
-Often, this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.
+ - Let $\gamma = \gamma_1, \dots, \gamma_p$ be a binary indicator variable denoting whether $\beta_i$ is included in model $\mathcal{M}_\gamma$. Different instances of $\gamma$ represent the whole model space $\mathcal{M}$.
+ - In the MCMC sampler, propose new values of $\gamma$ along with $\beta$ and $\mathbf{Y}$, and accept/reject based on model likelihood ratio.
+ - More probable models will appear more frequently in the resulting posterior distribution of $\gamma$.
+ - Often this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.
 
 ## Bayesian Model Averaging (BMA)
 
-While Bayesian model selection identifies the model with highest posterior density, Bayesian model averaging computes the coefficients by averaging the coefficients from *all* sampled candidate models. If $\beta_i$ was not included in a particular instance, we set $\beta_i = 0$. This yields posterior estimates for $\beta$ that are a weighted average of the different $\gamma$ instances, according to the probability of each model specification.
-
-While unintuitive, this procedure frequently returns highly accurate estimates of the true coefficients, with (relatively) minimal computational demand.
+ - Instead of identifying a single model with high posterior density, estimate model coefficients by averaging over all generated models.
+   - If $\gamma_i = 0$, then $\beta_i = 0$ for this model.
+ - This results in posterior estimates for $\beta$ that are weighted by the probability of each model specification $\gamma$.
+ - While unintuitive, this procedure frequently generates highly accurate estimates of the true coefficients, with (relatively) minimal computational demand.
  
+ 
+## Prior-Based Methods
+
+ - Suppose we have some prior belief about the structure of our $\beta$s: specifically, we believe that not all of them are included in the true data-generative model.
+ - We place a prior distribution on the $\beta$s that reflects this belief.
+ - We can introduce more complicated techniques, such as placing different priors on specific groups of $\beta$s (beyond the scope of this project).
+ 
+ 
+## Spike-And-Slab Priors
+
+A spike-and-slab prior is a mixture distribution: A combination of two distributions, drawing from one or the other with some Bernoulli probability (according to $\gamma$). Spike-and-slab priors have the general form
+
+$$
+  \beta_j | \gamma_j \sim (1 - \gamma_j) \phi_0(\beta_j) + \gamma_j \phi_1(\beta_j),
+$$
+
+where
+
+ - $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero.
+ - $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients.
+ - A common technique, Stochastic Search Variable Selection (SSVS), represents the two distributions as a scale mixture of normals, and finds highly probable instances of $\gamma$.
+ 
+ 
+## SSVS Prior Distribution
+
+
+```{r}
+#| label: spike and slab distribution
+
+tau <- 1
+c <- 3
+
+set.seed(481)
+slab <- rnorm(100000, 0, tau^2)
+spike <- rnorm(100000, 0, c^2 * tau^2)
+
+data.frame(slab, spike) %>% 
+  pivot_longer(everything()) %>% 
+  mutate(name = factor(name, levels = c("spike", "slab"))) %>% 
+  ggplot(aes(x = value, fill = name)) +
+  geom_density(alpha = 0.5) +
+  theme_bw() +
+  labs(x = TeX("$\\beta$"), y = "Density", fill = "Distribution",
+       title = "Plot of SSVS Spike-and-Slab Distribution",
+       subtitle = TeX("$\\tau = 1, c = 3$")) +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank(),
+        legend.position = "bottom",
+        text = element_text(size = 16)) +
+  scale_fill_viridis(discrete = TRUE, direction = -1)
+```
 
 
 
