@@ -2448,6 +2448,10 @@ emvs_0_out <- as.integer(emvs_0$prob_inclusion[1,] > 0.5)
 emvs_0_cm <- table(true_betas_0, emvs_0_out)
 
 
+X_0 <- model_0$X
+y_0 <- model_0$y
+
+
 model_0_rates <- rbind(
       #c(Name = "BSS - Small", Size = sum(bss_0_small),
         #calc_rates(bss_0_small_cm), Runtime = "Seconds"),
@@ -2457,37 +2461,43 @@ model_0_rates <- rbind(
         #calc_rates(bss_0_all_cm), Runtime = "Seconds"),
       c(Name = "BMS", Size = sum(bvs_0$HPMbin),
         calc_rates(bvs_0_cm), Runtime = "S",
-       MSE_Nonzero = NA, MSE_All = NA),
+        MSE_Nonzero = NA, MSE_All = NA, MSE_Resp = NA),
       c(Name = "BMA", Size = sum(bma_0_out),
         calc_rates(bma_0_cm), Runtime = "S",
         MSE_Nonzero = mean((bma_0_est[which(true_betas_0 == 1)] -
                              beta_vals_0[which(true_betas_0 == 1)])^2),
-        MSE_All = mean((bma_0_est - beta_vals_0)^2)),
+        MSE_All = mean((bma_0_est - beta_vals_0)^2),
+        MSE_Resp = mean(((X_0 %*% as.matrix(c(-1, bma_0_est))) - y_0)^2)),
       c(Name = "SSVS", Size = sum(ssvs_0_out),
         calc_rates(ssvs_0_cm), Runtime = "S",
         MSE_Nonzero = mean((ssvs_0_est[which(true_betas_0 == 1)] -
                              beta_vals_0[which(true_betas_0 == 1)])^2),
-        MSE_All = mean((ssvs_0_est - beta_vals_0)^2)),
+        MSE_All = mean((ssvs_0_est - beta_vals_0)^2),
+        MSE_Resp = mean(((X_0 %*% as.matrix(c(-1, ssvs_0_est))) - y_0)^2)),
       c(Name = "LASSO", Size = sum(lasso_0_out),
         calc_rates(lasso_0_cm), Runtime = "S",
         MSE_Nonzero = mean((lasso_0_est[which(true_betas_0 == 1)] -
                              beta_vals_0[which(true_betas_0 == 1)])^2),
-        MSE_All = mean((lasso_0_est - beta_vals_0)^2)),
+        MSE_All = mean((lasso_0_est - beta_vals_0)^2),
+        MSE_Resp = mean(((X_0 %*% as.matrix(c(-1, lasso_0_est))) - y_0)^2)),
       c(Name = "Normal-Gamma", Size = sum(ng_0_out),
         calc_rates(ng_0_cm), Runtime = "S",
         MSE_Nonzero = mean((ng_0_est[which(true_betas_0 == 1)] -
                              beta_vals_0[which(true_betas_0 == 1)])^2),
-        MSE_All = mean((ng_0_est - beta_vals_0)^2)),
+        MSE_All = mean((ng_0_est - beta_vals_0)^2),
+        MSE_Resp = mean(((X_0 %*% as.matrix(c(-1, ng_0_est))) - y_0)^2)),
       c(Name = "Horseshoe", Size = sum(hs_0_out),
         calc_rates(hs_0_cm), Runtime = "S",
         MSE_Nonzero = mean((hs_0_est[which(true_betas_0 == 1)] -
                              beta_vals_0[which(true_betas_0 == 1)])^2),
-        MSE_All = mean((hs_0_est - beta_vals_0)^2)),
+        MSE_All = mean((hs_0_est - beta_vals_0)^2),
+        MSE_Resp = mean(((X_0 %*% as.matrix(c(-1, hs_0_est))) - y_0)^2)),
       c(Name = "EMVS", Size = sum(emvs_0_out),
         calc_rates(emvs_0_cm), Runtime = "Ms",
         MSE_Nonzero = mean((emvs_0_est[which(true_betas_0 == 1)] -
                              beta_vals_0[which(true_betas_0 == 1)])^2),
-        MSE_All = mean((emvs_0_est - beta_vals_0)^2))
+        MSE_All = mean((emvs_0_est - beta_vals_0)^2),
+        MSE_Resp = mean(((X_0 %*% as.matrix(c(-1, emvs_0_est))) - y_0)^2))
   )
 
 save(model_0_rates, file = "model_0_rates.RData")
@@ -2684,16 +2694,20 @@ emvs_3_cm <- table(true_betas_3, emvs_3_out)
 emvs_3_thresholded <- as.integer(emvs_3$prob_inclusion[emvs_3_idx,] > emvs_3_thresh)
 emvs_3_thresh_cm <- table(true_betas_3, emvs_3_thresholded)
 
+X_3 <- model_3$X
+y_3 <- model_3$y
 
 model_3_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_3$HPMbin),
         calc_rates(bvs_3_cm), Runtime = "S",
-        MSE_Nonzero = NA, MSE_All = NA),
+        MSE_Nonzero = NA, MSE_All = NA,
+        MSE_Resp = NA),
       c(Name = "BMA", Size = sum(bma_3_out),
         calc_rates(bma_3_cm), Runtime = "S",
         MSE_Nonzero = mean((bma_3_est[which(true_betas_3 == 1)] -
                              beta_vals_3[which(true_betas_3 == 1)])^2),
-        MSE_All = mean((bma_3_est - beta_vals_3)^2)),
+        MSE_All = mean((bma_3_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, bma_3_est))) - y_3)^2)),
       #c(Name = "SSVS, p = 0.5", Size = sum(ssvs_3_out),
         #calc_rates(ssvs_3_cm), Runtime = "S",
         #MSE_Nonzero = mean((ssvs_3_est[which(true_betas_3 == 1)] -
@@ -2704,7 +2718,8 @@ model_3_rates <- rbind(
         calc_rates(ssvs_3_thresh_cm), runtime = "S",
         MSE_Nonzero = mean((ssvs_3_est[which(true_betas_3 == 1)] -
                              beta_vals_3[which(true_betas_3 == 1)])^2),
-        MSE_All = mean((ssvs_3_est - beta_vals_3)^2)),
+        MSE_All = mean((ssvs_3_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, ssvs_3_est))) - y_3)^2)),
       #c(Name = "LASSO, p = 0.5", Size = sum(lasso_3_out),
         #calc_rates(lasso_3_cm), Runtime = "M",
         #MSE_Nonzero = mean((lasso_3_est[which(true_betas_3 == 1)] -
@@ -2715,7 +2730,8 @@ model_3_rates <- rbind(
         calc_rates(lasso_3_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((lasso_3_est[which(true_betas_3 == 1)] -
                              beta_vals_3[which(true_betas_3 == 1)])^2),
-        MSE_All = mean((lasso_3_est - beta_vals_3)^2)),
+        MSE_All = mean((lasso_3_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, lasso_3_est))) - y_3)^2)),
       #c(Name = "Normal-Gamma, p = 0.5", Size = sum(ng_3_out),
         #calc_rates(ng_3_cm), Runtime = "M",
         #MSE_Nonzero = mean((ng_3_est[which(true_betas_3 == 1)] -
@@ -2726,7 +2742,8 @@ model_3_rates <- rbind(
         calc_rates(ng_3_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((ng_3_est[which(true_betas_3 == 1)] -
                              beta_vals_3[which(true_betas_3 == 1)])^2),
-        MSE_All = mean((ng_3_est - beta_vals_3)^2)),
+        MSE_All = mean((ng_3_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, ng_3_est))) - y_3)^2)),
       #c(Name = "Horseshoe, p = 0.5", Size = sum(hs_3_out),
         #calc_rates(hs_3_cm), Runtime = "M",
         #MSE_Nonzero = mean((hs_3_est[which(true_betas_3 == 1)] -
@@ -2737,7 +2754,8 @@ model_3_rates <- rbind(
         calc_rates(hs_3_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((hs_3_est[which(true_betas_3 == 1)] -
                              beta_vals_3[which(true_betas_3 == 1)])^2),
-        MSE_All = mean((hs_3_est - beta_vals_3)^2)),
+        MSE_All = mean((hs_3_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, hs_3_est))) - y_3)^2)),
       #c(Name = "EMVS, p = 0.5", Size = sum(emvs_3_out),
         #calc_rates(emvs_3_cm), Runtime = "Ms",
         #MSE_Nonzero = mean((emvs_3_est[which(true_betas_3 == 1)] -
@@ -2748,7 +2766,8 @@ model_3_rates <- rbind(
         calc_rates(emvs_3_thresh_cm), runtime = "Ms",
         MSE_Nonzero = mean((emvs_3_est[which(true_betas_3 == 1)] -
                              beta_vals_3[which(true_betas_3 == 1)])^2),
-        MSE_All = mean((emvs_3_est - beta_vals_3)^2))
+        MSE_All = mean((emvs_3_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, emvs_3_est))) - y_3)^2))
   )
 
 save(model_3_rates, file = "model_3_rates.RData")
@@ -2793,16 +2812,20 @@ emvs_4_cm <- table(true_betas_4, emvs_4_out)
 emvs_4_thresholded <- as.integer(emvs_4$prob_inclusion[emvs_4_idx,] > emvs_4_thresh)
 emvs_4_thresh_cm <- table(true_betas_4, emvs_4_thresholded)
 
+X_4 <- model_4$X
+y_4 <- model_4$y
 
 model_4_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_4$HPMbin),
         calc_rates(bvs_4_cm), Runtime = "S",
-        MSE_Nonzero = NA, MSE_All = NA),
+        MSE_Nonzero = NA, MSE_All = NA,
+        MSE_Resp = NA),
       c(Name = "BMA", Size = sum(bma_4_out),
         calc_rates(bma_4_cm), Runtime = "S",
         MSE_Nonzero = mean((bma_4_est[which(true_betas_4 == 1)] -
                              beta_vals_4[which(true_betas_4 == 1)])^2),
-        MSE_All = mean((bma_4_est - beta_vals_4)^2)),
+        MSE_All = mean((bma_4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, bma_4_est))) - y_4)^2)),
       #c(Name = "SSVS, p = 0.5", Size = sum(ssvs_4_out),
         #calc_rates(ssvs_4_cm), Runtime = "Seconds",
         #MSE_Nonzero = mean((ssvs_4_est[which(true_betas_4 == 1)] -
@@ -2813,7 +2836,8 @@ model_4_rates <- rbind(
         calc_rates(ssvs_4_thresh_cm), runtime = "S",
         MSE_Nonzero = mean((ssvs_4_est[which(true_betas_4 == 1)] -
                              beta_vals_4[which(true_betas_4 == 1)])^2),
-        MSE_All = mean((ssvs_4_est - beta_vals_4)^2)),
+        MSE_All = mean((ssvs_4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, ssvs_4_est))) - y_4)^2)),
       #c(Name = "LASSO, p = 0.5", Size = sum(lasso_4_out),
         #calc_rates(lasso_4_cm), Runtime = "Minutes",
         #MSE_Nonzero = mean((lasso_4_est[which(true_betas_4 == 1)] -
@@ -2824,7 +2848,8 @@ model_4_rates <- rbind(
         calc_rates(lasso_4_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((lasso_4_est[which(true_betas_4 == 1)] -
                              beta_vals_4[which(true_betas_4 == 1)])^2),
-        MSE_All = mean((lasso_4_est - beta_vals_4)^2)),
+        MSE_All = mean((lasso_4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, lasso_4_est))) - y_4)^2)),
       #c(Name = "Normal-Gamma, p = 0.5", Size = sum(ng_4_out),
         #calc_rates(ng_4_cm), Runtime = "Minutes",
         #MSE_Nonzero = mean((ng_4_est[which(true_betas_4 == 1)] -
@@ -2835,7 +2860,8 @@ model_4_rates <- rbind(
         calc_rates(ng_4_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((ng_4_est[which(true_betas_4 == 1)] -
                              beta_vals_4[which(true_betas_4 == 1)])^2),
-        MSE_All = mean((ng_4_est - beta_vals_4)^2)),
+        MSE_All = mean((ng_4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, ng_4_est))) - y_4)^2)),
       #c(Name = "Horseshoe, p = 0.5", Size = sum(hs_4_out),
         #calc_rates(hs_4_cm), Runtime = "Minutes",
         #MSE_Nonzero = mean((hs_4_est[which(true_betas_4 == 1)] -
@@ -2846,7 +2872,8 @@ model_4_rates <- rbind(
         calc_rates(hs_4_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((hs_4_est[which(true_betas_4 == 1)] -
                              beta_vals_4[which(true_betas_4 == 1)])^2),
-        MSE_All = mean((hs_4_est - beta_vals_4)^2)),
+        MSE_All = mean((hs_4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, hs_4_est))) - y_4)^2)),
       #c(Name = "EMVS, p = 0.5", Size = sum(emvs_4_out),
         #calc_rates(emvs_4_cm), Runtime = "Milliseconds",
         #MSE_Nonzero = mean((emvs_4_est[which(true_betas_4 == 1)] -
@@ -2857,7 +2884,8 @@ model_4_rates <- rbind(
         calc_rates(emvs_4_thresh_cm), runtime = "Ms",
         MSE_Nonzero = mean((emvs_4_est[which(true_betas_4 == 1)] -
                              beta_vals_4[which(true_betas_4 == 1)])^2),
-        MSE_All = mean((emvs_4_est - beta_vals_4)^2))
+        MSE_All = mean((emvs_4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, emvs_4_est))) - y_4)^2))
   )
 
 save(model_4_rates, file = "model_4_rates.RData")
@@ -2903,16 +2931,21 @@ emvs_5_cm <- table(true_betas_5, emvs_5_out)
 emvs_5_thresholded <- as.integer(emvs_5$prob_inclusion[emvs_5_idx,] > emvs_5_thresh)
 emvs_5_thresh_cm <- table(true_betas_5, emvs_5_thresholded)
 
+X_5 <- model_5$X
+y_5 <- model_5$y
+
 
 model_5_rates <- rbind(
       c(Name = "BMS", Size = sum(bvs_5$HPMbin),
         calc_rates(bvs_5_cm), Runtime = "M",
-        MSE_Nonzero = NA, MSE_All = NA),
+        MSE_Nonzero = NA, MSE_All = NA,
+        MSE_Resp = NA),
       c(Name = "BMA", Size = sum(bma_5_out),
         calc_rates(bma_5_cm), Runtime = "S",
         MSE_Nonzero = mean((bma_5_est[which(true_betas_5 == 1)] -
                              beta_vals_5[which(true_betas_5 == 1)])^2),
-        MSE_All = mean((bma_5_est - beta_vals_5)^2)),
+        MSE_All = mean((bma_5_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, bma_5_est))) - y_5)^2)),
       #c(Name = "SSVS, p = 0.5", Size = sum(ssvs_5_out),
         #calc_rates(ssvs_5_cm), Runtime = "Minutes",
         #MSE_Nonzero = mean((ssvs_5_est[which(true_betas_5 == 1)] -
@@ -2923,7 +2956,8 @@ model_5_rates <- rbind(
         calc_rates(ssvs_5_thresh_cm), runtime = "M",
         MSE_Nonzero = mean((ssvs_5_est[which(true_betas_5 == 1)] -
                              beta_vals_5[which(true_betas_5 == 1)])^2),
-        MSE_All = mean((ssvs_5_est - beta_vals_5)^2)),
+        MSE_All = mean((ssvs_5_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, ssvs_5_est))) - y_5)^2)),
       #c(Name = "LASSO, p = 0.5", Size = sum(lasso_5_out),
         #calc_rates(lasso_5_cm), Runtime = "Hours",
         #MSE_Nonzero = mean((lasso_5_est[which(true_betas_5 == 1)] -
@@ -2934,7 +2968,8 @@ model_5_rates <- rbind(
         calc_rates(lasso_5_thresh_cm), runtime = "H",
         MSE_Nonzero = mean((lasso_5_est[which(true_betas_5 == 1)] -
                              beta_vals_5[which(true_betas_5 == 1)])^2),
-        MSE_All = mean((lasso_5_est - beta_vals_5)^2)),
+        MSE_All = mean((lasso_5_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, lasso_5_est))) - y_5)^2)),
       #c(Name = "Normal-Gamma, p = 0.5", Size = sum(ng_5_out),
         #calc_rates(ng_5_cm), Runtime = "Hours",
         #MSE_Nonzero = mean((ng_5_est[which(true_betas_5 == 1)] -
@@ -2945,7 +2980,8 @@ model_5_rates <- rbind(
         calc_rates(ng_5_thresh_cm), runtime = "H",
         MSE_Nonzero = mean((ng_5_est[which(true_betas_5 == 1)] -
                              beta_vals_5[which(true_betas_5 == 1)])^2),
-        MSE_All = mean((ng_5_est - beta_vals_5)^2)),
+        MSE_All = mean((ng_5_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, ng_5_est))) - y_5)^2)),
       #c(Name = "Horseshoe, p = 0.5", Size = sum(hs_5_out),
         #calc_rates(hs_5_cm), Runtime = "Hours",
         #MSE_Nonzero = mean((hs_5_est[which(true_betas_5 == 1)] -
@@ -2956,7 +2992,8 @@ model_5_rates <- rbind(
         calc_rates(hs_5_thresh_cm), runtime = "H",
         MSE_Nonzero = mean((hs_5_est[which(true_betas_5 == 1)] -
                              beta_vals_5[which(true_betas_5 == 1)])^2),
-        MSE_All = mean((hs_5_est - beta_vals_5)^2)),
+        MSE_All = mean((hs_5_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, hs_5_est))) - y_5)^2)),
       #c(Name = "EMVS, p = 0.5", Size = sum(emvs_5_out),
         #calc_rates(emvs_5_cm), Runtime = "Milliseconds",
         #MSE_Nonzero = mean((emvs_5_est[which(true_betas_5 == 1)] -
@@ -2967,7 +3004,8 @@ model_5_rates <- rbind(
         calc_rates(emvs_5_thresh_cm), runtime = "Ms",
         MSE_Nonzero = mean((emvs_5_est[which(true_betas_5 == 1)] -
                              beta_vals_5[which(true_betas_5 == 1)])^2),
-        MSE_All = mean((emvs_5_est - beta_vals_5)^2))
+        MSE_All = mean((emvs_5_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, emvs_5_est))) - y_5)^2))
   )
 
 save(model_5_rates, file = "model_5_rates.RData")

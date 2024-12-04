@@ -332,10 +332,11 @@ model_0_rates %>%
          FPR = as.numeric(FPR),
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
-         MSE_All = as.numeric(MSE_All)) %>% 
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
   kable_styling(full_width = TRUE, position = "center", font_size = 28)
 ```
 
@@ -355,10 +356,11 @@ model_3_rates %>%
          FPR = as.numeric(FPR),
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
-         MSE_All = as.numeric(MSE_All)) %>% 
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
   kable_styling(full_width = TRUE, position = "center", font_size = 28)
 ```
 
@@ -378,10 +380,11 @@ model_4_rates %>%
          FPR = as.numeric(FPR),
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
-         MSE_All = as.numeric(MSE_All)) %>% 
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
   kable_styling(full_width = TRUE, position = "center", font_size = 28)
 ```
 
@@ -401,10 +404,11 @@ model_5_rates %>%
          FPR = as.numeric(FPR),
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
-         MSE_All = as.numeric(MSE_All)) %>% 
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
   kable_styling(full_width = TRUE, position = "center", font_size = 28)
 ```
 
