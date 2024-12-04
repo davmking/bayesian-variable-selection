@@ -6,6 +6,14 @@ format:
     css: styles.css
 ---
 
+```{r}
+library(VGAM)
+library(tidyverse)
+library(viridis)
+library(patchwork)
+```
+
+
 ## Motivation: Why Variable Selection?
 
 -   In modeling, we often have a vast number of possible predictors, but only anticipate a small handful are associated with the outcome variable.
@@ -86,6 +94,23 @@ In this model,
  
  3. What are the computation time/accuracy tradeoffs?
  
+
+# Non Prior-Based Methods
+
+## Bayesian Model Selection
+
+Define a binary variable $\mathbf{\gamma} = \gamma_1, \dots, \gamma_p$, where $\gamma_i$ represents $\beta_i$ being included in the model $\mathcal{M}$. Then we can represent our entire model space $\mathcal{M}_\gamma$ as different realizations of $\gamma$. Place some prior distribution on $\gamma$, often a Bernoulli distribution.
+
+When running the MCMC sampler, propose a new value of $\gamma$ at each step along with $\beta$ and $\mathbf{Y}$, and accept/reject the new model with a probability according to the likelihood ratio of the two models. Then we can generate a posterior distribution for $\gamma$, which shows us the regions of high posterior density, enabling us to see which $\beta$s have a higher probability of being included in the model. 
+
+Often, this procedure converges quickly to one (or a few) strong candidate models, without having to explore the full combinatorial space.
+
+
+## Bayesian Model Averaging
+
+Bayesian model averaging (BMA) is very similar to Bayesian model selection, with one key difference. In Bayesian model selection, we are looking for the model with the highest posterior probability. In Bayesian model averaging, we simply average over *all* of the candidate models - letting $\beta_i = 0$ if it is not included in a specific candidate model. While unintuitive, this procedure frequently returns highly accurate results of the true coefficients, with (relatively) minimal computational demand.
+
+ 
 # Prior-Based Methods
 
 ## Overview
@@ -108,9 +133,46 @@ where
  - $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the $\beta_j$ to reach their true coefficients
  - $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta_j$ to (near) zero
  - $\gamma$ is a latent binary indicator variable representing each of the $2^p$ possible models
+ 
+## Stochastic Search Variable Selection
+
+<div class="grid-layout">
+  <div>
+    - SSVS follows the same process of embedding the entire modeling process in a hierarchical Bayesian setup, including the model selection $\gamma$
+    - This can be represented as a scale mixture of normals:
+    $$ \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2) $$
+    - You can also place prior distributions on $\tau_j^2$ and $c_j$.
+  </div>
+  <div>
+```{r}
+tau <- 1
+c <- 4
+
+slab <- rnorm(100000, 0, tau^2)
+spike <- rnorm(100000, 0, c^2 * tau^2)
+
+data.frame(slab, spike) %>% 
+  pivot_longer(everything()) %>% 
+  mutate(name = factor(name, levels = c("spike", "slab"))) %>% 
+  ggplot(aes(x = value, fill = name)) +
+  geom_density(alpha = 0.5) +
+  theme_bw() +
+  labs(x = "Beta", y = "Density", fill = "Distribution",
+       title = "Plot of SSVS Spike-and-Slab Distribution",
+       subtitle = "tau = 1, c = 4") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  scale_y_continuous(labels = scales::percent_format())
+```
+  </div>
+</div>
 
 
 ## Shrinkage Priors
 
+
+# Expectation-Maximization Variable Selection
 
 

@@ -1,3 +1,10 @@
 .reveal {
   font-size: 2em;
 }
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  align-items: center;
+}
