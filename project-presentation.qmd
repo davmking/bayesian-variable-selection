@@ -7,10 +7,13 @@ format:
 ---
 
 ```{r}
+#| label: libraries
+
 library(VGAM)
 library(tidyverse)
 library(viridis)
 library(patchwork)
+library(latex2exp)
 ```
 
 
@@ -136,18 +139,26 @@ where
  
 ## Stochastic Search Variable Selection
 
-<div class="grid-layout">
-  <div>
-    - SSVS follows the same process of embedding the entire modeling process in a hierarchical Bayesian setup, including the model selection $\gamma$
-    - This can be represented as a scale mixture of normals:
-    $$ \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2) $$
-    - You can also place prior distributions on $\tau_j^2$ and $c_j$.
-  </div>
-  <div>
+ - SSVS follows the same procedure of embedding the entire modeling process in a hierarchical Bayesian setup, including the model selection $\gamma$
+ - The conditional distribution can be represented as a scale mixture of normals:
+ 
+$$ 
+  \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2) 
+$$
+
+ - You can also place prior distributions on $\tau_j^2$ and $c_j$
+ - Other priors, such as the normal mixture of inverse gammas (NMIG), extend this process
+ 
+## Stochastic Search Variable Selection
+
+
 ```{r}
+#| label: spike and slab distribution
+
 tau <- 1
 c <- 4
 
+set.seed(481)
 slab <- rnorm(100000, 0, tau^2)
 spike <- rnorm(100000, 0, c^2 * tau^2)
 
@@ -157,18 +168,17 @@ data.frame(slab, spike) %>%
   ggplot(aes(x = value, fill = name)) +
   geom_density(alpha = 0.5) +
   theme_bw() +
-  labs(x = "Beta", y = "Density", fill = "Distribution",
+  labs(x = TeX("$\\beta$"), y = "Density", fill = "Distribution",
        title = "Plot of SSVS Spike-and-Slab Distribution",
-       subtitle = "tau = 1, c = 4") +
+       subtitle = TeX("$\\tau = 1, c = 4$")) +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5),
-        panel.grid = element_blank()) +
+        panel.grid = element_blank(),
+        legend.position = "bottom",
+        text = element_text(size = 16)) +
   scale_fill_viridis(discrete = TRUE, direction = -1) +
   scale_y_continuous(labels = scales::percent_format())
 ```
-  </div>
-</div>
-
 
 ## Shrinkage Priors
 

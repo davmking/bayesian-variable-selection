@@ -31,6 +31,7 @@
     }
   </style>
   <link rel="stylesheet" href="project-presentation_files/libs/revealjs/dist/theme/quarto.css">
+  <link rel="stylesheet" href="styles.css">
   <link href="project-presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="project-presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="project-presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -362,7 +363,7 @@ Dav King
 <p><span class="math display">\[
   p(B | A) = \frac{p(A | B) p(B)}{p(A)}
 \]</span></p>
-<p>In <strong>Bayesian modeling</strong>, we use Bayes’ theorem to update our beliefs about parameters based on our prior beliefs and the likelihood of the data:</p>
+<p>In <strong>Bayesian modeling</strong>, we use Bayes’ theorem to update our beliefs about parameters based on A) our prior beliefs about the parameters and B) the likelihood function of the data:</p>
 <p><span class="math display">\[
   p(\mathbf{\beta} | \mathbf{Y}) = \frac{p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta})}{\int_\mathbf{\beta} p(\mathbf{Y} | \mathbf{\beta}) p(\mathbf{\beta}) d\mathbf{\beta}}
 \]</span></p>
@@ -383,27 +384,111 @@ Dav King
 <section id="bayesian-statistics-markov-chain-monte-carlo" class="slide level2">
 <h2>Bayesian Statistics: Markov Chain Monte Carlo</h2>
 <ul>
-<li>Since many posterior distributions are hard or impossible to compute numerically, we run a <strong>Markov Chain Monte Carlo (MCMC)</strong> algorithm:</li>
+<li>Since many posterior distributions are hard or impossible to compute mathematically, we run a <strong>Markov Chain Monte Carlo (MCMC)</strong> algorithm:</li>
 </ul>
 <ol type="1">
-<li>Sample <span class="math inline">\(\mathbf{\beta}\)</span> based on <span class="math inline">\(\mathbf{Y}\)</span>.</li>
-<li>Sample <span class="math inline">\(\mathbf{Y}\)</span> based on (updated) <span class="math inline">\(\mathbf{\beta}\)</span>.</li>
-<li>Sample hyperparameters accordingly.</li>
+<li>Initialize <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>.</li>
+<li>Sample <span class="math inline">\(\beta^{(s + 1)}\)</span> based on <span class="math inline">\(\mathbf{Y}^{(s)}\)</span>.</li>
+<li>Sample <span class="math inline">\(\mathbf{Y}^{(s + 1)}\)</span> based on (updated) <span class="math inline">\(\mathbf{\beta}^{(s + 1)}\)</span>.</li>
+<li>Sample hyperparameters if needed. <!-- - **Metropolis-Hastings Algorithm**: propose new values of $\mathbf{\beta}, \mathbf{Y}$, accept/reject based on the likelihood. --></li>
 </ol>
 <ul>
-<li><strong>Metropolis-Hastings Algorithm</strong>: propose new values of <span class="math inline">\(\mathbf{\beta}/\mathbf{Y}\)</span>, accept/reject based on the likelihood.</li>
+<li>A key component of the MCMC process is that it is <strong>memoryless</strong> - that is, each value in the Markov Chain is only dependent on the sample immediately before it.</li>
 </ul>
 </section>
 <section id="why-bayesian" class="slide level2">
 <h2>Why Bayesian?</h2>
 <ul>
-<li>Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the data.</li>
+<li>Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the model.</li>
 <li>This can help stabilize calculations and produce an outcome structured as we would like it to be.</li>
-<li>Can apply priors to groups of variables, etc.</li>
+<li>It can also improve computational complexity.</li>
+<li>Often, convergence is much faster in a Bayesian setting.</li>
+<li>We can apply priors to groups of variables, etc.</li>
 </ul>
 </section>
 <section id="research-questions" class="slide level2">
 <h2>Research Questions</h2>
+<ol type="1">
+<li>What methods of Bayesian variable selection exists, and how do they relate to one another?</li>
+<li>Which methods perform best in each of the following settings?</li>
+</ol>
+<p><span class="math display">\[
+  \begin{equation*}
+    n &gt;&gt; p \\
+    n &gt; p \\
+    p &gt; n \\
+    p &gt;&gt; n
+  \end{equation*}
+\]</span></p>
+<ol start="3" type="1">
+<li>What are the computation time/accuracy tradeoffs?</li>
+</ol>
+</section>
+<section>
+<section id="non-prior-based-methods" class="title-slide slide level1 center">
+<h1>Non Prior-Based Methods</h1>
+
+</section>
+<section id="bayesian-model-selection" class="slide level2">
+<h2>Bayesian Model Selection</h2>
+<p>Define a binary variable <span class="math inline">\(\mathbf{\gamma} = \gamma_1, \dots, \gamma_p\)</span>, where <span class="math inline">\(\gamma_i\)</span> represents <span class="math inline">\(\beta_i\)</span> being included in the model <span class="math inline">\(\mathcal{M}\)</span>. Then we can represent our entire model space <span class="math inline">\(\mathcal{M}_\gamma\)</span> as different realizations of <span class="math inline">\(\gamma\)</span>. Place some prior distribution on <span class="math inline">\(\gamma\)</span>, often a Bernoulli distribution.</p>
+<p>When running the MCMC sampler, propose a new value of <span class="math inline">\(\gamma\)</span> at each step along with <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>, and accept/reject the new model with a probability according to the likelihood ratio of the two models. Then we can generate a posterior distribution for <span class="math inline">\(\gamma\)</span>, which shows us the regions of high posterior density, enabling us to see which <span class="math inline">\(\beta\)</span>s have a higher probability of being included in the model.</p>
+<p>Often, this procedure converges quickly to one (or a few) strong candidate models, without having to explore the full combinatorial space.</p>
+</section>
+<section id="bayesian-model-averaging" class="slide level2">
+<h2>Bayesian Model Averaging</h2>
+<p>Bayesian model averaging (BMA) is very similar to Bayesian model selection, with one key difference. In Bayesian model selection, we are looking for the model with the highest posterior probability. In Bayesian model averaging, we simply average over <em>all</em> of the candidate models - letting <span class="math inline">\(\beta_i = 0\)</span> if it is not included in a specific candidate model. While unintuitive, this procedure frequently returns highly accurate results of the true coefficients, with (relatively) minimal computational demand.</p>
+</section></section>
+<section>
+<section id="prior-based-methods" class="title-slide slide level1 center">
+<h1>Prior-Based Methods</h1>
+
+</section>
+<section id="overview" class="slide level2">
+<h2>Overview</h2>
+<ul>
+<li>The general idea of prior-based methods is that we have some prior belief about the structure of our <span class="math inline">\(\beta\)</span>s.</li>
+<li>In particular, we believe that not all of them are included in the true data-generative model.</li>
+<li>We therefore place a prior distribution on the <span class="math inline">\(\beta\)</span>s that reflects this belief.</li>
+<li>We can add more complicated techniques, such as placing the priors on different groups of <span class="math inline">\(\beta\)</span>s (beyond the scope of this project).</li>
+</ul>
+</section>
+<section id="spike-and-slab-priors" class="slide level2">
+<h2>Spike-And-Slab Priors</h2>
+<p>A spike-and-slab prior is a mixture distribution - i.e., a combination of two distributions, drawing from one or the other with some Bernoulli probability. Spike-and-slab priors have the general form</p>
+<p><span class="math display">\[
+  \beta_j | \gamma_j \sim \gamma_j \phi_1(\beta_j) + (1 - \gamma_j) \phi_0(\beta_j),
+\]</span></p>
+<p>where</p>
+<ul>
+<li><span class="math inline">\(\phi_1(\beta_j)\)</span> is a diffuse “slab” distribution that allows the <span class="math inline">\(\beta_j\)</span> to reach their true coefficients</li>
+<li><span class="math inline">\(\phi_0(\beta_j)\)</span> is a concentrated “spike” distribution that pulls some of the <span class="math inline">\(\beta_j\)</span> to (near) zero</li>
+<li><span class="math inline">\(\gamma\)</span> is a latent binary indicator variable representing each of the <span class="math inline">\(2^p\)</span> possible models</li>
+</ul>
+</section>
+<section id="stochastic-search-variable-selection" class="slide level2">
+<h2>Stochastic Search Variable Selection</h2>
+<ul>
+<li>SSVS follows the same procedure of embedding the entire modeling process in a hierarchical Bayesian setup, including the model selection <span class="math inline">\(\gamma\)</span></li>
+<li>The conditional distribution can be represented as a scale mixture of normals:</li>
+</ul>
+<p><span class="math display">\[
+  \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2)
+\]</span></p>
+<ul>
+<li>You can also place prior distributions on <span class="math inline">\(\tau_j^2\)</span> and <span class="math inline">\(c_j\)</span></li>
+<li>Other priors, such as the normal mixture of inverse gammas (NMIG), extend this process</li>
+</ul>
+</section>
+<section id="stochastic-search-variable-selection-1" class="slide level2">
+<h2>Stochastic Search Variable Selection</h2>
+
+<img data-src="project-presentation_files/figure-revealjs/spike%20and%20slab%20distribution-1.png" width="960" class="r-stretch"></section>
+<section id="shrinkage-priors" class="slide level2">
+<h2>Shrinkage Priors</h2>
+</section></section>
+<section id="expectation-maximization-variable-selection" class="title-slide slide level1 center">
+<h1>Expectation-Maximization Variable Selection</h1>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
@@ -620,6 +705,82 @@ Dav King
         ]
       });
     </script>
+    
+
+    <script>
+
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
+      // slide changes (different for each slide format).
+
+      (function () {
+
+        // dispatch for htmlwidgets
+
+        function fireSlideEnter() {
+
+          const event = window.document.createEvent("Event");
+
+          event.initEvent("slideenter", true, true);
+
+          window.document.dispatchEvent(event);
+
+        }
+
+    
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+
+          fireSlideEnter();
+
+    
+
+          // dispatch for shiny
+
+          if (window.jQuery) {
+
+            if (previousSlide) {
+
+              window.jQuery(previousSlide).trigger("hidden");
+
+            }
+
+            if (currentSlide) {
+
+              window.jQuery(currentSlide).trigger("shown");
+
+            }
+
+          }
+
+        }
+
+    
+
+        // hookup for slidy
+
+        if (window.w3c_slidy) {
+
+          window.w3c_slidy.add_observer(function (slide_num) {
+
+            // slide_num starts at position 1
+
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
+          });
+
+        }
+
+    
+
+      })();
+
+    </script>
+
+    
+
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
       const toggleBodyColorMode = (bsSheetEl) => {
