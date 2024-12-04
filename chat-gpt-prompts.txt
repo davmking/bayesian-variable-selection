@@ -35,3 +35,5 @@ When using knitr::kable(), sometimes setting digits = 3 doesn't actually restric
 How do I force the table to fit on the screen without a scroll bar?
 
 What is a "scale mixture of normals"?
+
+How do you cite an R package in a .bib file?
