@@ -417,6 +417,22 @@ Dav King
 <ol start="3" type="1">
 <li>What are the computation time/accuracy tradeoffs?</li>
 </ol>
+</section></section>
+<section>
+<section id="non-prior-based-methods" class="title-slide slide level1 center">
+<h1>Non Prior-Based Methods</h1>
+
+</section>
+<section id="bayesian-model-selection-bms" class="slide level2">
+<h2>Bayesian Model Selection (BMS)</h2>
+<p>Define a binary variable <span class="math inline">\(\gamma = \gamma_1, \dots, \gamma_p\)</span>, where <span class="math inline">\(\gamma_i\)</span> represents the inclusion of <span class="math inline">\(\beta_i\)</span> in the current model <span class="math inline">\(\mathcal{M}_\gamma\)</span>. Then the entire model space <span class="math inline">\(\mathcal{M}\)</span> can be represented as different realizations of <span class="math inline">\(\gamma\)</span>.</p>
+<p>When we run the MCMC sampler, propose new values of <span class="math inline">\(\gamma\)</span> at each step along with <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>, and accept/reject the proposal according to the likelihood ratio between the proposed and current models. This generates a posterior distribution for <span class="math inline">\(\gamma\)</span>. The regions of high posterior density highlight the <span class="math inline">\(\beta\)</span>s with a higher probability of being included in the model.</p>
+<p>Often, this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.</p>
+</section>
+<section id="bayesian-model-averaging-bma" class="slide level2">
+<h2>Bayesian Model Averaging (BMA)</h2>
+<p>While Bayesian model selection identifies the model with highest posterior density, Bayesian model averaging computes the coefficients by averaging the coefficients from <em>all</em> sampled candidate models. If <span class="math inline">\(\beta_i\)</span> was not included in a particular instance, we set <span class="math inline">\(\beta_i = 0\)</span>. This yields posterior estimates for <span class="math inline">\(\beta\)</span> that are a weighted average of the different <span class="math inline">\(\gamma\)</span> instances, according to the probability of each model specification.</p>
+<p>While unintuitive, this procedure frequently returns highly accurate estimates of the true coefficients, with (relatively) minimal computational demand.</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 

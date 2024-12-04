@@ -95,6 +95,23 @@ $$
  
  3. What are the computation time/accuracy tradeoffs?
  
+ 
+# Non Prior-Based Methods
+
+## Bayesian Model Selection (BMS)
+
+Define a binary variable $\gamma = \gamma_1, \dots, \gamma_p$, where $\gamma_i$ represents the inclusion of $\beta_i$ in the current model $\mathcal{M}_\gamma$. Then the entire model space $\mathcal{M}$ can be represented as different realizations of $\gamma$.
+
+When we run the MCMC sampler, propose new values of $\gamma$ at each step along with $\beta$ and $\mathbf{Y}$, and accept/reject the proposal according to the likelihood ratio between the proposed and current models. This generates a posterior distribution for $\gamma$. The regions of high posterior density highlight the $\beta$s with a higher probability of being included in the model.
+
+Often, this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.
+
+## Bayesian Model Averaging (BMA)
+
+While Bayesian model selection identifies the model with highest posterior density, Bayesian model averaging computes the coefficients by averaging the coefficients from *all* sampled candidate models. If $\beta_i$ was not included in a particular instance, we set $\beta_i = 0$. This yields posterior estimates for $\beta$ that are a weighted average of the different $\gamma$ instances, according to the probability of each model specification.
+
+While unintuitive, this procedure frequently returns highly accurate estimates of the true coefficients, with (relatively) minimal computational demand.
+ 
 
 
 
