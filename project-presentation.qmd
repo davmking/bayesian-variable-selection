@@ -412,5 +412,19 @@ model_5_rates %>%
   kable_styling(full_width = TRUE, position = "center", font_size = 28)
 ```
 
+# Takeaways
+
+## Takeaways
+
+ - In low-dimensional settings, all of these options are very effective.
+ - As dimensionality increases, BMA and BMS become less useful; runtime increases dramatically for prior-based methods.
+ - Generally, EMVS performs pretty well, and it is so efficient that it leaves much more room for tuning.
+ 
+## Winners
+
+ - **Signal Coefficient Accuracy**: EMVS, except for in very low dimensions.
+ - **All Coefficient Accuracy**: Horseshoe (best at pulling variables to 0).
+ - **Response Variable Accuracy**: BMA, by a lot.
+ - **Model Accuracy**: Varies, but usually EMVS.
 
 
