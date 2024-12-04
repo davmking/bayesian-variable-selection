@@ -486,15 +486,70 @@ Dav King
 <img data-src="project-presentation_files/figure-revealjs/spike%20and%20slab%20distribution-1.png" width="960" class="r-stretch"></section>
 <section id="shrinkage-priors" class="slide level2">
 <h2>Shrinkage Priors</h2>
+<p>Unlike spike-and-slab priors, shrinkage priors are single-point, continuous distributions. Their goal, much like shrinkage in frequentist regression, is to pull some of the <span class="math inline">\(\beta\)</span>s towards zero, while minimally penalizing the remaining coefficients (i.e., allowing them to reach their true values).</p>
+<p>This class of prior is generally represented as a <strong>scale mixture of normals</strong>, which is a mixture of normal distributions whose variances are random variables drawn from another distribution.</p>
+</section>
+<section id="lasso-prior" class="slide level2">
+<h2>LASSO Prior</h2>
+<p>The prior for the Bayesian analogue to LASSO regression is the Laplace, or double-exponential, prior. It is easy to see this when deriving the posterior. The LASSO prior assumes that the mixing distribution follows an exponential distribution. The hierarchical representation of the full conditional model under the LASSO prior is given below:</p>
+<p><span class="math display">\[
+\begin{align*}
+  \beta_j | \tau_j &amp;\sim N(0, \sigma^2 \tau_j^2) \\
+  \tau_j^2 | \lambda &amp;\sim \text{exp}(\lambda^2 / 2)
+\end{align*}
+\]</span></p>
+</section>
+<section id="lasso-prior-1" class="slide level2">
+<h2>LASSO Prior</h2>
+
+<img data-src="project-presentation_files/figure-revealjs/LASSO%20distribution-1.png" width="960" class="r-stretch"></section>
+<section id="normal-gamma-prior" class="slide level2">
+<h2>Normal-Gamma Prior</h2>
+<p>While the LASSO is a well-known and often-used technique, empirical evidence has suggested that it may not be optimal. Specifically, the shrinkage effect may not be strong enough to bring coefficients to zero, but the tails may not be heavy enough to allow coefficients to reach their true values.</p>
+<p>The normal-gamma prior attempts to solve these problems. It assumes that the mixing distribution follows a gamma distribution, rather than an exponential. This, along with the introduction of another hyperparameter <span class="math inline">\(\xi\)</span>, allows the distribution to have a lot of mass close to zero, while maintaining heavy tails (particularly as <span class="math inline">\(\lambda\)</span> decreases). This is similar to a spike-and-slab distribution under the right formulation.</p>
+<p><span class="math display">\[
+\begin{align*}
+  \beta_j | \tau_j &amp;\sim N(0, \tau_j^2) \\
+  \tau_j^2 &amp;\sim \text{gamma}(\lambda, 1/(2\xi^2))
+\end{align*}
+\]</span></p>
+</section>
+<section id="horseshoe-prior" class="slide level2">
+<h2>Horseshoe Prior</h2>
+<p>The horseshoe class of priors uses a global hyperparameter to shrink all coefficients towards zero and a local hyperparameter to allow some coefficients to adjust the scale of shrinkage locally. These are known as <strong>global-local</strong> shrinkage priors. They can also be represented as scale mixtures of normals,</p>
+<p><span class="math display">\[
+\begin{align*}
+  \beta_j | \lambda_j &amp;\sim N(0, \lambda_j^2) \\
+  \lambda_j | \tau &amp;\sim C^+(0, \tau) \\
+  \tau | \sigma &amp;\sim C^+(0, \sigma)
+\end{align*}
+\]</span></p>
+<p>In this case, <span class="math inline">\(C^+(0, \tau)\)</span> is a half-Cauchy distribution. <span class="math inline">\(\lambda_j\)</span> is referred to as the local shrinkage parameter, while <span class="math inline">\(\tau\)</span> is the global shrinkage parameter. With some integration, this yields the shrinkage coefficient <span class="math inline">\(\kappa_j = 1 / (1 + \lambda_j^2)\)</span>. The half-Cauchy prior on <span class="math inline">\(\lambda_j\)</span> implies a Beta(1/2, 1/2) prior distribution for <span class="math inline">\(\kappa_j\)</span>, which gives the horseshoe its name.</p>
+</section>
+<section id="horseshoe-prior-1" class="slide level2">
+<h2>Horseshoe Prior</h2>
+
+<img data-src="project-presentation_files/figure-revealjs/horseshoe%20distribution-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"><p>The left side of the horseshoe, <span class="math inline">\(\kappa_j \approx 0\)</span>, yields almost no shrinkage and represents signals, while the right side of the horseshoe, <span class="math inline">\(\kappa_j \approx 1\)</span>, yields near-total shrinkage and represents noise.</p>
 </section></section>
+<section>
 <section id="expectation-maximization-variable-selection" class="title-slide slide level1 center">
 <h1>Expectation-Maximization Variable Selection</h1>
+
+</section>
+<section id="expectation-maximization-variable-selection-1" class="slide level2">
+<h2>Expectation-Maximization Variable Selection</h2>
+<p>EMVS is an alternative to Gibbs sampling, which is frequently much more computationally efficient and has been shown to have good performance in high-dimensional settings. Setting up the Bayesian regression setting using a spike-and-slab prior, the algorithm repeats two steps until convergence:</p>
+<ul>
+<li><strong>Expectation (E) Step</strong>: Calculate the posterior inclusion probabilities for each predictor based on current estimates of parameters.</li>
+<li><strong>Maximization (M) Step</strong>: Update parameter estimates by maximizing the expectation of the likelihood over (given) the data.</li>
+</ul>
+<p>Researchers have suggested that the EMVS algorithm may perform much better when <span class="math inline">\(p &gt;&gt; n\)</span>.</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
 </div>
 </div>
-</section>
+</section></section>
     </div>
   </div>
 
