@@ -287,11 +287,13 @@ model_0_rates %>%
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
          MSE_All = as.numeric(MSE_All),
-         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      "MSE\nTest\nY")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 25)
 ```
 
 ## Model 2: $n > p$
@@ -311,11 +313,13 @@ model_3_rates %>%
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
          MSE_All = as.numeric(MSE_All),
-         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      "MSE\nTest\nY")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 25)
 ```
 
 ## Model 3: $p > n$
@@ -335,11 +339,13 @@ model_4_rates %>%
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
          MSE_All = as.numeric(MSE_All),
-         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      "MSE\nTest\nY")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 25)
 ```
 
 ## Model 4: $p >> n$
@@ -359,11 +365,13 @@ model_5_rates %>%
          TNR = as.numeric(TNR),
          MSE_Nonzero = as.numeric(MSE_Nonzero),
          MSE_All = as.numeric(MSE_All),
-         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
-                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      "MSE\nTest\nY")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 25)
 ```
 
 # Takeaways
@@ -373,14 +381,17 @@ model_5_rates %>%
  - In low-dimensional settings, all algorithms are very fast and effective.
  - As dimensionality increases, BMA and BMS become less useful; runtime increases dramatically for prior-based methods.
  - Generally, EMVS performs pretty well, and it is so efficient that it leaves much more room for tuning.
+ - EMVS and BMA have a tendency to overfit (might be reduced with more data).
  - No model is unilaterally the best! They may have different performance in another setting - there are many more variables at play here.
  
 ## Winners
 
  - **Signal Coefficient Accuracy:** EMVS
  - **All Coefficient Accuracy:** Horseshoe
- - **Response Variable Accuracy:** BMA
+ - **Training Set Accuracy:** BMA
+ - **Testing Set Accuracy:** All Shrinkage Priors
  - **Model Accuracy:** Varies, usually EMVS
+ - **Runtime:** EMVS
  
 # Questions?
 
