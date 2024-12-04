@@ -1,0 +1,37 @@
+Explain, in detail, the EMVS algorithm for Bayesian variable selection. Assume I am generally familiar with concepts in Bayesian statistics, but am entirely unfamiliar with the EM algorithm.
+
+What is signal-to-noise ratio?
+
+How would you quantify "High" and "Low" SNR?
+
+How can I write code to run the EMVS algorithm for Bayesian variable selection in R?
+
+When I try to install the EMVS package, I get told "package 'EMVS' is not available for this version of R". Is there an easy workaround here?
+
+When running the EMVS() function, should I include the column for the intercept term, or remove it?
+
+When determining the efficacy of a binary classifier, how do you set the probability threshold for classification to minimize error?
+
+Write code in R to do this using the ROC curve method. Assume I have a vector of probabilities and a vector of truths.
+
+What is the maximum possible error rate?
+
+The code you've given me outputs error rates that are higher than 1.
+
+Say I have multiple rows of probabilities in a matrix (there is a second variable at play, and I want to find the optimal value across all of this). How can I compute this most efficiently? Is there a way to do it vectorized, or do I need to run the code separately for each row?
+
+How do you make the panel lines in a ggplot be placed in front of your bars?
+
+I am using quarto to make a presentation, currently using revealjs formatting (though I am open to changing that). How can I make all of the text in this presentation smaller?
+
+How do you comment out a line in a .qmd file?
+
+How do I raise the font size of all text in a ggplot?
+
+How do you reverse the order of a legend in ggplot?
+
+When using knitr::kable(), sometimes setting digits = 3 doesn't actually restrict it to 3 digits. How can I fix this?
+
+How do I force the table to fit on the screen without a scroll bar?
+
+What is a "scale mixture of normals"?
