@@ -361,7 +361,7 @@ model_3_rates %>%
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
 ```
 
 ## Model 3: $p > n$
@@ -385,7 +385,7 @@ model_4_rates %>%
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
 ```
 
 ## Model 4: $p >> n$
@@ -409,7 +409,7 @@ model_5_rates %>%
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
 ```
 
 # Takeaways
