@@ -337,7 +337,7 @@ model_0_rates %>%
   kable(digits = 3, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
-  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
 ```
 
 ## Model 2: $n > p$
@@ -426,5 +426,10 @@ model_5_rates %>%
  - **All Coefficient Accuracy**: Horseshoe (best at pulling variables to 0).
  - **Response Variable Accuracy**: BMA, by a lot.
  - **Model Accuracy**: Varies, but usually EMVS.
+ 
+ 
+## References
+
+All source code for this project and citations can be found at github.com/davmking/bayesian-variable-selection. References, which will be formalized in the final report, can be found in the file references.bib; Chat GPT citations can be found in the file chat-gpt-prompts.txt.
 
 
