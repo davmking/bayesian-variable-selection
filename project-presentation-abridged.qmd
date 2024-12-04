@@ -4,6 +4,7 @@ author: "Dav King"
 format: 
   revealjs:
     css: styles.css
+    slideNumber: true
 ---
 
 ```{r}
@@ -162,8 +163,230 @@ data.frame(slab, spike) %>%
         panel.grid = element_blank(),
         legend.position = "bottom",
         text = element_text(size = 16)) +
-  scale_fill_viridis(discrete = TRUE, direction = -1)
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  coord_cartesian(xlim = c(-30, 30))
 ```
+
+
+## Shrinkage Priors
+
+Unlike spike-and-slab priors, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the $\beta$s towards zero, while minimally penalizing the remaining coefficients (allowing them to reach their true values).
+
+Shrinkage priors are often represented as a **scale mixture of normals**, or a mixture of normal distributions with variances drawn from another distribution.
+
+The Bayesian analogue to LASSO regression places an exponential prior over $\lambda$ on the variance, which results in a Laplace prior for the $\beta$s. 
+
+The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance and allowing the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.
+
+## LASSO Prior
+
+```{r}
+#| label: LASSO distribution
+
+lambda <- c(0.5, 1, 2, 4)
+
+N_samples <- 100000
+
+lasso_values <- matrix(NA, nrow = N_samples, ncol = length(lambda))
+
+for(l in 1:length(lambda)){
+  lasso_values[,l] <- rlaplace(N_samples, 0, 1 / lambda[l])
+}
+
+
+data.frame(lasso_values) %>%
+  pivot_longer(everything(), names_to = "lambda_number") %>% 
+  mutate(lambda_number = as.integer(substring(lambda_number, 2))) %>% 
+  mutate(lambda = lambda[lambda_number]) %>% 
+  mutate(lambda = factor(lambda)) %>% 
+  mutate(lambda = fct_rev(lambda)) %>% 
+  ggplot(aes(x = value, fill = lambda)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(-10, 10)) +
+  theme_bw() +
+  labs(x = TeX("$\\beta$"), y = "Density", fill = TeX("$\\lambda$"),
+       title = "Plot of Laplace (LASSO Prior) Distribution") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank(),
+        text = element_text(size = 16)) +
+  scale_fill_viridis(discrete = TRUE, option = "B") +
+  guides(fill = guide_legend(reverse = TRUE))
+```
+
+## Horseshoe Prior
+
+Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. These are known as **global-local** shrinkage priors. 
+
+Drawing the variance from a half-Cauchy distribution, the model results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.
+
+
+## Horseshoe Prior
+
+```{r}
+#| label: horseshoe distribution
+#| fig-align: center
+
+set.seed(523)
+ggplot(mapping = aes(x = rbeta(1000000, 1/2, 1/2))) +
+  geom_density(fill = "darkgrey", alpha = 0.5) +
+  theme_bw() +
+  labs(x = TeX("$\\kappa_j$"), y = "Density",
+       title = "Plot of Horseshoe Prior Distribution") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank(),
+        text = element_text(size = 16))
+```
+
+# Expectation-Maximization Variable Selection
+
+## Expectation-Maximization Variable Selection
+
+As an alternative to MCMC sampling, the EMVS algorithm is frequently much more computationally efficient with demonstrated prowess in high-dimensional settings. After initializing Bayesian regression with a spike-and-slab prior, the algorithm repeats two steps until convergence:
+
+ - **Expectation (E) Step:** Calculate the posterior inclusion probabilities for each $\beta_j$ based on current parameter estimates.
+ - **Maximization (M) Step:** Update parameter estimates by maximizing the expectation of the data likelihood.
+ 
+Researchers have suggested that the EMVS algorithm may perform much better than MCMC when $p >> n$.
+
+# Experiment
+
+## Setup
+
+ - Focused on synthetic data for comparison
+ - Low-observation setting for the sake of runtime
+ - All runtimes are listed by orders of magnitude (seconds, minutes, hours, etc.)
+ - Focused on four settings:
+
+$$
+\begin{equation*}
+  n >> p \\
+  n > p \\
+  p > n \\
+  p >> n
+\end{equation*}
+$$
+
+ - Focused only on sparse signal settings: All algorithms performed poorly in dense signal setting
+ 
+ 
+## Model 1: $n >> p$
+
+$n = 100$, $p = 10$, $p\_sig = 3$
+
+```{r}
+#| label: model 1 table
+
+load("model_0_rates.RData")
+model_0_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+  kable(digits = 2, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+```
+
+## Model 2: $n > p$
+
+$n = 100$, $p = 95$, $p\_sig = 8$
+
+```{r}
+#| label: model 2 table
+
+load("model_3_rates.RData")
+model_3_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+  kable(digits = 2, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+```
+
+## Model 3: $p > n$
+
+$n = 100$, $p = 105$, $p\_sig = 8$
+
+```{r}
+#| label: model 3 table
+
+load("model_4_rates.RData")
+model_4_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+  kable(digits = 2, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+```
+
+## Model 4: $p >> n$
+
+$n = 100$, $p = 1000$, $p\_sig = 8$
+
+```{r}
+#| label: model 4 table
+
+load("model_5_rates.RData")
+model_5_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp)) %>% 
+  kable(digits = 2, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nResp")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 26)
+```
+
+# Takeaways
+
+## Takeaways
+
+ - In low-dimensional settings, all algorithms are very fast and effective.
+ - As dimensionality increases, BMA and BMS become less useful; runtime increases dramatically for prior-based methods.
+ - Generally, EMVS performs pretty well, and it is so efficient that it leaves much more room for tuning.
+ - No model is unilaterally the best! They may have different performance in another setting - there are many more variables at play here.
+ 
+## Winners
+
+ - **Signal Coefficient Accuracy:** EMVS
+ - **All Coefficient Accuracy:** Horseshoe
+ - **Response Variable Accuracy:** BMA
+ - **Model Accuracy:** Varies, usually EMVS
+ 
+# Questions?
+
+## References
+
+All source code for this project and citations can be found at github.com/davmking/bayesian-variable-selection. References, which will be formalized in the final report, can be found in the file references.bib; Chat GPT citations can be found in the file chat-gpt-prompts.txt.
+
 
 
 
