@@ -1500,6 +1500,9 @@ find_optimal_threshold <- function(emvs, idx, true_betas, N, P){
 ```{r}
 #| label: thresholding model 2
 
+true_betas_2 <- model_2$beta_true[-1]
+true_betas_2 <- as.integer(true_betas_2 != 0)
+
 N_2 <- sum(true_betas_2 == 0)
 P_2 <- sum(true_betas_2 == 1)
 
@@ -1577,6 +1580,9 @@ emvs_2_thresh
 ```{r}
 #| label: thresholding model 3
 
+true_betas_3 <- model_3$beta_true[-1]
+true_betas_3 <- as.integer(true_betas_3 != 0)
+
 N_3 <- sum(true_betas_3 == 0)
 P_3 <- sum(true_betas_3 == 1)
 
@@ -1652,6 +1658,9 @@ emvs_3_thresh
 ```{r}
 #| label: thresholding model 4
 
+true_betas_4 <- model_4$beta_true[-1]
+true_betas_4 <- as.integer(true_betas_4 != 0)
+
 N_4 <- sum(true_betas_4 == 0)
 P_4 <- sum(true_betas_4 == 1)
 
@@ -1726,6 +1735,9 @@ emvs_4_thresh
 
 ```{r}
 #| label: thresholding model 5
+
+true_betas_5 <- model_5$beta_true[-1]
+true_betas_5 <- as.integer(true_betas_5 != 0)
 
 N_5 <- sum(true_betas_5 == 0)
 P_5 <- sum(true_betas_5 == 1)
@@ -1810,6 +1822,9 @@ BMS does not actually give us coefficient estimates - it just tells us what coef
 
 ```{r}
 #| label: true coefficients model 0
+
+true_betas_0 <- model_0$beta_true[2:11]
+true_betas_0 <- as.integer(true_betas_0 != 0)
 
 bma_0_est <- estimates.bma(bma_0, order.by.pip = FALSE)[,2]
 emvs_0_est <- emvs_0$betas[1,]
@@ -1906,6 +1921,9 @@ data.frame(true_values = beta_vals_0,
 
 ```{r}
 #| label: true coefficients model 1
+
+true_betas_1 <- model_1$beta_true[2:11]
+true_betas_1 <- as.integer(true_betas_1 != 0)
 
 bma_1_est <- estimates.bma(bma_1, order.by.pip = FALSE)[,2]
 emvs_1_est <- emvs_1$betas[1,]
@@ -2431,26 +2449,45 @@ emvs_0_cm <- table(true_betas_0, emvs_0_out)
 
 
 model_0_rates <- rbind(
-      c(Name = "BSS - Small", Size = sum(bss_0_small),
-        calc_rates(bss_0_small_cm), Runtime = "Seconds"),
-      c(Name = "BSS - Min", Size = sum(bss_0_min),
-        calc_rates(bss_0_min_cm), Runtime = "Seconds"),
-      c(Name = "BSS - All", Size = sum(bss_0_all),
-        calc_rates(bss_0_all_cm), Runtime = "Seconds"),
+      #c(Name = "BSS - Small", Size = sum(bss_0_small),
+        #calc_rates(bss_0_small_cm), Runtime = "Seconds"),
+      #c(Name = "BSS - Min", Size = sum(bss_0_min),
+        #calc_rates(bss_0_min_cm), Runtime = "Seconds"),
+      #c(Name = "BSS - All", Size = sum(bss_0_all),
+        #calc_rates(bss_0_all_cm), Runtime = "Seconds"),
       c(Name = "BMS", Size = sum(bvs_0$HPMbin),
-        calc_rates(bvs_0_cm), Runtime = "Seconds"),
+        calc_rates(bvs_0_cm), Runtime = "Seconds",
+       MSE_Select = NA, MSE_All = NA),
       c(Name = "BMA", Size = sum(bma_0_out),
-        calc_rates(bma_0_cm), Runtime = "Seconds"),
+        calc_rates(bma_0_cm), Runtime = "Seconds",
+        MSE_Select = mean((bma_0_est[which(true_betas_0 == 1)] -
+                             beta_vals_0[which(true_betas_0 == 1)])^2),
+        MSE_All = mean((bma_0_est - beta_vals_0)^2)),
       c(Name = "SSVS", Size = sum(ssvs_0_out),
-        calc_rates(ssvs_0_cm), Runtime = "Seconds"),
+        calc_rates(ssvs_0_cm), Runtime = "Seconds",
+        MSE_Select = mean((ssvs_0_est[which(true_betas_0 == 1)] -
+                             beta_vals_0[which(true_betas_0 == 1)])^2),
+        MSE_All = mean((ssvs_0_est - beta_vals_0)^2)),
       c(Name = "LASSO", Size = sum(lasso_0_out),
-        calc_rates(lasso_0_cm), Runtime = "Seconds"),
+        calc_rates(lasso_0_cm), Runtime = "Seconds",
+        MSE_Select = mean((lasso_0_est[which(true_betas_0 == 1)] -
+                             beta_vals_0[which(true_betas_0 == 1)])^2),
+        MSE_All = mean((lasso_0_est - beta_vals_0)^2)),
       c(Name = "Normal-Gamma", Size = sum(ng_0_out),
-        calc_rates(ng_0_cm), Runtime = "Seconds"),
+        calc_rates(ng_0_cm), Runtime = "Seconds",
+        MSE_Select = mean((ng_0_est[which(true_betas_0 == 1)] -
+                             beta_vals_0[which(true_betas_0 == 1)])^2),
+        MSE_All = mean((ng_0_est - beta_vals_0)^2)),
       c(Name = "Horseshoe", Size = sum(hs_0_out),
-        calc_rates(hs_0_cm), Runtime = "Seconds"),
+        calc_rates(hs_0_cm), Runtime = "Seconds",
+        MSE_Select = mean((hs_0_est[which(true_betas_0 == 1)] -
+                             beta_vals_0[which(true_betas_0 == 1)])^2),
+        MSE_All = mean((hs_0_est - beta_vals_0)^2)),
       c(Name = "EMVS", Size = sum(emvs_0_out),
-        calc_rates(emvs_0_cm), Runtime = "Milliseconds")
+        calc_rates(emvs_0_cm), Runtime = "Milliseconds",
+        MSE_Select = mean((emvs_0_est[which(true_betas_0 == 1)] -
+                             beta_vals_0[which(true_betas_0 == 1)])^2),
+        MSE_All = mean((emvs_0_est - beta_vals_0)^2))
   )
 
 save(model_0_rates, file = "model_0_rates.RData")
