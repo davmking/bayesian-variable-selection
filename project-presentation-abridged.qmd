@@ -1,0 +1,100 @@
+---
+title: "Bayesian Methods of Variable Selection"
+author: "Dav King"
+format: 
+  revealjs:
+    css: styles.css
+---
+
+```{r}
+#| label: libraries
+
+library(VGAM)
+library(tidyverse)
+library(viridis)
+library(patchwork)
+library(latex2exp)
+library(knitr)
+library(kableExtra)
+```
+
+
+## Variable Selection: Motivation
+
+ - In modeling, we frequently have many possible predictors, but anticipate only a few are associated with the outcome
+ - Solution: Control the number of predictors
+   - Reduce computational complexity
+   - Minimize model variance
+   - Improve interpretability
+ - Useful in fields like genomics \& social sciences
+ - Common methods: Best subset selection, LASSO regression, etc.
+ 
+# Bayesian Statistics
+ 
+## Bayesian Statistics: Background
+
+**Bayesian statistics** is a field of statistics that uses Bayes' theorem to update beliefs about a probability based on new information:
+
+$$
+  p(B | A) = \frac{p(A | B)p(B)}{p(A)}
+$$
+
+In **Bayesian modeling**, we update our beliefs about model parameters based on A) our prior beliefs about the parameters and B) the likelihood function of the data:
+
+$$
+  p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta)p(\beta)}{\int_\beta p(\mathbf{Y} | \beta)p(\beta)d\beta}
+$$
+
+
+## Bayesian Statistics: Background
+
+$$
+  p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta)p(\beta)}{\int_\beta p(\mathbf{Y} | \beta)p(\beta)d\beta}
+$$
+
+In this model,
+
+ - $p(\mathbf{Y} | \beta)$ is the **Data Generative Model**.
+ - $p(\beta)$ is the **Prior Distribution**(**).
+ - $\int_\beta p(\mathbf{Y} | \beta) p(\beta) d\beta$ is a **constant**, which we can usually ignore.
+ - $p(\mathbf{\beta} | \mathbf{Y})$ is the **Posterior Distribution**, which is our target.
+ 
+ 
+## Bayesian Statistics: Markov Chain Monte Carlo
+
+Since many posterior distributions are hard or impossible to compute by hand, we run a **Markov Chain Monte Carlo (MCMC)** algorithm to sample from the posterior:
+ 
+  1. Initialize $\beta$ and $\mathbf{Y}$.
+  2. Sample $\beta^{(s + 1)}$ based on $\mathbf{Y}^{(s)}$.
+  3. Sample $\mathbf{Y}^{(s + 1)}$ based on (updated) $\mathbf{\beta}^{(s + 1)}$.
+  4. Sample hyperparameters if needed.
+
+A key attribute of the MCMC process is that it is **memoryless** - that is, each value in the Markov Chain is only dependent on the sample immediately before it.
+
+
+## Why Bayesian?
+
+ - Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the model.
+ - This helps stable calculations and produce an outcome of the desired form.
+ - We can also sample over the regions of high probability in the model space much more quickly, often improving computational complexity.
+ 
+ 
+## Research Questions
+
+ 1. What methods of Bayesian variable selection exists, and how do they relate to one another?
+ 2. Which methods perform best in each of the following settings?
+ 
+$$
+  \begin{equation*}
+    n >> p \\
+    n > p \\
+    p > n \\
+    p >> n
+  \end{equation*}
+$$
+ 
+ 3. What are the computation time/accuracy tradeoffs?
+ 
+
+
+
