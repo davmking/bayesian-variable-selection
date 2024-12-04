@@ -29,6 +29,7 @@ library(kableExtra)
    - Improve interpretability
  - Useful in fields like genomics \& social sciences
  - Common methods: Best subset selection, LASSO regression, etc.
+ - **Problem:** With $p$ parameters, there are $2^p$ possible model formulations, known as the **model space** $\mathcal{M}$
  
 # Bayesian Statistics
  
@@ -70,19 +71,20 @@ Since many posterior distributions are hard or impossible to compute by hand, we
   3. Sample $\mathbf{Y}^{(s + 1)}$ based on (updated) $\mathbf{\beta}^{(s + 1)}$.
   4. Sample hyperparameters if needed.
 
-A key attribute of the MCMC process is that it is **memoryless** - that is, each value in the Markov Chain is only dependent on the sample immediately before it.
+This allows us to explore parameter space and identify regions of high posterior density. With the right initialization, it often converges very quickly.
 
 
 ## Why Bayesian?
 
  - Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the model.
- - This helps stable calculations and produce an outcome of the desired form.
- - We can also sample over the regions of high probability in the model space much more quickly, often improving computational complexity.
+ - This helps stabilize calculations and produce an outcome of the desired form.
+ - We can sample hyperparameters in the MCMC process, instead of doing cross-validation.
+ - We can also identify regions of high probability in the model space (i.e., highly probable models) much more quickly than in the frequentist setting.
  
  
 ## Research Questions
 
- 1. What methods of Bayesian variable selection exists, and how do they relate to one another?
+ 1. What methods of Bayesian variable selection exist, and how do they relate to one another?
  2. Which methods perform best in each of the following settings?
  
 $$
@@ -101,8 +103,8 @@ $$
 
 ## Bayesian Model Selection (BMS)
 
- - Let $\gamma = \gamma_1, \dots, \gamma_p$ be a binary indicator variable denoting whether $\beta_i$ is included in model $\mathcal{M}_\gamma$. Different instances of $\gamma$ represent the whole model space $\mathcal{M}$.
- - In the MCMC sampler, propose new values of $\gamma$ along with $\beta$ and $\mathbf{Y}$, and accept/reject based on model likelihood ratio.
+ - Let $\gamma_i$ be a binary indicator variable denoting whether $\beta_i$ is included in model $\mathcal{M}_\gamma$. Different instances of $\gamma$ represent the whole model space $\mathcal{M}$.
+ - In the MCMC sampler, propose new values of $\gamma$ along with $\beta$ and $\mathbf{Y}$, and accept/reject the proposal based on model likelihood.
  - More probable models will appear more frequently in the resulting posterior distribution of $\gamma$.
  - Often this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.
 
@@ -113,6 +115,7 @@ $$
  - This results in posterior estimates for $\beta$ that are weighted by the probability of each model specification $\gamma$.
  - While unintuitive, this procedure frequently generates highly accurate estimates of the true coefficients, with (relatively) minimal computational demand.
  
+# Prior-Based Methods
  
 ## Prior-Based Methods
 
@@ -172,11 +175,9 @@ data.frame(slab, spike) %>%
 
 Unlike spike-and-slab priors, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the $\beta$s towards zero, while minimally penalizing the remaining coefficients (allowing them to reach their true values).
 
-Shrinkage priors are often represented as a **scale mixture of normals**, or a mixture of normal distributions with variances drawn from another distribution.
+The Bayesian analogue to LASSO regression places an exponential prior on the variance, which results in a Laplace prior for the $\beta$s. 
 
-The Bayesian analogue to LASSO regression places an exponential prior over $\lambda$ on the variance, which results in a Laplace prior for the $\beta$s. 
-
-The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance and allowing the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.
+The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance which allows the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.
 
 ## LASSO Prior
 
@@ -215,9 +216,9 @@ data.frame(lasso_values) %>%
 
 ## Horseshoe Prior
 
-Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. These are known as **global-local** shrinkage priors. 
+Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. This is known as a **global-local** shrinkage prior. 
 
-Drawing the variance from a half-Cauchy distribution, the model results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.
+The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.
 
 
 ## Horseshoe Prior
@@ -241,12 +242,12 @@ ggplot(mapping = aes(x = rbeta(1000000, 1/2, 1/2))) +
 
 ## Expectation-Maximization Variable Selection
 
-As an alternative to MCMC sampling, the EMVS algorithm is frequently much more computationally efficient with demonstrated prowess in high-dimensional settings. After initializing Bayesian regression with a spike-and-slab prior, the algorithm repeats two steps until convergence:
+As an alternative to MCMC sampling, the EMVS algorithm performs Bayesian regression with a spike-and-slab prior, repeating two steps until convergence:
 
  - **Expectation (E) Step:** Calculate the posterior inclusion probabilities for each $\beta_j$ based on current parameter estimates.
  - **Maximization (M) Step:** Update parameter estimates by maximizing the expectation of the data likelihood.
  
-Researchers have suggested that the EMVS algorithm may perform much better than MCMC when $p >> n$.
+Researchers have suggested that the EMVS algorithm may perform much better than MCMC when $p >> n$. It is also much more computationally efficient.
 
 # Experiment
 

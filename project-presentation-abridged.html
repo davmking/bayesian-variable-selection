@@ -354,6 +354,7 @@ Dav King
 </ul></li>
 <li>Useful in fields like genomics &amp; social sciences</li>
 <li>Common methods: Best subset selection, LASSO regression, etc.</li>
+<li><strong>Problem:</strong> With <span class="math inline">\(p\)</span> parameters, there are <span class="math inline">\(2^p\)</span> possible model formulations, known as the <strong>model space</strong> <span class="math inline">\(\mathcal{M}\)</span></li>
 </ul>
 </section>
 <section>
@@ -394,20 +395,21 @@ Dav King
 <li>Sample <span class="math inline">\(\mathbf{Y}^{(s + 1)}\)</span> based on (updated) <span class="math inline">\(\mathbf{\beta}^{(s + 1)}\)</span>.</li>
 <li>Sample hyperparameters if needed.</li>
 </ol>
-<p>A key attribute of the MCMC process is that it is <strong>memoryless</strong> - that is, each value in the Markov Chain is only dependent on the sample immediately before it.</p>
+<p>This allows us to explore parameter space and identify regions of high posterior density. With the right initialization, it often converges very quickly.</p>
 </section>
 <section id="why-bayesian" class="slide level2">
 <h2>Why Bayesian?</h2>
 <ul>
 <li>Compared to the frequentist setting, Bayesian approaches allow us to incorporate prior beliefs on the structure of the model.</li>
-<li>This helps stable calculations and produce an outcome of the desired form.</li>
-<li>We can also sample over the regions of high probability in the model space much more quickly, often improving computational complexity.</li>
+<li>This helps stabilize calculations and produce an outcome of the desired form.</li>
+<li>We can sample hyperparameters in the MCMC process, instead of doing cross-validation.</li>
+<li>We can also identify regions of high probability in the model space (i.e., highly probable models) much more quickly than in the frequentist setting.</li>
 </ul>
 </section>
 <section id="research-questions" class="slide level2">
 <h2>Research Questions</h2>
 <ol type="1">
-<li>What methods of Bayesian variable selection exists, and how do they relate to one another?</li>
+<li>What methods of Bayesian variable selection exist, and how do they relate to one another?</li>
 <li>Which methods perform best in each of the following settings?</li>
 </ol>
 <p><span class="math display">\[
@@ -430,8 +432,8 @@ Dav King
 <section id="bayesian-model-selection-bms" class="slide level2">
 <h2>Bayesian Model Selection (BMS)</h2>
 <ul>
-<li>Let <span class="math inline">\(\gamma = \gamma_1, \dots, \gamma_p\)</span> be a binary indicator variable denoting whether <span class="math inline">\(\beta_i\)</span> is included in model <span class="math inline">\(\mathcal{M}_\gamma\)</span>. Different instances of <span class="math inline">\(\gamma\)</span> represent the whole model space <span class="math inline">\(\mathcal{M}\)</span>.</li>
-<li>In the MCMC sampler, propose new values of <span class="math inline">\(\gamma\)</span> along with <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>, and accept/reject based on model likelihood ratio.</li>
+<li>Let <span class="math inline">\(\gamma_i\)</span> be a binary indicator variable denoting whether <span class="math inline">\(\beta_i\)</span> is included in model <span class="math inline">\(\mathcal{M}_\gamma\)</span>. Different instances of <span class="math inline">\(\gamma\)</span> represent the whole model space <span class="math inline">\(\mathcal{M}\)</span>.</li>
+<li>In the MCMC sampler, propose new values of <span class="math inline">\(\gamma\)</span> along with <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>, and accept/reject the proposal based on model likelihood.</li>
 <li>More probable models will appear more frequently in the resulting posterior distribution of <span class="math inline">\(\gamma\)</span>.</li>
 <li>Often this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.</li>
 </ul>
@@ -446,8 +448,13 @@ Dav King
 <li>This results in posterior estimates for <span class="math inline">\(\beta\)</span> that are weighted by the probability of each model specification <span class="math inline">\(\gamma\)</span>.</li>
 <li>While unintuitive, this procedure frequently generates highly accurate estimates of the true coefficients, with (relatively) minimal computational demand.</li>
 </ul>
+</section></section>
+<section>
+<section id="prior-based-methods" class="title-slide slide level1 center">
+<h1>Prior-Based Methods</h1>
+
 </section>
-<section id="prior-based-methods" class="slide level2">
+<section id="prior-based-methods-1" class="slide level2">
 <h2>Prior-Based Methods</h2>
 <ul>
 <li>Suppose we have some prior belief about the structure of our <span class="math inline">\(\beta\)</span>s: specifically, we believe that not all of them are included in the true data-generative model.</li>
@@ -475,9 +482,8 @@ Dav King
 <section id="shrinkage-priors" class="slide level2">
 <h2>Shrinkage Priors</h2>
 <p>Unlike spike-and-slab priors, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the <span class="math inline">\(\beta\)</span>s towards zero, while minimally penalizing the remaining coefficients (allowing them to reach their true values).</p>
-<p>Shrinkage priors are often represented as a <strong>scale mixture of normals</strong>, or a mixture of normal distributions with variances drawn from another distribution.</p>
-<p>The Bayesian analogue to LASSO regression places an exponential prior over <span class="math inline">\(\lambda\)</span> on the variance, which results in a Laplace prior for the <span class="math inline">\(\beta\)</span>s.</p>
-<p>The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance and allowing the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.</p>
+<p>The Bayesian analogue to LASSO regression places an exponential prior on the variance, which results in a Laplace prior for the <span class="math inline">\(\beta\)</span>s.</p>
+<p>The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance which allows the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.</p>
 </section>
 <section id="lasso-prior" class="slide level2">
 <h2>LASSO Prior</h2>
@@ -485,8 +491,8 @@ Dav King
 <img data-src="project-presentation-abridged_files/figure-revealjs/LASSO%20distribution-1.png" width="960" class="r-stretch"></section>
 <section id="horseshoe-prior" class="slide level2">
 <h2>Horseshoe Prior</h2>
-<p>Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. These are known as <strong>global-local</strong> shrinkage priors.</p>
-<p>Drawing the variance from a half-Cauchy distribution, the model results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.</p>
+<p>Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. This is known as a <strong>global-local</strong> shrinkage prior.</p>
+<p>The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.</p>
 </section>
 <section id="horseshoe-prior-1" class="slide level2">
 <h2>Horseshoe Prior</h2>
@@ -499,12 +505,12 @@ Dav King
 </section>
 <section id="expectation-maximization-variable-selection-1" class="slide level2">
 <h2>Expectation-Maximization Variable Selection</h2>
-<p>As an alternative to MCMC sampling, the EMVS algorithm is frequently much more computationally efficient with demonstrated prowess in high-dimensional settings. After initializing Bayesian regression with a spike-and-slab prior, the algorithm repeats two steps until convergence:</p>
+<p>As an alternative to MCMC sampling, the EMVS algorithm performs Bayesian regression with a spike-and-slab prior, repeating two steps until convergence:</p>
 <ul>
 <li><strong>Expectation (E) Step:</strong> Calculate the posterior inclusion probabilities for each <span class="math inline">\(\beta_j\)</span> based on current parameter estimates.</li>
 <li><strong>Maximization (M) Step:</strong> Update parameter estimates by maximizing the expectation of the data likelihood.</li>
 </ul>
-<p>Researchers have suggested that the EMVS algorithm may perform much better than MCMC when <span class="math inline">\(p &gt;&gt; n\)</span>.</p>
+<p>Researchers have suggested that the EMVS algorithm may perform much better than MCMC when <span class="math inline">\(p &gt;&gt; n\)</span>. It is also much more computationally efficient.</p>
 </section></section>
 <section>
 <section id="experiment" class="title-slide slide level1 center">
