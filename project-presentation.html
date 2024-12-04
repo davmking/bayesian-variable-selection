@@ -321,6 +321,10 @@
       margin-right: 0; 
     }
   </style>
+  <script src="project-presentation_files/libs/kePrint-0.0.1/kePrint.js"></script>
+
+  <link href="project-presentation_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -544,6 +548,455 @@ Dav King
 <li><strong>Maximization (M) Step</strong>: Update parameter estimates by maximizing the expectation of the likelihood over (given) the data.</li>
 </ul>
 <p>Researchers have suggested that the EMVS algorithm may perform much better when <span class="math inline">\(p &gt;&gt; n\)</span>.</p>
+</section></section>
+<section>
+<section id="experiment" class="title-slide slide level1 center">
+<h1>Experiment</h1>
+
+</section>
+<section id="setup" class="slide level2">
+<h2>Setup</h2>
+<ul>
+<li>Focused only on synthetic data, in order to be able to better compare these approaches.</li>
+<li>Low-observation setting for complexity’s sake.</li>
+<li>Runtimes are given approximately (orders of magnitude).</li>
+<li>Focused on four settings:</li>
+</ul>
+<p><span class="math display">\[
+  \begin{equation*}
+    n &gt;&gt; p \\
+    n &gt; p \\
+    p &gt; n \\
+    p &gt;&gt; n
+  \end{equation*}
+\]</span></p>
+<ul>
+<li>Focused only on sparse signal settings: While I explored the dense signal setting, all of these algorithms performed poorly there.</li>
+</ul>
+</section>
+<section id="model-1-n-p" class="slide level2">
+<h2>Model 1: <span class="math inline">\(n &gt;&gt; p\)</span></h2>
+<p><span class="math inline">\(n = 100\)</span>, <span class="math inline">\(p = 10\)</span>, <span class="math inline">\(p\_sig = 3\)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<table class="table" data-quarto-postprocess="true" style="font-size: 28px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Size</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FNR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TNR</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Time</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef Signal</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef All</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BMS</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BMA</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SSVS</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LASSO</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Normal-Gamma</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Horseshoe</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EMVS</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Ms</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.003</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="model-2-n-p" class="slide level2">
+<h2>Model 2: <span class="math inline">\(n &gt; p\)</span></h2>
+<p><span class="math inline">\(n = 100\)</span>, <span class="math inline">\(p = 95\)</span>, <span class="math inline">\(p\_sig = 8\)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<table class="table" data-quarto-postprocess="true" style="font-size: 28px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Size</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FNR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TNR</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Time</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef Signal</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef All</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BMS</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.011</td>
+<td style="text-align: right;">0.989</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BMA</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">0.875</td>
+<td style="text-align: right;">0.125</td>
+<td style="text-align: right;">0.759</td>
+<td style="text-align: right;">0.241</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">1.330</td>
+<td style="text-align: right;">1.499</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SSVS, p = 0.021</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.011</td>
+<td style="text-align: right;">0.989</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.765</td>
+<td style="text-align: right;">0.067</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LASSO, p = 0.767</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">0.629</td>
+<td style="text-align: right;">0.067</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Normal-Gamma, p = 0.768</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">0.616</td>
+<td style="text-align: right;">0.065</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Horseshoe, p = 0.623</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.750</td>
+<td style="text-align: right;">0.250</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">0.977</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">0.518</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EMVS, p = 0.994</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">Ms</td>
+<td style="text-align: right;">0.340</td>
+<td style="text-align: right;">0.210</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="model-3-p-n" class="slide level2">
+<h2>Model 3: <span class="math inline">\(p &gt; n\)</span></h2>
+<p><span class="math inline">\(n = 100\)</span>, <span class="math inline">\(p = 105\)</span>, <span class="math inline">\(p\_sig = 8\)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<table class="table" data-quarto-postprocess="true" style="font-size: 28px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Size</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FNR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TNR</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Time</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef Signal</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef All</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BMS</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.990</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BMA</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">0.875</td>
+<td style="text-align: right;">0.125</td>
+<td style="text-align: right;">0.619</td>
+<td style="text-align: right;">0.381</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">1.369</td>
+<td style="text-align: right;">1.016</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SSVS, p = 0.009</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.990</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">0.626</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LASSO, p = 0.909</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">0.418</td>
+<td style="text-align: right;">0.046</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Normal-Gamma, p = 0.901</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">0.416</td>
+<td style="text-align: right;">0.045</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Horseshoe, p = 0.905</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">0.430</td>
+<td style="text-align: right;">0.044</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EMVS, p = 1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">Ms</td>
+<td style="text-align: right;">0.295</td>
+<td style="text-align: right;">0.218</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="model-4-p-n" class="slide level2">
+<h2>Model 4: <span class="math inline">\(p &gt;&gt; n\)</span></h2>
+<p><span class="math inline">\(n = 100\)</span>, <span class="math inline">\(p = 1000\)</span>, <span class="math inline">\(p\_sig = 8\)</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<table class="table" data-quarto-postprocess="true" style="font-size: 28px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Size</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FNR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FPR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TNR</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Time</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef Signal</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">MSE Coef All</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BMS</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.998</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BMA</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">0.250</td>
+<td style="text-align: right;">0.750</td>
+<td style="text-align: right;">0.024</td>
+<td style="text-align: right;">0.976</td>
+<td style="text-align: left;">S</td>
+<td style="text-align: right;">1.333</td>
+<td style="text-align: right;">0.053</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SSVS, p = 0.214</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">M</td>
+<td style="text-align: right;">1.294</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LASSO, p = 0.418</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.999</td>
+<td style="text-align: left;">H</td>
+<td style="text-align: right;">0.578</td>
+<td style="text-align: right;">0.006</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Normal-Gamma, p = 0.421</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.999</td>
+<td style="text-align: left;">H</td>
+<td style="text-align: right;">0.581</td>
+<td style="text-align: right;">0.006</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Horseshoe, p = 0.426</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.999</td>
+<td style="text-align: left;">H</td>
+<td style="text-align: right;">0.548</td>
+<td style="text-align: right;">0.006</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EMVS, p = 0</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: left;">Ms</td>
+<td style="text-align: right;">0.530</td>
+<td style="text-align: right;">0.006</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 

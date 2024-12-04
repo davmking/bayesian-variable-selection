@@ -14,6 +14,8 @@ library(tidyverse)
 library(viridis)
 library(patchwork)
 library(latex2exp)
+library(knitr)
+library(kableExtra)
 ```
 
 
@@ -86,14 +88,14 @@ In this model,
  1. What methods of Bayesian variable selection exists, and how do they relate to one another?
  2. Which methods perform best in each of the following settings?
  
- $$
+$$
   \begin{equation*}
     n >> p \\
     n > p \\
     p > n \\
     p >> n
   \end{equation*}
- $$
+$$
  
  3. What are the computation time/accuracy tradeoffs?
  
@@ -293,5 +295,118 @@ EMVS is an alternative to Gibbs sampling, which is frequently much more computat
  - **Maximization (M) Step**: Update parameter estimates by maximizing the expectation of the likelihood over (given) the data.
  
 Researchers have suggested that the EMVS algorithm may perform much better when $p >> n$.
+
+# Experiment
+
+## Setup
+
+ - Focused only on synthetic data, in order to be able to better compare these approaches.
+ - Low-observation setting for complexity's sake.
+ - Runtimes are given approximately (orders of magnitude).
+ - Focused on four settings:
+ 
+$$
+  \begin{equation*}
+    n >> p \\
+    n > p \\
+    p > n \\
+    p >> n
+  \end{equation*}
+$$
+
+ - Focused only on sparse signal settings: While I explored the dense signal setting, all of these algorithms performed poorly there.
+ 
+## Model 1: $n >> p$
+
+$n = 100$, $p = 10$, $p\_sig = 3$
+
+```{r}
+#| label: model 1 table
+
+load("model_0_rates.RData")
+model_0_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All)) %>% 
+  kable(digits = 3, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+```
+
+## Model 2: $n > p$
+
+$n = 100$, $p = 95$, $p\_sig = 8$
+
+```{r}
+#| label: model 2 table
+
+load("model_3_rates.RData")
+model_3_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All)) %>% 
+  kable(digits = 3, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+```
+
+## Model 3: $p > n$
+
+$n = 100$, $p = 105$, $p\_sig = 8$
+
+```{r}
+#| label: model 3 table
+
+load("model_4_rates.RData")
+model_4_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All)) %>% 
+  kable(digits = 3, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+```
+
+## Model 4: $p >> n$
+
+$n = 100$, $p = 1000$, $p\_sig = 8$
+
+```{r}
+#| label: model 4 table
+
+load("model_5_rates.RData")
+model_5_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All)) %>% 
+  kable(digits = 3, format = "html",
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      "MSE\nCoef\nSignal", "MSE\nCoef\nAll")) %>%
+  kable_styling(full_width = TRUE, position = "center", font_size = 28)
+```
+
 
 
