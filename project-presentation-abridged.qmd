@@ -248,6 +248,8 @@ As an alternative to MCMC sampling, the EMVS algorithm performs Bayesian regress
  
 Researchers have suggested that the EMVS algorithm may perform much better than MCMC when $p >> n$. It is also much more computationally efficient.
 
+Smoothing can be added with **deterministic annealing**, which can improve the model's tendency to overfit (discussed in report).
+
 # Experiment
 
 ## Setup
@@ -402,11 +404,11 @@ All source code for this project and citations can be found at github.com/davmki
 
 ## Bayesian Definitions
 
- - **Prior:**
- - **Data Generative Model:**
- - **Normalizing Constant:**
- - **(Joint) Posterior:**
- - **Full Conditional:**
+ - **Prior Distribution:** Our beliefs about the distribution of a paramter *a priori*, i.e. before seeing the data.
+ - **Data Generative Model:** The true mechanism by which the data are generated (including some zero-mean random noise).
+ - **Normalizing Constant:** The constant required to make a probability distribution integrate to 1. Generally speaking, this is absorbed into proportionality.
+ - **(Joint) Posterior Distribution:** The distribution of (all) variables, incorporating both our prior beliefs and our data generative model's likelihood function.
+ - **Full Conditional Distribution:** The distribution of a parameter given all other parameters. This is always proportional to the joint posterior. We usually sample from the full conditional in MCMC sampling.
 
 ## Gibbs and Metropolis-Hastings Algorithms
 
@@ -415,6 +417,58 @@ Two of the most common MCMC algorithms are Gibbs samplers and Metropolis-Hasting
 In **Gibbs sampling**, the full conditional has a closed-form expression, and you simply sample from the full conditional for each parameter. This is much more computationally efficient, but requires a specific setting that is frequently untrue.
 
 In **Metropolis-Hastings sampling**, the full conditional does not have a closed-form expression. Instead, you generate a proposal value (usually very close to the current parameter value), and calculate the likelihood ratio $\alpha = \ell(\text{proposal}) / \ell(\text{current})$. You then accept the proposal with probability $\text{min}\{\alpha, 1\}$ (i.e., if the proposal has a higher likelihood, it is always accepted; if not, it is still sometimes accepted so that we can continue to explore parameter space).
+
+
+## Stochastic Search Variable Selection
+
+ - Just like in Bayesian model selection, SSVS embeds the entire modeling processing in a hierarchical Bayesian setup, including the model selection $\gamma$.
+ - The conditional distribution is represented as a scale mixture of normal:
+ 
+$$
+  \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2)
+$$
+
+ - You can place prior distributions on $\tau_j^2$ and $c_j$, or hold them constant.
+ - Other priors, such as the normal mixture of inverse gammas (NMIG), extend this process.
+ 
+ 
+## LASSO and NG Specifications
+
+The hierarchical representation of the full conditional model under the LASSO prior is given below:
+
+$$
+\begin{align*}
+  \beta_j | \tau_j &\sim N(0, \sigma^2 \tau_j^2) \\
+  \tau_j^2 | \lambda &\sim \text{exp}(\lambda^2 / 2)
+\end{align*}
+$$
+
+The hierarchical representation of the full conditional model under the normal-gamma prior is given below:
+
+$$
+\begin{align*}
+  \beta_j | \tau_j &\sim N(0, \tau_j^2) \\
+  \tau_j^2 &\sim \text{gamma}(\lambda, 1/(2\xi^2))
+\end{align*}
+$$
+
+## Horseshoe Prior
+
+The hierarchical representation for the full conditional model under the horseshoe prior is given below:
+
+$$
+\begin{align*}
+  \beta_j | \eta_j &\sim N(0, \eta_j^2) \\
+  \eta_j | \tau &\sim C^+(0, \tau) \\
+  \tau | \sigma &\sim C^+(0, \sigma)
+\end{align*}
+$$
+
+In this case, $C^+$ is a half-Cauchy distribution. Here, $\eta_j$ is the local shrinkage parameter, while $\tau$ is the global shrinkage parameter. With some integration, this yields the shrinkage coefficient $\kappa_j = 1 / (1 + \eta_j^2)$. The half-cauchy prior on $\eta_j$ implies a Beta(1/2, 1/2) prior distribution for $\kappa_j$, which yields the horseshoe.
+
+## Expectation-Maximization Variable Selection
+
+Equations for the objective function and calculations to be taken at the E and M steps can be found in Rockova (2013), pp. 44-47.
 
 
 

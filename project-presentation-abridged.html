@@ -510,6 +510,7 @@ Dav King
 <li><strong>Maximization (M) Step:</strong> Update parameter estimates by maximizing the objective function of all model parameters.</li>
 </ul>
 <p>Researchers have suggested that the EMVS algorithm may perform much better than MCMC when <span class="math inline">\(p &gt;&gt; n\)</span>. It is also much more computationally efficient.</p>
+<p>Smoothing can be added with <strong>deterministic annealing</strong>, which can improve the model’s tendency to overfit (discussed in report).</p>
 </section></section>
 <section>
 <section id="experiment" class="title-slide slide level1 center">
@@ -1064,11 +1065,68 @@ Dav King
 <h2>References</h2>
 <p>All source code for this project and citations can be found at github.com/davmking/bayesian-variable-selection. References, which will be formalized in the final report, can be found in the file references.bib; Chat GPT citations can be found in the file chat-gpt-prompts.txt.</p>
 </section>
+<section id="bayesian-definitions" class="slide level2">
+<h2>Bayesian Definitions</h2>
+<ul>
+<li><strong>Prior Distribution:</strong> Our beliefs about the distribution of a paramter <em>a priori</em>, i.e.&nbsp;before seeing the data.</li>
+<li><strong>Data Generative Model:</strong> The true mechanism by which the data are generated (including some zero-mean random noise).</li>
+<li><strong>Normalizing Constant:</strong> The constant required to make a probability distribution integrate to 1. Generally speaking, this is absorbed into proportionality.</li>
+<li><strong>(Joint) Posterior Distribution:</strong> The distribution of (all) variables, incorporating both our prior beliefs and our data generative model’s likelihood function.</li>
+<li><strong>Full Conditional Distribution:</strong> The distribution of a parameter given all other parameters. This is always proportional to the joint posterior. We usually sample from the full conditional in MCMC sampling.</li>
+</ul>
+</section>
 <section id="gibbs-and-metropolis-hastings-algorithms" class="slide level2">
 <h2>Gibbs and Metropolis-Hastings Algorithms</h2>
 <p>Two of the most common MCMC algorithms are Gibbs samplers and Metropolis-Hastings samplers.</p>
 <p>In <strong>Gibbs sampling</strong>, the full conditional has a closed-form expression, and you simply sample from the full conditional for each parameter. This is much more computationally efficient, but requires a specific setting that is frequently untrue.</p>
 <p>In <strong>Metropolis-Hastings sampling</strong>, the full conditional does not have a closed-form expression. Instead, you generate a proposal value (usually very close to the current parameter value), and calculate the likelihood ratio <span class="math inline">\(\alpha = \ell(\text{proposal}) / \ell(\text{current})\)</span>. You then accept the proposal with probability <span class="math inline">\(\text{min}\{\alpha, 1\}\)</span> (i.e., if the proposal has a higher likelihood, it is always accepted; if not, it is still sometimes accepted so that we can continue to explore parameter space).</p>
+</section>
+<section id="stochastic-search-variable-selection" class="slide level2">
+<h2>Stochastic Search Variable Selection</h2>
+<ul>
+<li>Just like in Bayesian model selection, SSVS embeds the entire modeling processing in a hierarchical Bayesian setup, including the model selection <span class="math inline">\(\gamma\)</span>.</li>
+<li>The conditional distribution is represented as a scale mixture of normal:</li>
+</ul>
+<p><span class="math display">\[
+  \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2)
+\]</span></p>
+<ul>
+<li>You can place prior distributions on <span class="math inline">\(\tau_j^2\)</span> and <span class="math inline">\(c_j\)</span>, or hold them constant.</li>
+<li>Other priors, such as the normal mixture of inverse gammas (NMIG), extend this process.</li>
+</ul>
+</section>
+<section id="lasso-and-ng-specifications" class="slide level2">
+<h2>LASSO and NG Specifications</h2>
+<p>The hierarchical representation of the full conditional model under the LASSO prior is given below:</p>
+<p><span class="math display">\[
+\begin{align*}
+  \beta_j | \tau_j &amp;\sim N(0, \sigma^2 \tau_j^2) \\
+  \tau_j^2 | \lambda &amp;\sim \text{exp}(\lambda^2 / 2)
+\end{align*}
+\]</span></p>
+<p>The hierarchical representation of the full conditional model under the normal-gamma prior is given below:</p>
+<p><span class="math display">\[
+\begin{align*}
+  \beta_j | \tau_j &amp;\sim N(0, \tau_j^2) \\
+  \tau_j^2 &amp;\sim \text{gamma}(\lambda, 1/(2\xi^2))
+\end{align*}
+\]</span></p>
+</section>
+<section id="horseshoe-prior-2" class="slide level2">
+<h2>Horseshoe Prior</h2>
+<p>The hierarchical representation for the full conditional model under the horseshoe prior is given below:</p>
+<p><span class="math display">\[
+\begin{align*}
+  \beta_j | \eta_j &amp;\sim N(0, \eta_j^2) \\
+  \eta_j | \tau &amp;\sim C^+(0, \tau) \\
+  \tau | \sigma &amp;\sim C^+(0, \sigma)
+\end{align*}
+\]</span></p>
+<p>In this case, <span class="math inline">\(C^+\)</span> is a half-Cauchy distribution. Here, <span class="math inline">\(\eta_j\)</span> is the local shrinkage parameter, while <span class="math inline">\(\tau\)</span> is the global shrinkage parameter. With some integration, this yields the shrinkage coefficient <span class="math inline">\(\kappa_j = 1 / (1 + \eta_j^2)\)</span>. The half-cauchy prior on <span class="math inline">\(\eta_j\)</span> implies a Beta(1/2, 1/2) prior distribution for <span class="math inline">\(\kappa_j\)</span>, which yields the horseshoe.</p>
+</section>
+<section id="expectation-maximization-variable-selection-2" class="slide level2">
+<h2>Expectation-Maximization Variable Selection</h2>
+<p>Equations for the objective function and calculations to be taken at the E and M steps can be found in Rockova (2013), pp.&nbsp;44-47.</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
