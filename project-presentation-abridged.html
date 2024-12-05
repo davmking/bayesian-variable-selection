@@ -353,7 +353,6 @@ Dav King
 <li>Improve interpretability</li>
 </ul></li>
 <li>Useful in fields like genomics &amp; social sciences</li>
-<li>Common methods: Best subset selection, LASSO regression, etc.</li>
 <li><strong>Problem:</strong> With <span class="math inline">\(p\)</span> parameters, there are <span class="math inline">\(2^p\)</span> possible model formulations, known as the <strong>model space</strong> <span class="math inline">\(\mathcal{M}\)</span></li>
 </ul>
 </section>
@@ -368,7 +367,7 @@ Dav King
 <p><span class="math display">\[
   p(B | A) = \frac{p(A | B)p(B)}{p(A)}
 \]</span></p>
-<p>In <strong>Bayesian modeling</strong>, we update our beliefs about model parameters based on A) our prior beliefs about the parameters and B) the likelihood function of the data:</p>
+<p>In <strong>Bayesian modeling</strong>, we use Bayes’ theorem to update our beliefs about model parameters:</p>
 <p><span class="math display">\[
   p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta)p(\beta)}{\int_\beta p(\mathbf{Y} | \beta)p(\beta)d\beta}
 \]</span></p>
@@ -378,7 +377,7 @@ Dav King
 <p><span class="math display">\[
   p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta)p(\beta)}{\int_\beta p(\mathbf{Y} | \beta)p(\beta)d\beta}
 \]</span></p>
-<p>In this model,</p>
+<p>In this equation,</p>
 <ul>
 <li><span class="math inline">\(p(\mathbf{Y} | \beta)\)</span> is the <strong>Data Generative Model</strong>.</li>
 <li><span class="math inline">\(p(\beta)\)</span> is the <strong>Prior Distribution</strong>(**).</li>
@@ -432,7 +431,7 @@ Dav King
 <section id="bayesian-model-selection-bms" class="slide level2">
 <h2>Bayesian Model Selection (BMS)</h2>
 <ul>
-<li>Let <span class="math inline">\(\gamma_i\)</span> be a binary indicator variable denoting whether <span class="math inline">\(\beta_i\)</span> is included in model <span class="math inline">\(\mathcal{M}_\gamma\)</span>. Different instances of <span class="math inline">\(\gamma\)</span> represent the whole model space <span class="math inline">\(\mathcal{M}\)</span>.</li>
+<li>Define <span class="math inline">\(\gamma = \gamma_1, \dots, \gamma_p\)</span> so that <span class="math inline">\(\gamma_i\)</span> is a binary indicator variable denoting whether <span class="math inline">\(\beta_i\)</span> is included in model <span class="math inline">\(\mathcal{M}_\gamma\)</span>. Different instances of <span class="math inline">\(\gamma\)</span> represent the whole model space <span class="math inline">\(\mathcal{M}\)</span>.</li>
 <li>In the MCMC sampler, propose new values of <span class="math inline">\(\gamma\)</span> along with <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>, and accept/reject the proposal based on model likelihood.</li>
 <li>More probable models will appear more frequently in the resulting posterior distribution of <span class="math inline">\(\gamma\)</span>.</li>
 <li>Often this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.</li>
@@ -459,7 +458,7 @@ Dav King
 <ul>
 <li>Suppose we have some prior belief about the structure of our <span class="math inline">\(\beta\)</span>s: specifically, we believe that not all of them are included in the true data-generative model.</li>
 <li>We place a prior distribution on the <span class="math inline">\(\beta\)</span>s that reflects this belief.</li>
-<li>We can introduce more complicated techniques, such as placing different priors on specific groups of <span class="math inline">\(\beta\)</span>s (beyond the scope of this project).</li>
+<li>This produces an outcome of the desired form.</li>
 </ul>
 </section>
 <section id="spike-and-slab-priors" class="slide level2">
@@ -472,7 +471,7 @@ Dav King
 <ul>
 <li><span class="math inline">\(\phi_0(\beta_j)\)</span> is a concentrated “spike” distribution that pulls some of the <span class="math inline">\(\beta\)</span>s to (near) zero.</li>
 <li><span class="math inline">\(\phi_1(\beta_j)\)</span> is a diffuse “slab” distribution that allows the remaining <span class="math inline">\(\beta\)</span>s to attain their true coefficients.</li>
-<li>A common technique, Stochastic Search Variable Selection (SSVS), represents the two distributions as a scale mixture of normals, and finds highly probable instances of <span class="math inline">\(\gamma\)</span>.</li>
+<li>A common technique, Stochastic Search Variable Selection (SSVS), represents the two distributions as normals, and finds highly probable instances of <span class="math inline">\(\gamma\)</span>.</li>
 </ul>
 </section>
 <section id="ssvs-prior-distribution" class="slide level2">
@@ -482,8 +481,8 @@ Dav King
 <section id="shrinkage-priors" class="slide level2">
 <h2>Shrinkage Priors</h2>
 <p>Unlike spike-and-slab priors, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the <span class="math inline">\(\beta\)</span>s towards zero, while minimally penalizing the remaining coefficients (allowing them to reach their true values).</p>
-<p>The Bayesian analogue to LASSO regression places an exponential prior on the variance, which results in a Laplace prior for the <span class="math inline">\(\beta\)</span>s.</p>
-<p>The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance which allows the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.</p>
+<p>The Bayesian analogue to LASSO is hierarchical: <span class="math inline">\(\beta\)</span>s are drawn from a normal distribution, with random variance drawn from an exponential prior, resulting in a conditional Laplace prior for the <span class="math inline">\(\beta\)</span>s.</p>
+<p>The Normal-Gamma prior modifies the Bayesian LASSO, placing a gamma prior on the variance, which allows the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.</p>
 </section>
 <section id="lasso-prior" class="slide level2">
 <h2>LASSO Prior</h2>
@@ -491,8 +490,8 @@ Dav King
 <img data-src="project-presentation-abridged_files/figure-revealjs/LASSO%20distribution-1.png" width="960" class="r-stretch"></section>
 <section id="horseshoe-prior" class="slide level2">
 <h2>Horseshoe Prior</h2>
-<p>Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. This is known as a <strong>global-local</strong> shrinkage prior.</p>
-<p>The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.</p>
+<p>Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage for some coefficients. This is known as a <strong>global-local</strong> shrinkage prior.</p>
+<p>The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near 0 (indicating signals) 1 one (indicating noise), giving the horseshoe prior its name.</p>
 </section>
 <section id="horseshoe-prior-1" class="slide level2">
 <h2>Horseshoe Prior</h2>
@@ -507,8 +506,8 @@ Dav King
 <h2>Expectation-Maximization Variable Selection</h2>
 <p>As an alternative to MCMC sampling, the EMVS algorithm performs Bayesian regression with a spike-and-slab prior, repeating two steps until convergence:</p>
 <ul>
-<li><strong>Expectation (E) Step:</strong> Calculate the posterior inclusion probabilities for each <span class="math inline">\(\beta_j\)</span> based on current parameter estimates.</li>
-<li><strong>Maximization (M) Step:</strong> Update parameter estimates by maximizing the expectation of the data likelihood.</li>
+<li><strong>Expectation (E) Step:</strong> Calculate the posterior inclusion probabilities (expectations) for each <span class="math inline">\(\beta_j\)</span> based on current parameter estimates.</li>
+<li><strong>Maximization (M) Step:</strong> Update parameter estimates by maximizing the objective function of all model parameters.</li>
 </ul>
 <p>Researchers have suggested that the EMVS algorithm may perform much better than MCMC when <span class="math inline">\(p &gt;&gt; n\)</span>. It is also much more computationally efficient.</p>
 </section></section>
@@ -1036,7 +1035,7 @@ Dav King
 <li>In low-dimensional settings, all algorithms are very fast and effective.</li>
 <li>As dimensionality increases, BMA and BMS become less useful; runtime increases dramatically for prior-based methods.</li>
 <li>Generally, EMVS performs pretty well, and it is so efficient that it leaves much more room for tuning.</li>
-<li>EMVS and BMA have a tendency to overfit (might be reduced with more data).</li>
+<li>EMVS and BMA have a tendency to overfit (might be reduced with more training data).</li>
 <li>No model is unilaterally the best! They may have different performance in another setting - there are many more variables at play here.</li>
 </ul>
 </section>
@@ -1051,9 +1050,14 @@ Dav King
 <li><strong>Runtime:</strong> EMVS</li>
 </ul>
 </section></section>
-<section>
 <section id="questions" class="title-slide slide level1 center">
 <h1>Questions?</h1>
+
+</section>
+
+<section>
+<section id="appendix" class="title-slide slide level1 center">
+<h1>Appendix</h1>
 
 </section>
 <section id="references" class="slide level2">

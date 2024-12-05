@@ -28,7 +28,6 @@ library(kableExtra)
    - Minimize model variance
    - Improve interpretability
  - Useful in fields like genomics \& social sciences
- - Common methods: Best subset selection, LASSO regression, etc.
  - **Problem:** With $p$ parameters, there are $2^p$ possible model formulations, known as the **model space** $\mathcal{M}$
  
 # Bayesian Statistics
@@ -41,7 +40,7 @@ $$
   p(B | A) = \frac{p(A | B)p(B)}{p(A)}
 $$
 
-In **Bayesian modeling**, we update our beliefs about model parameters based on A) our prior beliefs about the parameters and B) the likelihood function of the data:
+In **Bayesian modeling**, we use Bayes' theorem to update our beliefs about model parameters:
 
 $$
   p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta)p(\beta)}{\int_\beta p(\mathbf{Y} | \beta)p(\beta)d\beta}
@@ -54,7 +53,7 @@ $$
   p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta)p(\beta)}{\int_\beta p(\mathbf{Y} | \beta)p(\beta)d\beta}
 $$
 
-In this model,
+In this equation,
 
  - $p(\mathbf{Y} | \beta)$ is the **Data Generative Model**.
  - $p(\beta)$ is the **Prior Distribution**(**).
@@ -103,7 +102,7 @@ $$
 
 ## Bayesian Model Selection (BMS)
 
- - Let $\gamma_i$ be a binary indicator variable denoting whether $\beta_i$ is included in model $\mathcal{M}_\gamma$. Different instances of $\gamma$ represent the whole model space $\mathcal{M}$.
+ - Define $\gamma = \gamma_1, \dots, \gamma_p$ so that $\gamma_i$ is a binary indicator variable denoting whether $\beta_i$ is included in model $\mathcal{M}_\gamma$. Different instances of $\gamma$ represent the whole model space $\mathcal{M}$.
  - In the MCMC sampler, propose new values of $\gamma$ along with $\beta$ and $\mathbf{Y}$, and accept/reject the proposal based on model likelihood.
  - More probable models will appear more frequently in the resulting posterior distribution of $\gamma$.
  - Often this procedure converges quickly to one (or a few) strong candidate models, despite only exploring a small portion of the model space.
@@ -121,7 +120,7 @@ $$
 
  - Suppose we have some prior belief about the structure of our $\beta$s: specifically, we believe that not all of them are included in the true data-generative model.
  - We place a prior distribution on the $\beta$s that reflects this belief.
- - We can introduce more complicated techniques, such as placing different priors on specific groups of $\beta$s (beyond the scope of this project).
+ - This produces an outcome of the desired form.
  
  
 ## Spike-And-Slab Priors
@@ -136,7 +135,7 @@ where
 
  - $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero.
  - $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients.
- - A common technique, Stochastic Search Variable Selection (SSVS), represents the two distributions as a scale mixture of normals, and finds highly probable instances of $\gamma$.
+ - A common technique, Stochastic Search Variable Selection (SSVS), represents the two distributions as normals, and finds highly probable instances of $\gamma$.
  
  
 ## SSVS Prior Distribution
@@ -175,9 +174,9 @@ data.frame(slab, spike) %>%
 
 Unlike spike-and-slab priors, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the $\beta$s towards zero, while minimally penalizing the remaining coefficients (allowing them to reach their true values).
 
-The Bayesian analogue to LASSO regression places an exponential prior on the variance, which results in a Laplace prior for the $\beta$s. 
+The Bayesian analogue to LASSO is hierarchical: $\beta$s are drawn from a normal distribution, with random variance drawn from an exponential prior, resulting in a conditional Laplace prior for the $\beta$s. 
 
-The Normal-Gamma prior expands on the Bayesian LASSO, placing a gamma prior on the variance which allows the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.
+The Normal-Gamma prior modifies the Bayesian LASSO, placing a gamma prior on the variance, which allows the distribution to have a lot of mass close to zero while maintaining heavy tails for the non-zero coefficients.
 
 ## LASSO Prior
 
@@ -216,9 +215,9 @@ data.frame(lasso_values) %>%
 
 ## Horseshoe Prior
 
-Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage locally for some coefficients. This is known as a **global-local** shrinkage prior. 
+Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage for some coefficients. This is known as a **global-local** shrinkage prior. 
 
-The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near zero (indicating signals) and one (indicating noise), giving the horseshoe prior its name.
+The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near 0 (indicating signals) 1 one (indicating noise), giving the horseshoe prior its name.
 
 
 ## Horseshoe Prior
@@ -244,8 +243,8 @@ ggplot(mapping = aes(x = rbeta(1000000, 1/2, 1/2))) +
 
 As an alternative to MCMC sampling, the EMVS algorithm performs Bayesian regression with a spike-and-slab prior, repeating two steps until convergence:
 
- - **Expectation (E) Step:** Calculate the posterior inclusion probabilities for each $\beta_j$ based on current parameter estimates.
- - **Maximization (M) Step:** Update parameter estimates by maximizing the expectation of the data likelihood.
+ - **Expectation (E) Step:** Calculate the posterior inclusion probabilities (expectations) for each $\beta_j$ based on current parameter estimates.
+ - **Maximization (M) Step:** Update parameter estimates by maximizing the objective function of all model parameters.
  
 Researchers have suggested that the EMVS algorithm may perform much better than MCMC when $p >> n$. It is also much more computationally efficient.
 
@@ -381,7 +380,7 @@ model_5_rates %>%
  - In low-dimensional settings, all algorithms are very fast and effective.
  - As dimensionality increases, BMA and BMS become less useful; runtime increases dramatically for prior-based methods.
  - Generally, EMVS performs pretty well, and it is so efficient that it leaves much more room for tuning.
- - EMVS and BMA have a tendency to overfit (might be reduced with more data).
+ - EMVS and BMA have a tendency to overfit (might be reduced with more training data).
  - No model is unilaterally the best! They may have different performance in another setting - there are many more variables at play here.
  
 ## Winners
@@ -394,6 +393,8 @@ model_5_rates %>%
  - **Runtime:** EMVS
  
 # Questions?
+
+# Appendix
 
 ## References
 
