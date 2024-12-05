@@ -851,6 +851,276 @@ rowSums(emvs_5$prob_inclusion > 0.5)
 emvs_5$niters
 ```
 
+```{r}
+#| label: model 5 temperature test
+
+X <- model_5$X[,-1]
+y <- model_5$y
+
+set.seed(465)
+emvs_5_t0 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X),
+  temperature = 0.1
+)
+
+set.seed(465)
+emvs_5_t1 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X),
+  temperature = 1
+)
+
+set.seed(465)
+emvs_5_t2 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X),
+  temperature = 2
+)
+
+set.seed(465)
+emvs_5_t3 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X),
+  temperature = 5
+)
+
+set.seed(465)
+emvs_5_t4 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X),
+  temperature = 10
+)
+
+set.seed(465)
+emvs_5_t5 <- EMVS(
+  X = X,
+  Y = y,
+  #v0 = 0.01,
+  v0 = v0_try,
+  v1 = 1,
+  type = "betabinomial",
+  beta_init = rep(0, ncol(X)),
+  sigma_init = 1,
+  epsilon = 1e-6,
+  a = 1,
+  b = ncol(X),
+  temperature = 100
+)
+
+
+emvs_5_t0_error <- Inf
+emvs_5_t0_idx <- NA
+emvs_5_t0_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5_t0, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_t0_error){
+    emvs_5_t0_error <- temp$error
+    emvs_5_t0_idx <- i
+    emvs_5_t0_thresh <- temp$threshold
+  }
+}
+emvs_5_t0_error
+emvs_5_t0_idx
+emvs_5_t0_thresh
+
+
+emvs_5_t1_error <- Inf
+emvs_5_t1_idx <- NA
+emvs_5_t1_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5_t1, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_t1_error){
+    emvs_5_t1_error <- temp$error
+    emvs_5_t1_idx <- i
+    emvs_5_t1_thresh <- temp$threshold
+  }
+}
+emvs_5_t1_error
+emvs_5_t1_idx
+emvs_5_t1_thresh
+
+
+emvs_5_t2_error <- Inf
+emvs_5_t2_idx <- NA
+emvs_5_t2_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5_t2, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_t2_error){
+    emvs_5_t2_error <- temp$error
+    emvs_5_t2_idx <- i
+    emvs_5_t2_thresh <- temp$threshold
+  }
+}
+emvs_5_t2_error
+emvs_5_t2_idx
+emvs_5_t2_thresh
+
+
+emvs_5_t3_error <- Inf
+emvs_5_t3_idx <- NA
+emvs_5_t3_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5_t3, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_t3_error){
+    emvs_5_t3_error <- temp$error
+    emvs_5_t3_idx <- i
+    emvs_5_t3_thresh <- temp$threshold
+  }
+}
+emvs_5_t3_error
+emvs_5_t3_idx
+emvs_5_t3_thresh
+
+
+emvs_5_t4_error <- Inf
+emvs_5_t4_idx <- NA
+emvs_5_t4_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5_t4, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_t4_error){
+    emvs_5_t4_error <- temp$error
+    emvs_5_t4_idx <- i
+    emvs_5_t4_thresh <- temp$threshold
+  }
+}
+emvs_5_t4_error
+emvs_5_t4_idx
+emvs_5_t4_thresh
+
+
+emvs_5_t5_error <- Inf
+emvs_5_t5_idx <- NA
+emvs_5_t5_thresh <- NA
+for(i in 1:6){
+  temp <- find_optimal_threshold(emvs_5_t5, i, true_betas_5, N_5, P_5)
+  if(temp$error < emvs_5_t5_error){
+    emvs_5_t5_error <- temp$error
+    emvs_5_t5_idx <- i
+    emvs_5_t5_thresh <- temp$threshold
+  }
+}
+emvs_5_t5_error
+emvs_5_t5_idx
+emvs_5_t5_thresh
+
+
+emvs_5_t0_thresholded <- as.integer(emvs_5_t0$prob_inclusion[emvs_5_t0_idx,] > emvs_5_t0_thresh)
+emvs_5_t0_thresh_cm <- table(true_betas_5, emvs_5_t0_thresholded)
+
+emvs_5_t1_thresholded <- as.integer(emvs_5_t1$prob_inclusion[emvs_5_t1_idx,] > emvs_5_t1_thresh)
+emvs_5_t1_thresh_cm <- table(true_betas_5, emvs_5_t1_thresholded)
+
+emvs_5_t2_thresholded <- as.integer(emvs_5_t2$prob_inclusion[emvs_5_t2_idx,] > emvs_5_t2_thresh)
+emvs_5_t2_thresh_cm <- table(true_betas_5, emvs_5_t2_thresholded)
+
+emvs_5_t3_thresholded <- as.integer(emvs_5_t3$prob_inclusion[emvs_5_t3_idx,] > emvs_5_t3_thresh)
+emvs_5_t3_thresh_cm <- table(true_betas_5, emvs_5_t3_thresholded)
+
+emvs_5_t4_thresholded <- as.integer(emvs_5_t4$prob_inclusion[emvs_5_t4_idx,] > emvs_5_t4_thresh)
+emvs_5_t4_thresh_cm <- table(true_betas_5, emvs_5_t4_thresholded)
+
+emvs_5_t5_thresholded <- as.integer(emvs_5_t5$prob_inclusion[emvs_5_t5_idx,] > emvs_5_t5_thresh)
+emvs_5_t5_thresh_cm <- table(true_betas_5, emvs_5_t5_thresholded)
+
+emvs_5_t0_thresh_cm
+emvs_5_t1_thresh_cm
+emvs_5_t2_thresh_cm
+emvs_5_t3_thresh_cm
+emvs_5_t4_thresh_cm
+emvs_5_t5_thresh_cm
+
+emvs_5_t0_est <- emvs_5_t0$betas[1,]
+emvs_5_t1_est <- emvs_5_t1$betas[1,]
+emvs_5_t2_est <- emvs_5_t2$betas[1,]
+emvs_5_t3_est <- emvs_5_t3$betas[1,]
+emvs_5_t4_est <- emvs_5_t4$betas[1,]
+emvs_5_t5_est <- emvs_5_t5$betas[1,]
+
+# Signal coefficients
+mean((emvs_5_t0_est[which(true_betas_5 == 1)] - beta_vals_5[which(true_betas_5 == 1)])^2)
+mean((emvs_5_t1_est[which(true_betas_5 == 1)] - beta_vals_5[which(true_betas_5 == 1)])^2)
+mean((emvs_5_t2_est[which(true_betas_5 == 1)] - beta_vals_5[which(true_betas_5 == 1)])^2)
+mean((emvs_5_t3_est[which(true_betas_5 == 1)] - beta_vals_5[which(true_betas_5 == 1)])^2)
+mean((emvs_5_t4_est[which(true_betas_5 == 1)] - beta_vals_5[which(true_betas_5 == 1)])^2)
+mean((emvs_5_t5_est[which(true_betas_5 == 1)] - beta_vals_5[which(true_betas_5 == 1)])^2)
+# Minimized at t = 1
+
+# All coefficients
+mean((emvs_5_t0_est - beta_vals_5)^2)
+mean((emvs_5_t1_est - beta_vals_5)^2)
+mean((emvs_5_t2_est - beta_vals_5)^2)
+mean((emvs_5_t3_est - beta_vals_5)^2)
+mean((emvs_5_t4_est - beta_vals_5)^2)
+mean((emvs_5_t5_est - beta_vals_5)^2)
+# Technically minimized at t = 10, but very indiscernible except for t = 100
+
+# Train MSE
+mean(((X_5 %*% as.matrix(c(-1, emvs_5_t0_est))) - y_5)^2)
+mean(((X_5 %*% as.matrix(c(-1, emvs_5_t1_est))) - y_5)^2)
+mean(((X_5 %*% as.matrix(c(-1, emvs_5_t2_est))) - y_5)^2)
+mean(((X_5 %*% as.matrix(c(-1, emvs_5_t3_est))) - y_5)^2)
+mean(((X_5 %*% as.matrix(c(-1, emvs_5_t4_est))) - y_5)^2)
+mean(((X_5 %*% as.matrix(c(-1, emvs_5_t5_est))) - y_5)^2)
+# Minimized at low temperatures
+
+# Test MSE
+mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t0_est))) - y_5_test)^2)
+mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t1_est))) - y_5_test)^2)
+mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t2_est))) - y_5_test)^2)
+mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t3_est))) - y_5_test)^2)
+mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t4_est))) - y_5_test)^2)
+mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t5_est))) - y_5_test)^2)
+# Minimized at t = 10
+# With this, it outperforms other models
+```
+
+
 
 
 # Prior Methods
