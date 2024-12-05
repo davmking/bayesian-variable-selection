@@ -1,0 +1,60 @@
+---
+title: "Bayesian Methods of Variable Selection"
+author: "Dav King"
+format: pdf
+bibliography: references.bib
+csl: apa.csl
+---
+
+# Introduction
+
+
+# Bayesian Modeling
+
+
+# Non-Prior Methods
+
+
+## Bayesian Model Selection
+
+
+## Bayesian Model Averaging
+
+
+# Prior Methods
+
+## Spike-and-Slab Priors
+
+### Stochastic Search Variable Selection
+
+### Normal Mixture of Inverse Gamma
+
+
+## Shrinkage Priors
+
+### LASSO
+
+### Normal-Gamma
+
+### Horseshoe
+
+
+# Expectation-Maximization Variable Selection
+
+## Overview
+
+## Algorithm
+
+## Deterministic Annealing
+
+
+# Experiment
+
+## Methodology
+
+## Results
+
+
+# Discussion
+
+
