@@ -1063,6 +1063,12 @@ Dav King
 <section id="references" class="slide level2">
 <h2>References</h2>
 <p>All source code for this project and citations can be found at github.com/davmking/bayesian-variable-selection. References, which will be formalized in the final report, can be found in the file references.bib; Chat GPT citations can be found in the file chat-gpt-prompts.txt.</p>
+</section>
+<section id="gibbs-and-metropolis-hastings-algorithms" class="slide level2">
+<h2>Gibbs and Metropolis-Hastings Algorithms</h2>
+<p>Two of the most common MCMC algorithms are Gibbs samplers and Metropolis-Hastings samplers.</p>
+<p>In <strong>Gibbs sampling</strong>, the full conditional has a closed-form expression, and you simply sample from the full conditional for each parameter. This is much more computationally efficient, but requires a specific setting that is frequently untrue.</p>
+<p>In <strong>Metropolis-Hastings sampling</strong>, the full conditional does not have a closed-form expression. Instead, you generate a proposal value (usually very close to the current parameter value), and calculate the likelihood ratio <span class="math inline">\(\alpha = \ell(\text{proposal}) / \ell(\text{current})\)</span>. You then accept the proposal with probability <span class="math inline">\(\text{min}\{\alpha, 1\}\)</span> (i.e., if the proposal has a higher likelihood, it is always accepted; if not, it is still sometimes accepted so that we can continue to explore parameter space).</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
