@@ -58,3 +58,13 @@ csl: apa.csl
 # Discussion
 
 
+\newpage
+
+# References
+
+
+\newpage
+
+# Appendix
+
+
