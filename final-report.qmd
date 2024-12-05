@@ -8,6 +8,21 @@ csl: apa.csl
 
 # Introduction
 
+*Note: all notes and code used in this project can be found at github.com/davmking/bayesian-variable-selection.*
+
+Consider the traditional regression setting:
+
+$$
+\begin{equation}
+  \mathbf{Y} = \mathbf{X} \beta + \mathbf{\epsilon}
+\end{equation}
+$$
+
+In this setting, $\beta$ is the $p \times 1$ vector of predictors, $\mathbf{X}$ is the $n \times p$ feature matrix, $\mathbf{Y}$ is the $n \times 1$ vector of responses, and $\mathbf{\epsilon}$ is the $n \times 1$ vector of random, irreducible, zero-mean noise. $p(\mathbf{Y} | \beta)$ is known as the **data-generative model**, i.e., the mechanism by which we believe the response variable $\mathbf{Y}$ is actually generated. Often, we have a great number of potential predictors, but believe that only a small handful of them are truly a part of the data-generative model. This is a statistical concept known as **sparsity**, where the predictors in the true data-generative model are **signals** and the remaining predictors are **noise**.
+
+
+# Research Questions
+
 
 # Bayesian Modeling
 
