@@ -148,12 +148,12 @@ tau <- 1
 c <- 3
 
 set.seed(481)
-slab <- rnorm(100000, 0, tau^2)
-spike <- rnorm(100000, 0, c^2 * tau^2)
+spike <- rnorm(100000, 0, tau^2)
+slab <- rnorm(100000, 0, c^2 * tau^2)
 
 data.frame(slab, spike) %>% 
   pivot_longer(everything()) %>% 
-  mutate(name = factor(name, levels = c("spike", "slab"))) %>% 
+  mutate(name = factor(name, levels = c("slab", "spike"))) %>% 
   ggplot(aes(x = value, fill = name)) +
   geom_density(alpha = 0.5) +
   theme_bw() +
@@ -217,7 +217,7 @@ data.frame(lasso_values) %>%
 
 Horseshoe priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage for some coefficients. This is known as a **global-local** shrinkage prior. 
 
-The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near 0 (indicating signals) 1 one (indicating noise), giving the horseshoe prior its name.
+The horseshoe prior setting results in a shrinkage coefficient that places a lot of mass near 0 (indicating signals) and 1 (indicating noise), giving the horseshoe prior its name.
 
 
 ## Horseshoe Prior
