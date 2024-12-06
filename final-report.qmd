@@ -330,6 +330,8 @@ More formal specifications of the equations required to execute this algorithm c
 
 ## Deterministic Annealing
 
+If the true posterior is multi-modal, it is very possible that poor initialization of the EMVS algorithm will lead to incorrect estimates of the posterior, as EMVS gets trapped in local modes. One potential solution to this is deterministic annealing. Instead of maximizing the objective function, we minimize a tempered version known as the negative free energy function. We can raise the "temperature", which smooths away the local modes of the negative free energy function, allowing only the true signals to shine through and giving us some robustness against poor initialization. As we progress through the algorithm, we lower the temperature progressively until its effects are completely removed, allowing us to view an equation that more truly resembles the posterior [@rockova2013]. Some form of cross-validation is required to find the optimal values of initial temperature, but since the EMVS algorithm converges so quickly, this is still much faster than MCMC sampling in most cases.
+
 
 # Experiment
 
