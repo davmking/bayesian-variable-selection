@@ -268,14 +268,65 @@ Under this distribution, there is a high probability of the $\beta$s falling at 
 
 ### Normal-Gamma
 
+While the Bayesian LASSO was one of the earliest methods of Bayesian variable selection and remains one of the best-used, it is not without its criticisms. The use of only a single hyperparameter reduces flexibility, meaning that either the LASSO will fail to perform adequate variable selection or the signal coefficients will be unnecessarily reduced. Thus, the normal-gamma prior arises [@griffin2010]. The specification for the normal-gamma is
+
+\begin{align}
+  \beta_j | \tau_j &\sim N(0, \tau_j^2) \\
+  \tau_j^2 | \lambda, \xi &\sim \text{gamma}(\lambda, 1/(2\xi^2))
+\end{align}
+
+The introduction of the extra hyperparameter $\xi$ and the gamma prior on the variance $\tau_j^2$ allows this distribution to have a lot of mass close to zero, while maintaining heavy tails for the coefficients. This is generally an improvement on LASSO, though it does require the introduction of an extra parameter (potentially increasing computational complexity) and does not always outperform the LASSO in applied settings.
+
+
 ### Horseshoe
+
+Taking a slightly different approach, horseshoe priors fall into a class known as **global-local** shrinkage priors [@carvalho2010]. These priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage for some coefficients at the local level. The hierarchical representation of the regression model under a horseshoe prior is
+
+\begin{align}
+  \beta_j | \eta_j &\sim N(0, \eta_j^2) \\
+  \eta_j | \tau &\sim C^+(0, \tau) \\ 
+  \tau | \sigma &\sim C^+(0, \sigma),
+\end{align}
+
+where $C^+$ is a half-Cauchy distribution (restricted to positive values). In this specification, $\eta_j$ is the local shrinkage parameter, while $\tau$ is the global shrinkage parameter. With some integration, this results in a shrinkage coefficient $\kappa_j = 1 / (1 + \eta_j^2)$. The half-Cauchy prior on $\eta_j$ implies a Beta(1/2, 1/2) marginal distribution for $\kappa_j$, which gives the horseshoe its name.
+
+```{r}
+#| label: horseshoe distribution
+#| fig-align: center
+
+set.seed(523)
+ggplot(mapping = aes(x = rbeta(1000000, 1/2, 1/2))) +
+  geom_density(fill = "darkgrey", alpha = 0.5) +
+  theme_bw() +
+  labs(x = TeX("$\\kappa_j$"), y = "Density",
+       title = "Plot of Horseshoe Prior Distribution") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank())
+```
+
+The distribution for $\kappa_j$ places a lot of mass near 0 (implying near-zero shrinkage, representing signals) and 1 (implying near-total shrinkage, representing noise). This specification allows for most of the coefficients to be pulled to zero, while allowing the remaining coefficients to reach their true values. It is a different specification than LASSO/NG, but one that is widely used and often performs better in practice.
+
+### Other Approaches
+
+There are several other shrinkage priors that have been proposed. The horseshoe+ prior places another latent variable in the hierarchy for another level of local shrinkage [@bhadra2017]. The Dirichlet-Laplace prior, another global-local shrinkage prior, draws local shrinkage coefficients from the joint Dirichlet distribution [@bhattacharya2014]. The SSLASSO prior hybridizes spike-and-slab and shrinkage priors by drawing from a mixture of Laplace distributions [@rockova2018]. While all of these approaches are promising and have their own strengths, they are excluded from further analysis here for the sake of time.
 
 
 # Expectation-Maximization Variable Selection
 
 ## Overview
 
+Though all other methods described here use the MCMC algorithm approach to Bayesian variable selection, EMVS is an algorithm that is formulated differently. EMVS is highly useful in high dimensional settings ($p >> n$), since it runs in a tiny fraction of the time that MCMC requires and can effectively identify the high-probability sparse models [@rockova2013]. EMVS is anchored by the SSVS spike-and-slab approach [@george1993], but it can be extended into other settings as well.
+
+
 ## Algorithm
+
+The EMVS algorithm is very straightforward. Begin by specifying the full Bayesian regression setting, typically using a spike-and-slab prior such as SSVS. Then, repeat two steps until convergence:
+
+ - **Expectation (E) Step:** Calculate the posterior inclusion probabilities (i.e., expectations) for each $\beta_j$ given current parameter updates.
+ - **Maximization (M) Step:** Update the parameter estimates by maximizing the objective function of all model parameters, given the data.
+ 
+More formal specifications of the equations required to execute this algorithm can be found in [@rockova2013]. In practice, this algorithm generally converges very quickly - in the experiment below, all specifications of the algorithm converged within 15 iterations, which is stellar performance.
+
 
 ## Deterministic Annealing
 
@@ -293,7 +344,6 @@ Under this distribution, there is a high probability of the $\beta$s falling at 
 \newpage
 
 # References
-
 
 \newpage
 
