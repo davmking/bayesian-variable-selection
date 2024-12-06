@@ -150,7 +150,7 @@ Spike-and-slab priors have the general form
   \beta_j | \gamma_j \sim (1 - \gamma_j) \phi_0(\beta_j) + \gamma_j \phi_1(\beta_j),
 \end{equation}
 
-where $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero, while $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients [@lu2022]. By continuing to sample $\gamma$ in the MCMC sampler, this specification returns a joint posterior where (in general) the signal coefficients are near their true values while the noise coefficients are near zero, with posterior inclusion probabilities ($\gamma$) that reflect the most probable model specifications. This allows for a little more uncertainty in the estimation of coefficients than BMS does, since near-zero coefficients do not have to be pulled to exactly zero.
+where $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero, while $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients [@lu2022]. By continuing to sample $\gamma$ in the MCMC sampler, this specification returns a joint posterior where (in general) the signal coefficients are near their true values while the noise coefficients are near zero, with posterior inclusion probabilities ($\gamma$) that reflect the most probable model specifications. This allows for a little more uncertainty in the estimation of coefficients than BMS does, since near-zero coefficients do not have to be pulled to exactly zero. Overall, spike-and-slab approaches are well-studied, effective, and widely used. However, there is still the disadvantage of needing to include $\gamma$ to sample over the model space $\mathcal{M}$, which can result in either extreme computational complexity or the possibility that the sampler never reaches the areas of true high posterior density.
 
 
 ### Stochastic Search Variable Selection
@@ -193,6 +193,15 @@ data.frame(slab, spike) %>%
 
 
 ### Normal Mixture of Inverse Gamma
+
+The normal mixture of inverse gamma expands on SSVS by moving the spike-and-slab formulation down one level in the hierarchy, to place it on the variance instead [@albert1993, @rockova2012]. The hierarchal specification of this model is
+
+\begin{align}
+  \beta_j | \eta_j &\sim N(0, \eta_j) \\
+  \eta_j | \gamma_j &\sim (1 - \gamma_j) \text{IG} \left ( a, \frac{\nu_0}{b} \right ) + \gamma_j \text{IG} \left ( a, \frac{\nu_1}{b} \right ),
+\end{align}
+
+where IG is the inverse-gamma distribution, and $\nu_1 >> \nu_0$. A prior, typically Bernoulli, is placed on $\gamma$. By moving the sampling down one level in the hierarchy, we avoid having to put as much weight on the hyperparameters $c$ and $\tau$, often leading to better performance [@lu2022]. However, due to a lack of an efficient implementation in R, we omit NMIG from the experiment in this paper.
 
 
 ## Shrinkage Priors
