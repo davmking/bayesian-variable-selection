@@ -37,3 +37,32 @@ How do I force the table to fit on the screen without a scroll bar?
 What is a "scale mixture of normals"?
 
 How do you cite an R package in a .bib file?
+
+What is an objective function?
+
+I am trying to render a quarto document to pdf. I get a latex error: compilation failed- error
+LaTeX Error: Bad math environment delimiter. l.155 \begin{equation} 
+
+This is the full equation:
+
+$$
+\begin{equation}
+  \mathbf{Y} = \mathbf{X} \beta + \mathbf{\epsilon}
+\end{equation}
+$$
+
+How do I call a LaTeX package in a quarto document?
+
+When using a .bib file in a qmd document (rendered to pdf with LaTeX), how do I put the references in a designated place (i.e., not the end of the document)?
+
+When I use knitr to make a kable in my qmd file and render it with LaTeX, how many packages is it going to have to install in LaTeX?
+
+Is there any way to know what it's going to try to install? It has, so far, been rendering for over ten minutes and is in the middle of its eighth package install with no known end in sight.
+
+ERROR: 
+compilation failed- error
+Dimension too large.
+\LT@max@sel #1#2->{\ifdim #2=\wd \tw@ 
+                                      #1\else \number \c@LT@chunks \fi }{\th...
+l.839 \end{longtabu}
+

@@ -355,9 +355,9 @@ rbind(
 
 In this experiment, I focused only on the sparse signal setting. I did also consider the dense signal setting, but all of these algorithms performed poorly in that setting, so they are omitted from further exploration. Partial findings from the dense signal setting can be found in the appendix.
 
-All analysis for this experiment was performed in R. I ran the modeling process for all four models with each of the variable selection methods. Runtimes are only reported in terms of orders of magnitude, as getting accurate timing on these tests would require numerous trials. Where applicable, I used ROC curves to determine the optimal thresholds (in posterior inclusion probability) for each model, based on true $\beta$ values. While this is a luxury afforded to us in the synthetic setting that is not present in the real world, most of these models have forms of thresholding based on intersection points in the posterior distribution.
+All analysis for this experiment was performed in R. I ran the modeling process for all four models with each of the variable selection methods. MCMC samplers discarded 1,000 burn-in samples and then were run for 10,000 or 30,000 iterations, depending on computational demand. Runtimes are only reported in terms of orders of magnitude, as getting accurate timing on these tests would require numerous trials. Where applicable, I used ROC curves to determine the optimal thresholds (in posterior inclusion probability) for each model, based on true $\beta$ values. While this is a luxury afforded to us in the synthetic setting that is not present in the real world, most of these models have forms of thresholding based on intersection points in the posterior distribution.
 
-I evaluated models on four criteria: MSE in terms of estimated coefficients for the true (nonzero) coefficients, MSE in terms of estimated coefficients for all (including zero) coefficients, MSE in terms of the response variable on the training set, and MSE in terms of the response variable on a testing set (data generated with the same specification and a different random seed). I also explored true/false positive/negative rates, for researchers who are interested in those domains. All code to produce these results can be found in `experiment.qmd`, although some manipulation may be required to get the code to run sequentially. All results are pritned as tables in Appendix A.
+I evaluated models on four criteria: MSE in terms of estimated coefficients for the true (nonzero) coefficients, MSE in terms of estimated coefficients for all (including zero) coefficients, MSE in terms of the response variable on the training set, and MSE in terms of the response variable on a testing set (data generated with the same specification and a different random seed). I also explored true/false positive/negative rates, for researchers who are interested in those domains. All code to produce these results can be found in `experiment.qmd`, although some manipulation may be required to get the code to run sequentially. All results are printed as tables in Appendix A.
 
 
 ## Results
@@ -391,6 +391,36 @@ Overall, though, this paper shows a robust comparison of Bayesian variable selec
 \newpage
 
 # Appendix A: Model Results
+
+Note: Bayesian model selection does not produce coefficient estimates in the same manner that the other approaches do: the identification of a strong candidate model is its most important feature. Thus, it is excluded from an analysis of MSE here.
+
+## Key
+
+**Algorithm Names:**
+
+ - BMS: Bayesian Model Selection
+ - BMA: Bayesian Model Averaging
+ - SSVS: Stochastic Search Variable Selection
+ - EMVS: Expectation-Maximization Variable Selection
+ - EMVS_DA: EMVS with Deterministic Annealing
+ 
+**Name Qualifiers:**
+
+ - $p = ...$: the threshold of posterior inclusion probability at which any given $\beta_j$ is included in the model, selected through error minimization from an ROC curve. If not specified, $p = 0.5$.
+ - $t = ...$: the temperature coefficient used in deterministic annealing, selected through test set error minimization. If not specified, $t = 1$.
+ 
+**Variable Names:**
+
+ - Size: the number of predictors included in the model (based on the posterior inclusion probability thresholds)
+ - TPR: true positive rate
+ - FNR: false negative rate
+ - FPR: false positive rate
+ - TNR: true negative rate
+ - MSE Coef Signal: MSE between the model's estimates and the truth for coefficients that are actually non-zero
+ - MSE Coef All: MSE between the model's estimates and the truth for all coefficients, including those which are zero
+ - MSE Train Y: MSE in the response variable on the training set
+ - MSE Test Y: MSE in the response variable on the testing set
+ 
 
 ## Model 1: $n >> p$
 
@@ -436,6 +466,9 @@ model_0_rates %>%
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
         longtable = TRUE)
+
+load("model_coef_0.RData")
+model_coef_0
 ```
 
 ## Model 2: $n > p$
@@ -482,6 +515,9 @@ model_3_rates %>%
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
         longtable = TRUE)
+
+load("model_coef_3.RData")
+model_coef_3
 ```
 
 ## Model 3: $p > n$
@@ -528,6 +564,9 @@ model_4_rates %>%
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
         longtable = TRUE)
+
+load("model_coef_4.RData")
+model_coef_4
 ```
 
 ## Model 4: $p >> n$
@@ -574,7 +613,53 @@ model_5_rates %>%
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
         longtable = TRUE)
+
+load("model_coef_5.RData")
+model_coef_5
 ```
+
+\newpage
+
+# Appendix B: Dense Setting
+
+In addition to the sparse signal setting, I briefly considered the dense signal setting. One set of models was sufficient to know that none of these algorithms are very effective at identifying signals in a dense signal setting. In this setting, $n = 100, p = 95, p\_sig = 75$. The table below depicts the outcomes from each model in this dense setting. It mostly follows from the tables above, but has not been fully updated. This is here purely for those interested, and is not meant as true supplemental material.
+
+```{r}
+#| label: dense model table
+
+load("model_2_rates.RData")
+model_2_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All)) %>% 
+  kable(digits = 2, longtable = TRUE,
+        col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR",
+                      "Runtime", "MSE Coef Signal", "MSE Coef All"))
+```
+
+\newpage
+
+# Appendix C: R Packages Used
+
+ - `BayesVarSel`: Bayesian model selection [@R-BayesVarSel].
+ - `BMS`: Bayesian model averaging [@R-BMS].
+ - `BoomSpikeSlab`: SSVS [@R-BoomSpikeSlab].
+ - `bayeslm`: Bayesian linear modeling [@R-bayeslm].
+ - `BayesSubset`: Bayesian subset selection [@R-BayesSubsets].
+ - `monomvn`: Shrinkage priors [@R-monomvn].
+ - `tidyverse`: Data handling [@R-tidyverse].
+ - `knitr`: Table formatting [@R-knitr].
+ - `kableExtra`: Table formatting [@R-kableExtra].
+ - `pROC`: ROC curves [@R-pROC].
+ - `EMVS`: EMVS algorithm (installed from CRAN archive version 1.2.1) [@R-EMVS].
+ - `viridis`: Colorblind-friendly color palettes [@R-viridis].
+ - `VGAM`: Sampling from Laplace distribution [@R-VGAM].
+ - `latex2exp`: Adding latex to plot labels [@R-latex2exp].
 
 
 
