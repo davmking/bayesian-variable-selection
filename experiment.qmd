@@ -2754,11 +2754,11 @@ data.frame(true_values = beta_vals_0,
 # Looking at all coefficients, BMA is still the best
 
 
-data.frame(true_values = beta_vals_0,
+model_coef_0 <- data.frame(true_values = beta_vals_0,
            BMA = bma_0_est,
            EMVS = emvs_0_est,
            SSVS = ssvs_0_est,
-           Truth = beta_vals_0,
+           TRUTH = beta_vals_0,
            LASSO = lasso_0_est,
            Normal.Gamma = ng_0_est,
            Horseshoe = hs_0_est) %>% 
@@ -2771,11 +2771,16 @@ data.frame(true_values = beta_vals_0,
   ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
   geom_col(position = "dodge") + 
   theme_bw() +
-  labs(x = "True Coefficient", title = "Model 0 Estimates") +
+  labs(x = "True Coefficient",
+       title = "Model 1 Mean Coefficient Estimates vs. Truth",
+       subtitle = "Black Bars Represent Truth") +
   theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
         panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank()) +
+        panel.grid.major.x = element_blank(),
+        legend.position = "bottom") +
   scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+save(model_coef_0, file = "model_coef_0.RData")
 ```
 
 
@@ -3042,11 +3047,12 @@ data.frame(true_values = beta_vals_3,
 # Horseshoe is the best when we include everything
 
 
-data.frame(true_values = beta_vals_3,
+model_coef_3 <- data.frame(true_values = beta_vals_3,
            BMA = bma_3_est,
            EMVS = emvs_3_est,
+           EMVS_DA = emvs_3_t4_est,
            SSVS = ssvs_3_est,
-           Truth = beta_vals_3,
+           TRUTH = beta_vals_3,
            LASSO = lasso_3_est,
            Normal.Gamma = ng_3_est,
            Horseshoe = hs_3_est) %>% 
@@ -3059,11 +3065,16 @@ data.frame(true_values = beta_vals_3,
   ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
   geom_col(position = "dodge") + 
   theme_bw() +
-  labs(x = "True Coefficient", title = "Model 3 Estimates") +
+  labs(x = "True Coefficient",
+       title = "Model 2 Mean Coefficient Estimates vs. Truth",
+       subtitle = "Black Bars Represent Truth") +
   theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
         panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank()) +
+        panel.grid.major.x = element_blank(),
+        legend.position = "bottom") +
   scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+save(model_coef_3, file = "model_coef_3.RData")
 ```
 
 ### Model 4
@@ -3137,11 +3148,12 @@ data.frame(true_values = beta_vals_4,
 # Horseshoe is the best when we include everything
 
 
-data.frame(true_values = beta_vals_4,
+model_coef_4 <-data.frame(true_values = beta_vals_4,
            BMA = bma_4_est,
            EMVS = emvs_4_est,
+           EMVS_DA = emvs_4_t4_est,
            SSVS = ssvs_4_est,
-           Truth = beta_vals_4,
+           TRUTH = beta_vals_4,
            LASSO = lasso_4_est,
            Normal.Gamma = ng_4_est,
            Horseshoe = hs_4_est) %>% 
@@ -3154,11 +3166,16 @@ data.frame(true_values = beta_vals_4,
   ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
   geom_col(position = "dodge") + 
   theme_bw() +
-  labs(x = "True Coefficient", title = "Model 4 Estimates") +
+  labs(x = "True Coefficient",
+       title = "Model 3 Mean Coefficient Estimates vs. Truth",
+       subtitle = "Black Bars Represent Truth") +
   theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
         panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank()) +
+        panel.grid.major.x = element_blank(),
+        legend.position = "bottom") +
   scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+save(model_coef_4, file = "model_coef_4.RData")
 ```
 
 ### Model 5
@@ -3232,11 +3249,12 @@ data.frame(true_values = beta_vals_5,
 # Pretty much a four-way tie
 
 
-data.frame(true_values = beta_vals_5,
+model_coef_5 <- data.frame(true_values = beta_vals_5,
            BMA = bma_5_est,
            EMVS = emvs_5_est,
+           EMVS_DA = emvs_5_t4_est,
            SSVS = ssvs_5_est,
-           Truth = beta_vals_5,
+           TRUTH = beta_vals_5,
            LASSO = lasso_5_est,
            Normal.Gamma = ng_5_est,
            Horseshoe = hs_5_est) %>% 
@@ -3249,11 +3267,16 @@ data.frame(true_values = beta_vals_5,
   ggplot(aes(x = true_values, y = Estimate, fill = Model)) +
   geom_col(position = "dodge") + 
   theme_bw() +
-  labs(x = "True Coefficient", title = "Model 5 Estimates") +
+  labs(x = "True Coefficient",
+       title = "Model 4 Mean Coefficient Estimates vs. Truth",
+       subtitle = "Black Bars Represent Truth") +
   theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
         panel.grid.minor.x = element_blank(),
-        panel.grid.major.x = element_blank()) +
+        panel.grid.major.x = element_blank(),
+        legend.position = "bottom") +
   scale_fill_viridis(discrete = TRUE, option = "A", direction = -1)
+save(model_coef_5, file = "model_coef_5.RData")
 ```
 
 
