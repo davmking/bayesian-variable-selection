@@ -464,7 +464,7 @@ $$
 \end{align*}
 $$
 
-In this case, $C^+$ is a half-Cauchy distribution. Here, $\eta_j$ is the local shrinkage parameter, while $\tau$ is the global shrinkage parameter. With some integration, this yields the shrinkage coefficient $\kappa_j = 1 / (1 + \eta_j^2)$. The half-cauchy prior on $\eta_j$ implies a Beta(1/2, 1/2) prior distribution for $\kappa_j$, which yields the horseshoe.
+In this case, $C^+$ is a half-Cauchy distribution. Here, $\eta_j$ is the local shrinkage parameter, while $\tau$ is the global shrinkage parameter. With some integration, this yields the shrinkage coefficient $\kappa_j = 1 / (1 + \eta_j^2)$. The half-Cauchy prior on $\eta_j$ implies a Beta(1/2, 1/2) prior distribution for $\kappa_j$, which yields the horseshoe.
 
 ## Expectation-Maximization Variable Selection
 
