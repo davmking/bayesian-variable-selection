@@ -16,6 +16,7 @@ header-includes:
 ```{r}
 #| label: libraries
 
+library(VGAM)
 library(tidyverse)
 library(latex2exp)
 library(viridis)
@@ -206,7 +207,64 @@ where IG is the inverse-gamma distribution, and $\nu_1 >> \nu_0$. A prior, typic
 
 ## Shrinkage Priors
 
+Unlike spike-and-slab priors, which are mixture distributions, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the $\beta$s towards zero, while minimally penalizing the signal coefficients. Shrinkage priors have the benefit of being fully continuous, which means that they do not require a latent variable $\gamma$ to search over $\mathcal{M}$, and this makes shrinkage priors less likely to leave an entire set of highly probable model specifications unexplored. However, this has its tradeoffs: approaches using shrinkage priors often have dramatically increased computation time, and research has suggested that they may not select variables aggressively enough or may overly penalize the signal coefficients in the process (i.e., they may be less effective at discerning between signal and noise predictors).
+
+
 ### LASSO
+
+In frequentist statistics, LASSO regression is a well-know regression setting that expands on OLS regression to penalize the $\ell_1$ norm of the $\beta$s, using a hyperparameter $\lambda$ to control the shrinkage:
+
+\begin{equation}
+  \underset{\beta}{\text{min}} (\mathbf{Y} - \mathbf{X}\beta)^T (\mathbf{Y} - \mathbf{X} \beta) + \lambda \sum_{j = 1}^{p} |\beta_j|
+\end{equation}
+
+In the Bayesian analogue to LASSO regression [@park2008], we place a conditional Laplace prior on $\beta$:
+
+\begin{equation}
+  p(\beta | \sigma^2) = \prod_{j = 1}^{p} \frac{\lambda}{2\sqrt{\sigma^2}} \text{exp} \left \{ \frac{-\lambda |\beta_j|}{\sqrt{\sigma^2}} \right \}
+\end{equation}
+
+```{r}
+#| label: LASSO distribution
+
+lambda <- c(0.5, 1, 2, 4)
+
+N_samples <- 100000
+
+lasso_values <- matrix(NA, nrow = N_samples, ncol = length(lambda))
+
+for(l in 1:length(lambda)){
+  lasso_values[,l] <- rlaplace(N_samples, 0, 1 / lambda[l])
+}
+
+
+data.frame(lasso_values) %>%
+  pivot_longer(everything(), names_to = "lambda_number") %>% 
+  mutate(lambda_number = as.integer(substring(lambda_number, 2))) %>% 
+  mutate(lambda = lambda[lambda_number]) %>% 
+  mutate(lambda = factor(lambda)) %>% 
+  mutate(lambda = fct_rev(lambda)) %>% 
+  ggplot(aes(x = value, fill = lambda)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(-10, 10)) +
+  theme_bw() +
+  labs(x = TeX("$\\beta$"), y = "Density", fill = TeX("$\\lambda$"),
+       title = "Plot of Laplace (LASSO Prior) Distribution") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank()) +
+  scale_fill_viridis(discrete = TRUE, option = "B") +
+  guides(fill = guide_legend(reverse = TRUE))
+```
+
+This results in the hierarchical specification
+
+\begin{align}
+  \beta_j | \tau_j &\sim N(0, \sigma^2 \tau_j^2) \\
+  \tau_j | \lambda &\sim \text{exp}(\lambda^2 / 2)
+\end{align}
+
+Under this distribution, there is a high probability of the $\beta$s falling at or near zero, which increases with $\lambda$ as shown above. In this setting, we can also place a prior on $\lambda$ and sample it along with $\beta$. The result is a posterior where many of the $\beta$s are at or near 0, and careful prior specification can ensure that the posterior distribution is unimodal [@park2008]. This can also be generalized to other cases, such as bridge regression.
+
 
 ### Normal-Gamma
 
