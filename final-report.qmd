@@ -1,13 +1,26 @@
 ---
 title: "Bayesian Methods of Variable Selection"
 author: "Dav King"
-format: pdf
+format: 
+  pdf:
+    echo: false
+    warning: false
+    message: false
 bibliography: references.bib
 csl: apa.csl
 header-includes:
   - \usepackage{amssymb}
   - \usepackage{amsmath}
 ---
+
+```{r}
+#| label: libraries
+
+library(tidyverse)
+library(latex2exp)
+library(viridis)
+```
+
 
 # Introduction
 
@@ -122,9 +135,62 @@ However, as promising as BSS is with its many strengths over frequentist methods
 
 # Prior Methods
 
+Suppose we have some prior beliefs about the structure of our $\beta$s. Specifically, we believe that not all of them are included in the true data-generative model, and many of their coefficients must be zero. We can place a prior distribution on the $\beta$s accordingly, reflecting this belief. This produces a posterior distribution of our desired form, where many of the $\beta$s are set to (near) zero. We can also introduce additional structure with this method, such as placing priors on different groups of $\beta$s, but that goes beyond the scope of this paper.
+
+There are two major classes of priors used for variable selection: spike-and-slab priors and shrinkage priors.
+
+
 ## Spike-and-Slab Priors
 
+A spike-and-slab prior is a mixture distribution: A combination of two distributions, where $\beta_j$ is drawn from one or the other according to some Bernoulli probability. Thus, a latent indicator variable $\gamma$ is still used, but instead of explicitly denoting whether a specific $\beta_j$ is included in the model, it denotes whether the prior distribution for $\beta_j$ is drawn from the spike or the slab distribution.
+
+Spike-and-slab priors have the general form
+
+\begin{equation}
+  \beta_j | \gamma_j \sim (1 - \gamma_j) \phi_0(\beta_j) + \gamma_j \phi_1(\beta_j),
+\end{equation}
+
+where $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero, while $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients [@lu2022]. By continuing to sample $\gamma$ in the MCMC sampler, this specification returns a joint posterior where (in general) the signal coefficients are near their true values while the noise coefficients are near zero, with posterior inclusion probabilities ($\gamma$) that reflect the most probable model specifications. This allows for a little more uncertainty in the estimation of coefficients than BMS does, since near-zero coefficients do not have to be pulled to exactly zero.
+
+
 ### Stochastic Search Variable Selection
+
+The best-known implementation of the spike-and-slab prior is stochastic search variable selection [@george1993]. This follows the procedure outlined above, embedding the full model selection process in a hierarchical Bayesian MCMC scheme. In SSVS, the prior is represented as a mixture of normals:
+
+\begin{equation}
+  \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2)
+\end{equation}
+
+Prior distributions can be placed on $\tau$ and $c$, or they can be held constant.
+
+```{r}
+#| label: spike and slab distribution
+
+tau <- 1
+c <- 3
+
+set.seed(481)
+spike <- rnorm(100000, 0, tau^2)
+slab <- rnorm(100000, 0, c^2 * tau^2)
+
+data.frame(slab, spike) %>% 
+  pivot_longer(everything()) %>% 
+  mutate(name = factor(name, levels = c("slab", "spike"))) %>% 
+  ggplot(aes(x = value, fill = name)) +
+  geom_density(alpha = 0.5) +
+  theme_bw() +
+  labs(x = TeX("$\\beta$"), y = "Density", fill = "Distribution",
+       title = "Plot of SSVS Spike-and-Slab Distribution",
+       subtitle = TeX("$\\tau = 1, c = 3$"),
+       caption = "Note: spike is usually more concentrated and slab is usually more diffuse than depicted") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid = element_blank(),
+        legend.position = "bottom") +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  coord_cartesian(xlim = c(-30, 30))
+```
+
 
 ### Normal Mixture of Inverse Gamma
 
