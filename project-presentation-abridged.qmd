@@ -231,7 +231,7 @@ ggplot(mapping = aes(x = rbeta(1000000, 1/2, 1/2))) +
   geom_density(fill = "darkgrey", alpha = 0.5) +
   theme_bw() +
   labs(x = TeX("$\\kappa_j$"), y = "Density",
-       title = "Plot of Horseshoe Prior Distribution") +
+       title = "Plot of Horseshoe Shrinkage Coefficient Distribution") +
   theme(plot.title = element_text(hjust = 0.5),
         panel.grid = element_blank(),
         text = element_text(size = 16))
