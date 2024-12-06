@@ -3602,7 +3602,15 @@ model_3_rates <- rbind(
                              beta_vals_3[which(true_betas_3 == 1)])^2),
         MSE_All = mean((emvs_3_est - beta_vals_3)^2),
         MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, emvs_3_est))) - y_3)^2),
-        MSE_Resp_Test = mean(((X_3_test %*% as.matrix(c(-1, emvs_3_est))) - y_3_test)^2))
+        MSE_Resp_Test = mean(((X_3_test %*% as.matrix(c(-1, emvs_3_est))) - y_3_test)^2)),
+      c(Name = paste0("EMVS, p = ", round(emvs_3_t4_thresh, 3), ", t = 10"),
+        Size = sum(emvs_3_t4_thresholded),
+        calc_rates(emvs_3_t4_thresh_cm), runtime = "Ms",
+        MSE_Nonzero = mean((emvs_3_t4_est[which(true_betas_3 == 1)] -
+                              beta_vals_3[which(true_betas_3 == 1)])^2),
+        MSE_All = mean((emvs_3_t4_est - beta_vals_3)^2),
+        MSE_Resp = mean(((X_3 %*% as.matrix(c(-1, emvs_3_t4_est))) - y_3)^2),
+        MSE_Resp_Test = mean(((X_3_test %*% as.matrix(c(-1, emvs_3_t4_est))) - y_3_test)^2))
   )
 
 save(model_3_rates, file = "model_3_rates.RData")
@@ -3704,7 +3712,15 @@ model_4_rates <- rbind(
                              beta_vals_4[which(true_betas_4 == 1)])^2),
         MSE_All = mean((emvs_4_est - beta_vals_4)^2),
         MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, emvs_4_est))) - y_4)^2),
-        MSE_Resp_Test = mean(((X_4_test %*% as.matrix(c(-1, emvs_4_est))) - y_4_test)^2))
+        MSE_Resp_Test = mean(((X_4_test %*% as.matrix(c(-1, emvs_4_est))) - y_4_test)^2)),
+      c(Name = paste0("EMVS, p = ", round(emvs_4_t4_thresh, 3), ", t = 10"),
+        Size = sum(emvs_4_t4_thresholded),
+        calc_rates(emvs_4_t4_thresh_cm), runtime = "Ms",
+        MSE_Nonzero = mean((emvs_4_t4_est[which(true_betas_4 == 1)] -
+                              beta_vals_4[which(true_betas_4 == 1)])^2),
+        MSE_All = mean((emvs_4_t4_est - beta_vals_4)^2),
+        MSE_Resp = mean(((X_4 %*% as.matrix(c(-1, emvs_4_t4_est))) - y_4)^2),
+        MSE_Resp_Test = mean(((X_4_test %*% as.matrix(c(-1, emvs_4_t4_est))) - y_4_test)^2))
   )
 
 save(model_4_rates, file = "model_4_rates.RData")
@@ -3808,7 +3824,15 @@ model_5_rates <- rbind(
                              beta_vals_5[which(true_betas_5 == 1)])^2),
         MSE_All = mean((emvs_5_est - beta_vals_5)^2),
         MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, emvs_5_est))) - y_5)^2),
-        MSE_Resp_Test = mean(((X_5_test %*% as.matrix(c(-1, emvs_5_est))) - y_5_test)^2))
+        MSE_Resp_Test = mean(((X_5_test %*% as.matrix(c(-1, emvs_5_est))) - y_5_test)^2)),
+      c(Name = paste0("EMVS, p = ", round(emvs_5_t4_thresh, 3), ", t = 10"),
+        Size = sum(emvs_5_t4_thresholded),
+        calc_rates(emvs_5_t4_thresh_cm), runtime = "Ms",
+        MSE_Nonzero = mean((emvs_5_t4_est[which(true_betas_5 == 1)] -
+                              beta_vals_5[which(true_betas_5 == 1)])^2),
+        MSE_All = mean((emvs_5_t4_est - beta_vals_5)^2),
+        MSE_Resp = mean(((X_5 %*% as.matrix(c(-1, emvs_5_t4_est))) - y_5)^2),
+        MSE_Resp_Test = mean(((X_5_test %*% as.matrix(c(-1, emvs_5_t4_est))) - y_5_test)^2))
   )
 
 save(model_5_rates, file = "model_5_rates.RData")

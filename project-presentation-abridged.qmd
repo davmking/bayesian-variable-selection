@@ -290,6 +290,7 @@ model_0_rates %>%
          MSE_All = as.numeric(MSE_All),
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  filter(!grepl("t =", Name)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
@@ -316,6 +317,7 @@ model_3_rates %>%
          MSE_All = as.numeric(MSE_All),
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  filter(!grepl("t =", Name)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
@@ -342,6 +344,7 @@ model_4_rates %>%
          MSE_All = as.numeric(MSE_All),
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  filter(!grepl("t =", Name)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
@@ -368,6 +371,7 @@ model_5_rates %>%
          MSE_All = as.numeric(MSE_All),
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  filter(!grepl("t =", Name)) %>% 
   kable(digits = 2, format = "html",
         col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
                       "MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
