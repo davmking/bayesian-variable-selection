@@ -20,6 +20,8 @@ library(VGAM)
 library(tidyverse)
 library(latex2exp)
 library(viridis)
+library(knitr)
+library(kableExtra)
 ```
 
 
@@ -337,6 +339,27 @@ If the true posterior is multi-modal, it is very possible that poor initializati
 
 ## Methodology
 
+In order to compare these methods against each other, I performed a brief experiment. This experiment was performed using synthetic data in order to be able to control and evaluate the experiment more effectively, though this does limit the generalizability of this experiment to real-world data which may not match this setting. Data were generated using the `simulate_lm()` function from the R package `BayesSubsets` [@R-BayesSubsets], with some modifications to have a little more diversity in coefficients. All data were generated with $n = 100$, for the sake of runtime when performing this experiment (greater amounts of data would likely change performance somewhat, but since the signal-to-noise ratio was fixed in these models, it likely would not have proven to be a huge change). Details of the model specifications, including the total number of predictors, the total number of significant predictors, and the true coefficients, can be found in the table below. 
+
+```{r}
+#| label: model specification table
+
+rbind(
+  c(Model = "Model 1", n = 100, p = 10, p_sig = 3, Coef = "3, 2, -2"),
+  c(Model = "Model 2", n = 100, p = 95, p_sig = 8, Coef = "3, 2, -2, 1, -1, -1, -1, -1"),
+  c(Model = "Model 3", n = 100, p = 105, p_sig = 8, Coef = "3, 2, -2, 1, -1, -1, -1, -1"),
+  c(Model = "Model 4", n = 100, p = 1000, p_sig = 8, Coef = "3, 2, -2, 1, -1, -1, -1, -1")
+) %>% 
+  kable()
+```
+
+In this experiment, I focused only on the sparse signal setting. I did also consider the dense signal setting, but all of these algorithms performed poorly in that setting, so they are omitted from further exploration. Partial findings from the dense signal setting can be found in the appendix.
+
+All analysis for this experiment was performed in R. I ran the modeling process for all four models with each of the variable selection methods. Runtimes are only reported in terms of orders of magnitude, as getting accurate timing on these tests would require numerous trials. Where applicable, I used ROC curves to determine the optimal thresholds (in posterior inclusion probability) for each model, based on true $\beta$ values. While this is a luxury afforded to us in the synthetic setting that is not present in the real world, most of these models have forms of thresholding based on intersection points in the posterior distribution.
+
+I evaluated models on four criteria: MSE in terms of estimated coefficients for the true (nonzero) coefficients, MSE in terms of estimated coefficients for all (including zero) coefficients, MSE in terms of the response variable on the training set, and MSE in terms of the response variable on a testing set (data generated with the same specification and a different random seed). I also explored true/false positive/negative rates, for researchers who are interested in those domains. All code to produce these results can be found in `experiment.qmd`, although some manipulation may be required to get the code to run sequentially.
+
+
 ## Results
 
 
@@ -345,10 +368,192 @@ If the true posterior is multi-modal, it is very possible that poor initializati
 
 \newpage
 
-# References
+# Appendix A: Model Results
+
+## Model 1: $n >> p$
+
+$n = 100$, $p = 10$, $p\_sig = 3$
+
+```{r}
+#| label: model 1 table
+
+load("model_0_rates.RData")
+model_0_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, TPR, FNR, FPR, TNR, Runtime) %>% 
+  #kable(digits = 2, #format = "html",
+        #col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      #"MSE\nTest\nY"),
+        #longtable = TRUE)
+  kable(digits = 2, longtable = TRUE)
+
+model_0_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  kable(digits = 2,
+        col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
+                      "MSE Train Y", "MSE Test Y"),
+        longtable = TRUE)
+```
+
+## Model 2: $n > p$
+
+$n = 100$, $p = 95$, $p\_sig = 8$
+
+```{r}
+#| label: model 2 table
+
+load("model_3_rates.RData")
+model_3_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, TPR, FNR, FPR, TNR, Runtime) %>% 
+  #kable(digits = 2, #format = "html",
+        #col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      #"MSE\nTest\nY"),
+        #longtable = TRUE)
+  kable(digits = 2, longtable = TRUE)
+
+model_3_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  kable(digits = 2,
+        col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
+                      "MSE Train Y", "MSE Test Y"),
+        longtable = TRUE)
+```
+
+## Model 3: $p > n$
+
+$n = 100$, $p = 105$, $p\_sig = 8$
+
+```{r}
+#| label: model 3 table
+
+load("model_4_rates.RData")
+model_4_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, TPR, FNR, FPR, TNR, Runtime) %>% 
+  #kable(digits = 2, #format = "html",
+        #col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      #"MSE\nTest\nY"),
+        #longtable = TRUE)
+  kable(digits = 2, longtable = TRUE)
+
+model_4_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  kable(digits = 2,
+        col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
+                      "MSE Train Y", "MSE Test Y"),
+        longtable = TRUE)
+```
+
+## Model 4: $p >> n$
+
+$n = 100$, $p = 1000$, $p\_sig = 8$
+
+```{r}
+#| label: model 4 table
+
+load("model_5_rates.RData")
+model_5_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, TPR, FNR, FPR, TNR, Runtime) %>% 
+  #kable(digits = 2, #format = "html",
+        #col.names = c("Name", "Size", "TPR", "FNR", "FPR", "TNR", "Time",
+                      #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
+                      #"MSE\nTest\nY"),
+        #longtable = TRUE)
+  kable(digits = 2, longtable = TRUE)
+
+model_5_rates %>% 
+  as.data.frame() %>% 
+  mutate(Size = as.numeric(Size),
+         TPR = as.numeric(TPR),
+         FNR = as.numeric(FNR),
+         FPR = as.numeric(FPR),
+         TNR = as.numeric(TNR),
+         MSE_Nonzero = as.numeric(MSE_Nonzero),
+         MSE_All = as.numeric(MSE_All),
+         MSE_Resp = as.numeric(MSE_Resp),
+         MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
+  select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  kable(digits = 2,
+        col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
+                      "MSE Train Y", "MSE Test Y"),
+        longtable = TRUE)
+```
+
+
 
 \newpage
 
-# Appendix
+# References
 
 
