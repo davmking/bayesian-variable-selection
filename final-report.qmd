@@ -357,10 +357,26 @@ In this experiment, I focused only on the sparse signal setting. I did also cons
 
 All analysis for this experiment was performed in R. I ran the modeling process for all four models with each of the variable selection methods. Runtimes are only reported in terms of orders of magnitude, as getting accurate timing on these tests would require numerous trials. Where applicable, I used ROC curves to determine the optimal thresholds (in posterior inclusion probability) for each model, based on true $\beta$ values. While this is a luxury afforded to us in the synthetic setting that is not present in the real world, most of these models have forms of thresholding based on intersection points in the posterior distribution.
 
-I evaluated models on four criteria: MSE in terms of estimated coefficients for the true (nonzero) coefficients, MSE in terms of estimated coefficients for all (including zero) coefficients, MSE in terms of the response variable on the training set, and MSE in terms of the response variable on a testing set (data generated with the same specification and a different random seed). I also explored true/false positive/negative rates, for researchers who are interested in those domains. All code to produce these results can be found in `experiment.qmd`, although some manipulation may be required to get the code to run sequentially.
+I evaluated models on four criteria: MSE in terms of estimated coefficients for the true (nonzero) coefficients, MSE in terms of estimated coefficients for all (including zero) coefficients, MSE in terms of the response variable on the training set, and MSE in terms of the response variable on a testing set (data generated with the same specification and a different random seed). I also explored true/false positive/negative rates, for researchers who are interested in those domains. All code to produce these results can be found in `experiment.qmd`, although some manipulation may be required to get the code to run sequentially. All results are pritned as tables in Appendix A.
 
 
 ## Results
+
+### Model 1: $n >> p$
+
+This setting is not particularly interesting to look at. All models performed perfectly, ran within seconds, and had very similar MSE rates. Since this is not the setting where we are most curious about these algorithms' performance, there is nothing much to say about which method performs best here.
+
+### Model 2: $n > p$
+
+In this setting, the models begin to differentiate. First, while BMS, BMA, and SSVS still run on the order of seconds (and EMVS on the order of milliseconds), the shrinkage prior based approaches have already slowed down, taking several minutes to run. Second, BMA is more or less useless by this point - it wants to include far too many predictors in the model, and its response test MSE is alarmingly large, indicating overfitting. Overall, most other methods performed comparably in this setting. Horseshoe did the best job of selecting true positive coefficients, estimating overall coefficients, and minimizing Test MSE, while EMVS performed best at estimating the signal coefficients (though it showed signs of overfitting on the training data).
+
+### Model 3: $p > n$
+
+Though there is a difference between "$n$ slightly bigger than $p$" and "$p$ slightly bigger than $n$", there was very little change in the performance of these models between the two settings. With more predictors, the shrinkage prior methods got closer to the performance of EMVS at predicting true signal coefficients, and continued to be the best performing in terms of variable selection, overall coefficient estimation, and test MSE with negligible increases in runtime complexity.
+
+### Model 4: $p >> n$
+
+This is the true high-dimensional setting, so it is perhaps our biggest area of focus here. There are a few things that stand out immediately. First of all, all of the algorithms have increased dramatically in runtime, except for EMVS, which runs in milliseconds even in this setting. Second, almost every method selects only true signal coefficients, with minimal to no false positives. Third, the shrinkage prior methods are indiscernible from EMVS in terms of their ability to estimate coefficients, and the test MSE is comparable, though the EMVS with deterministic annealing performs best (by a little). All of these models have highly accurate performance, given the circumstances. However, although researchers have suggested that EMVS is a far more effective algorithm in the high dimensional setting, these results do not suggest that it has much performance improvement (outside of runtime).
 
 
 # Discussion
@@ -395,7 +411,7 @@ model_0_rates %>%
                       #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
                       #"MSE\nTest\nY"),
         #longtable = TRUE)
-  kable(digits = 2, longtable = TRUE)
+  kable(digits = 3, longtable = TRUE)
 
 model_0_rates %>% 
   as.data.frame() %>% 
@@ -409,6 +425,7 @@ model_0_rates %>%
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  filter(Name != "BMS") %>% 
   kable(digits = 2,
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
@@ -440,7 +457,7 @@ model_3_rates %>%
                       #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
                       #"MSE\nTest\nY"),
         #longtable = TRUE)
-  kable(digits = 2, longtable = TRUE)
+  kable(digits = 3, longtable = TRUE)
 
 model_3_rates %>% 
   as.data.frame() %>% 
@@ -454,6 +471,7 @@ model_3_rates %>%
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  filter(Name != "BMS") %>% 
   kable(digits = 2,
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
@@ -485,7 +503,7 @@ model_4_rates %>%
                       #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
                       #"MSE\nTest\nY"),
         #longtable = TRUE)
-  kable(digits = 2, longtable = TRUE)
+  kable(digits = 3, longtable = TRUE)
 
 model_4_rates %>% 
   as.data.frame() %>% 
@@ -499,6 +517,7 @@ model_4_rates %>%
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  filter(Name != "BMS") %>% 
   kable(digits = 2,
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
@@ -530,7 +549,7 @@ model_5_rates %>%
                       #"MSE\nCoef\nSignal", "MSE\nCoef\nAll", "MSE\nTrain\nY",
                       #"MSE\nTest\nY"),
         #longtable = TRUE)
-  kable(digits = 2, longtable = TRUE)
+  kable(digits = 3, longtable = TRUE)
 
 model_5_rates %>% 
   as.data.frame() %>% 
@@ -544,6 +563,7 @@ model_5_rates %>%
          MSE_Resp = as.numeric(MSE_Resp),
          MSE_Resp_Test = as.numeric(MSE_Resp_Test)) %>% 
   select(Name, Size, MSE_Nonzero, MSE_All, MSE_Resp, MSE_Resp_Test) %>% 
+  filter(Name != "BMS") %>% 
   kable(digits = 2,
         col.names = c("Name", "Size", "MSE Coef Signal", "MSE Coef All",
                       "MSE Train Y", "MSE Test Y"),
