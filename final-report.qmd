@@ -72,15 +72,15 @@ The central research questions for this paper are as follows:
 ## Introduction
 
 \begin{equation}
-  \mathbb{P}(\beta | \mathbf{Y}) = \frac{\mathbb{P}(\mathbf{Y} | \beta) \mathbb{P}(\beta)}{\int_\beta \mathbb{P}(\mathbf{Y} | \beta) \mathbb{P}(\beta) d\beta}
+  p(\beta | \mathbf{Y}) = \frac{p(\mathbf{Y} | \beta) p(\beta)}{\int_\beta p(\mathbf{Y} | \beta) p(\beta) d\beta}
 \end{equation}
 
-In a Bayesian modeling setting, we use Bayes' theorem to generate estimates of the model parameters. In this equation, $\mathbb{P}(\mathbf{Y} | \beta)$ is the data generative model, or the process by which we believe the response variable is generated. This is generally represented with a likelihood function. $\mathbb{P}(\beta)$ is the prior distribution, representing our beliefs about the structure of $\beta$ before viewing any of the data. This is a useful concept in Bayesian variable selection, as we will see later. $\int_\beta \mathbb{P}(\mathbf{Y} | \beta) \mathbb{P}(\beta) d\beta$ is the normalizing constant which ensures the posterior distribution integrates to 1, and it can usually be absorbed into proportionality and thus omitted from these calculations. Finally, $\mathbb{P}(\beta | \mathbf{Y})$ is the posterior distribution, reflecting our beliefs about $\beta$ after seeing the data - in other words, reflecting an update in our beliefs about $\beta$ from our prior beliefs, based on the data likelihood function.
+In a Bayesian modeling setting, we use Bayes' theorem to generate a probability distribution of the model parameters. In this equation, $p(\mathbf{Y} | \beta)$ is the data generative model, or the process by which we believe the response variable is generated. This is generally represented with a likelihood function. $p(\beta)$ is the prior distribution, representing our beliefs about the structure of $\beta$ before viewing any of the data. This is a useful concept in Bayesian variable selection, as we will see later. $\int_\beta p(\mathbf{Y} | \beta) p(\beta) d\beta$ is the normalizing constant which ensures the posterior distribution integrates to 1, and it can usually be absorbed into proportionality and thus omitted from these calculations. Finally, $p(\beta | \mathbf{Y})$ is the posterior distribution, reflecting our beliefs about $\beta$ after seeing the data. In other words, the posterior distribution reflects an update in our beliefs about $\beta$ from our prior beliefs, based on the data likelihood function.
 
 
 ## Markov Chain Monte Carlo
 
-Let $\beta$ and $\mathbf{Y}$ be as defined above, and let $\theta$ represent all other parameters in our modeling setup. In this setting, we would like to calculate the joint posterior distribution $p(\beta, \mathbf{Y}, \theta)$. In many cases, posterior distributions are difficult or impossible to compute by hand. In this case, we estimate the joint posterior by sampling repeatedly from the full conditional distributions of all involved parameters (full conditional means the distribution of one parameter given everything else). This is known as a **Markov Chain Monte Carlo (MCMC)** algorithm. It is conducted as follows: Initialize your values $\beta^{(1)}$, $\mathbf{Y}^{(1)}$, and $\theta^{(1)}$. Then, for every step $s$, 
+Let $\beta$ and $\mathbf{Y}$ be as defined above, and let $\theta$ represent all other parameters in our modeling setup. We would like to calculate the joint posterior distribution $p(\beta, \mathbf{Y}, \theta)$. In many cases, posterior distributions are difficult or impossible to compute by hand. Thus, we estimate the joint posterior by sampling repeatedly from the full conditional distributions (i.e., the distribution of one parameter given everything else) of all involved parameters. This is known as a **Markov Chain Monte Carlo (MCMC)** algorithm. It is conducted as follows: Initialize your values $\beta^{(1)}$, $\mathbf{Y}^{(1)}$, and $\theta^{(1)}$. Then, at every step $s$, 
 
 \begin{enumerate}
   \item Sample $\beta^{(s + 1)}$ from the full conditional $p(\beta | \mathbf{Y}^{(s)}, \theta^{(s)})$.
@@ -88,20 +88,20 @@ Let $\beta$ and $\mathbf{Y}$ be as defined above, and let $\theta$ represent all
   \item Sample $\theta^{(s + 1)}$ from the full conditional $p(\theta | \beta^{(s + 1)}, \mathbf{Y}^{(s + 1)})$.
 \end{enumerate}
 
-After repeating this algorithm for long enough, it will eventually converge to the joint posterior (reasonable initialization is key, or it may not reach the true joint posterior before the heat death of the universe). Usually, iterations on the order of tens of thousands are sufficient for the sampler to converge and give a reasonable estimate of the joint posterior. There are a couple things of importance here. First, the order in which these variables are sampled does not matter, and they can even be re-shuffled randomly at different steps. Second, the Markov Chain is memoryless - each sample only depends on the step immediately before it.
+After repeating this algorithm for long enough, it will eventually converge to the joint posterior. Usually, iterations on the order of tens of thousands are sufficient for the sampler to converge to a reasonable estimate of the joint posterior. The order in which these variables are sampled does not matter, and can be shuffled at different steps. The Markov Chain is memoryless - each sample only depends on the step immediately before it.
 
 There are many different ways that values can be sampled in this process, but two of the most famous algorithms are Gibbs and Metropolis-Hastings. In a Gibbs sampler, the full conditional of each variable is known and easy to compute, and so new values are simply drawn from that full conditional and accepted with probability 1. In a Metropolis-Hastings algorithm, the full conditional of each variable is harder to draw from, so the following steps are used:
 
 \begin{enumerate}
-  \item Propose a new value of the parameter of interest from a proposal distribution, usually centered at around the current parameter value.
+  \item Propose a new value of the parameter of interest from a proposal distribution, usually centered around the current parameter value.
   \item Calculate the likelihood ratio $\alpha = \ell(\text{proposal}) / \ell(\text{current})$.
-  \item Accept the likelihood ratio with probability $\text{min}\{1, \alpha\}$.
+  \item Accept the proposal with probability $\text{min}\{1, \alpha\}$. Otherwise, retain the current value.
 \end{enumerate}
 
-With a Metropolis-Hastings sampler, if the proposed value is more likely than the current value, it is always accepted; otherwise, it is accepted with probability corresponding to the likelihood ratio (which ensures that the sampler continues to explore parameter space). Note that it is possible to use both Gibbs and Metropolis-Hastings sampling for different parameters within the same MCMC sampler.
+With a Metropolis-Hastings sampler, if the proposed value is more likely than the current value, it is always accepted; otherwise, it is accepted with probability corresponding to the likelihood ratio. This ensures that the sampler continues to explore parameter space. Note that it is possible to use both Gibbs and Metropolis-Hastings sampling for different parameters within the same MCMC sampler.
 
 
-# Non-Prior Methods
+# Variable Selection: Non-Prior Methods
 
 The first domain of Bayesian variable selection is general methods revolving around the problem setup, without modifying the priors placed on the $\beta$s. These still take place within the framework of MCMC sampling, but introduce additional structure or variables in order to reach the desired outcomes.
 
@@ -135,7 +135,7 @@ Bayesian subset selection is very similar to the frequentist problem of best sub
 However, as promising as BSS is with its many strengths over frequentist methods and its ability to compare subsets of models in the true spirit of variable selection, it still has its drawbacks. First, even with the computational benefits of the branch-and-bound algorithm, it is still computationally intractible above a certain number of predictors, which restricts the algorithm to subsets of an arbitrary maximum size (and may eliminate the true best subsets from consideration). Since there is no efficient implementation of this in R, it is excluded from this analysis. Additionally, this means it is not much more computationally tractable than frequentist best subset selection, where the branch-and-bound algorithm can also be applied. This puts BSS far behind BMS and BMA, which do not need to search over the full model space to identify promising models. Still, the Bayesian BSS method is very promising (and still very new), and offers a lot of advantages. Research in the coming years will likely make this one of the clearly preferred methods of Bayesian variable selection, particularly as searching over candidate subsets becomes more efficient.
 
 
-# Prior Methods
+# Variable Selection: Prior-Based Methods
 
 Suppose we have some prior beliefs about the structure of our $\beta$s. Specifically, we believe that not all of them are included in the true data-generative model, and many of their coefficients must be zero. We can place a prior distribution on the $\beta$s accordingly, reflecting this belief. This produces a posterior distribution of our desired form, where many of the $\beta$s are set to (near) zero. We can also introduce additional structure with this method, such as placing priors on different groups of $\beta$s, but that goes beyond the scope of this paper.
 
@@ -312,7 +312,7 @@ The distribution for $\kappa_j$ places a lot of mass near 0 (implying near-zero 
 There are several other shrinkage priors that have been proposed. The horseshoe+ prior places another latent variable in the hierarchy for another level of local shrinkage [@bhadra2017]. The Dirichlet-Laplace prior, another global-local shrinkage prior, draws local shrinkage coefficients from the joint Dirichlet distribution [@bhattacharya2014]. The SSLASSO prior hybridizes spike-and-slab and shrinkage priors by drawing from a mixture of Laplace distributions [@rockova2018]. While all of these approaches are promising and have their own strengths, they are excluded from further analysis here for the sake of time.
 
 
-# Expectation-Maximization Variable Selection
+# Variable Selection: Expectation-Maximization Variable Selection
 
 ## Overview
 
