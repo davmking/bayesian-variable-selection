@@ -48,7 +48,7 @@ One very active domain of variable selection research draws from the Bayesian pe
   \mathbb{P}(B | A) = \frac{\mathbb{P}(A | B) \mathbb{P}(B)}{\mathbb{P}(A)}
 \end{equation}
 
-As discussed below, Bayesian statistics allows the statistician to impose some structure on the model based on their prior beliefs about its format, which can help stabilize calculations and ensure an output of the desired form. It also can search over high-probability regions of the model space much more effectively than frequentist approaches. Many papers have compared different aspects of Bayesian model averaging to one another (e.g., [@lu2022], [@rockova2013]), but few if any have compared different branches of Bayesian variable selection to one another. Thus, this paper introduces a variety of Bayesian variable selection methods, and performs a brief experiment to compare across these branches.
+As discussed below, Bayesian statistics allows the statistician to impose some structure on the model based on their prior beliefs about its format, which can help stabilize calculations and ensure an output of the desired form. It also can search over high-probability regions of the model space much more effectively than frequentist approaches. Many papers have compared different aspects of Bayesian model averaging to one another (e.g., [@lu2022; @rockova2013]), but few if any have compared different branches of Bayesian variable selection to one another. Thus, this paper introduces a variety of Bayesian variable selection methods, and performs a brief experiment to compare across these branches.
 
 
 ## Research Questions
@@ -137,7 +137,7 @@ However, as promising as BSS is with its improvements on the frequentist optimal
 
 # Variable Selection: Prior-Based Methods
 
-Suppose we have some prior beliefs about the structure of our $\beta$s. Specifically, we believe that not all of them are included in the true data-generative model, and many of their coefficients must be zero. We can place a prior distribution on the $\beta$s accordingly, reflecting this belief. This produces a posterior distribution of our desired form, where many of the $\beta$s are set to (near) zero. We can also introduce additional structure with this method, such as placing priors on different groups of $\beta$s, but that goes beyond the scope of this paper.
+Suppose we have some prior beliefs about the structure of our $\beta$s. Specifically, we believe that not all of them are included in the true data-generative model, and many of their coefficients must be zero. We can place a prior distribution on the $\beta$s accordingly, reflecting this belief. This produces a posterior distribution of our desired form, where many of the $\beta$s are set to (near) zero. We can also introduce additional structure with this method, such as placing priors on different groups of $\beta$s, but that is beyond the scope of this paper.
 
 There are two major classes of priors used for variable selection: spike-and-slab priors and shrinkage priors.
 
@@ -152,7 +152,7 @@ Spike-and-slab priors have the general form
   \beta_j | \gamma_j \sim (1 - \gamma_j) \phi_0(\beta_j) + \gamma_j \phi_1(\beta_j),
 \end{equation}
 
-where $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero, while $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients [@lu2022]. By continuing to sample $\gamma$ in the MCMC sampler, this specification returns a joint posterior where (in general) the signal coefficients are near their true values while the noise coefficients are near zero, with posterior inclusion probabilities ($\gamma$) that reflect the most probable model specifications. This allows for a little more uncertainty in the estimation of coefficients than BMS does, since near-zero coefficients do not have to be pulled to exactly zero. Overall, spike-and-slab approaches are well-studied, effective, and widely used. However, there is still the disadvantage of needing to include $\gamma$ to sample over the model space $\mathcal{M}$, which can result in either extreme computational complexity or the possibility that the sampler never reaches the areas of true high posterior density.
+where $\phi_0(\beta_j)$ is a concentrated "spike" distribution that pulls some of the $\beta$s to (near) zero, while $\phi_1(\beta_j)$ is a diffuse "slab" distribution that allows the remaining $\beta$s to attain their true coefficients [@lu2022]. By sampling $\gamma$ in the MCMC sampler, this specification returns a joint posterior where the signal coefficients are near their true values while the noise coefficients are near zero, with posterior inclusion probabilities ($\gamma$) that reflect the most probable model specifications. This allows for a little more uncertainty in the estimation of coefficients than BMS does, since near-zero coefficients do not have to be pulled to exactly zero. However, there is still the disadvantage of needing to include $\gamma$ to sample over the model space $\mathcal{M}$, which could struggle to converge to regions of true high posterior density.
 
 
 ### Stochastic Search Variable Selection
@@ -163,7 +163,7 @@ The best-known implementation of the spike-and-slab prior is stochastic search v
   \beta_j | \gamma_j \sim (1 - \gamma_j) N(0, \tau_j^2) + \gamma_j N(0, c_j^2 \tau_j^2)
 \end{equation}
 
-Prior distributions can be placed on $\tau$ and $c$, or they can be held constant.
+Prior distributions can be placed on $\tau$ and $c$, or they can be held constant. A visual depiction of the spike-and-slab distribution is shown in Figure 1, though the spike is usually more concentrated and the slab more diffuse than depicted.
 
 ```{r}
 #| label: spike and slab distribution
@@ -184,7 +184,7 @@ data.frame(slab, spike) %>%
   labs(x = TeX("$\\beta$"), y = "Density", fill = "Distribution",
        title = "Plot of SSVS Spike-and-Slab Distribution",
        subtitle = TeX("$\\tau = 1, c = 3$"),
-       caption = "Note: spike is usually more concentrated and slab is usually more diffuse than depicted") +
+       caption = "Figure 1") +
   theme(plot.title = element_text(hjust = 0.5),
         plot.subtitle = element_text(hjust = 0.5),
         panel.grid = element_blank(),
@@ -196,7 +196,7 @@ data.frame(slab, spike) %>%
 
 ### Normal Mixture of Inverse Gamma
 
-The normal mixture of inverse gamma expands on SSVS by moving the spike-and-slab formulation down one level in the hierarchy, to place it on the variance instead [@albert1993, @rockova2012]. The hierarchal specification of this model is
+The normal mixture of inverse gamma expands on SSVS by moving the spike-and-slab formulation down one level in the hierarchy, to place it on the variance instead [@albert1993; @rockova2012]. The hierarchal specification of this model is
 
 \begin{align}
   \beta_j | \eta_j &\sim N(0, \eta_j) \\
@@ -208,7 +208,7 @@ where IG is the inverse-gamma distribution, and $\nu_1 >> \nu_0$. A prior, typic
 
 ## Shrinkage Priors
 
-Unlike spike-and-slab priors, which are mixture distributions, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the $\beta$s towards zero, while minimally penalizing the signal coefficients. Shrinkage priors have the benefit of being fully continuous, which means that they do not require a latent variable $\gamma$ to search over $\mathcal{M}$, and this makes shrinkage priors less likely to leave an entire set of highly probable model specifications unexplored. However, this has its tradeoffs: approaches using shrinkage priors often have dramatically increased computation time, and research has suggested that they may not select variables aggressively enough or may overly penalize the signal coefficients in the process (i.e., they may be less effective at discerning between signal and noise predictors).
+Unlike spike-and-slab priors, which are mixture distributions, shrinkage priors are single-point, continuous distributions. Their goal is to pull some of the $\beta$s towards zero, while minimally penalizing the signal coefficients. Shrinkage priors have the benefit of being fully continuous, which means that they do not require a latent variable $\gamma$ to search over $\mathcal{M}$, and this makes shrinkage priors less likely to leave highly probable model specifications unexplored. However, this has its tradeoffs: approaches using shrinkage priors often have dramatically increased computation time, and research has suggested that they may not select variables aggressively enough or may overly penalize the signal coefficients in the process (i.e., they may be less effective at discerning between signal and noise predictors).
 
 
 ### LASSO
@@ -224,6 +224,15 @@ In the Bayesian analogue to LASSO regression [@park2008], we place a conditional
 \begin{equation}
   p(\beta | \sigma^2) = \prod_{j = 1}^{p} \frac{\lambda}{2\sqrt{\sigma^2}} \text{exp} \left \{ \frac{-\lambda |\beta_j|}{\sqrt{\sigma^2}} \right \}
 \end{equation}
+
+This results in the hierarchical specification
+
+\begin{align}
+  \beta_j | \tau_j &\sim N(0, \sigma^2 \tau_j^2) \\
+  \tau_j | \lambda &\sim \text{exp}(\lambda^2 / 2)
+\end{align}
+
+Under this distribution, there is a high probability of the $\beta$s falling at or near zero, which increases with $\lambda$ as shown in Figure 2. In this setting, we can also place a prior on $\lambda$ and sample it along with $\beta$. The result is a posterior where many of the $\beta$s are at or near 0, and careful prior specification can ensure that the posterior distribution is unimodal [@park2008]. This can also be generalized to other cases, such as bridge regression.
 
 ```{r}
 #| label: LASSO distribution
@@ -250,26 +259,19 @@ data.frame(lasso_values) %>%
   coord_cartesian(xlim = c(-10, 10)) +
   theme_bw() +
   labs(x = TeX("$\\beta$"), y = "Density", fill = TeX("$\\lambda$"),
-       title = "Plot of Laplace (LASSO Prior) Distribution") +
+       title = "Plot of Laplace (LASSO Prior) Distribution",
+       caption = "Figure 2") +
   theme(plot.title = element_text(hjust = 0.5),
-        panel.grid = element_blank()) +
+        panel.grid = element_blank(),
+        legend.position = "bottom") +
   scale_fill_viridis(discrete = TRUE, option = "B") +
   guides(fill = guide_legend(reverse = TRUE))
 ```
 
-This results in the hierarchical specification
-
-\begin{align}
-  \beta_j | \tau_j &\sim N(0, \sigma^2 \tau_j^2) \\
-  \tau_j | \lambda &\sim \text{exp}(\lambda^2 / 2)
-\end{align}
-
-Under this distribution, there is a high probability of the $\beta$s falling at or near zero, which increases with $\lambda$ as shown above. In this setting, we can also place a prior on $\lambda$ and sample it along with $\beta$. The result is a posterior where many of the $\beta$s are at or near 0, and careful prior specification can ensure that the posterior distribution is unimodal [@park2008]. This can also be generalized to other cases, such as bridge regression.
-
 
 ### Normal-Gamma
 
-While the Bayesian LASSO was one of the earliest methods of Bayesian variable selection and remains one of the best-used, it is not without its criticisms. The use of only a single hyperparameter reduces flexibility, meaning that either the LASSO will fail to perform adequate variable selection or the signal coefficients will be unnecessarily reduced. Thus, the normal-gamma prior arises [@griffin2010]. The specification for the normal-gamma is
+While the Bayesian LASSO was one of the earliest methods of Bayesian variable selection and remains one of the best-used, it is not without its criticisms. The use of only a single hyperparameter reduces flexibility, meaning that either the LASSO will fail to perform adequate variable selection or the signal coefficients will be unnecessarily reduced. Thus, the normal-gamma prior arises [@griffin2010]. The normal-gamma specification is:
 
 \begin{align}
   \beta_j | \tau_j &\sim N(0, \tau_j^2) \\
@@ -281,7 +283,7 @@ The introduction of the extra hyperparameter $\xi$ and the gamma prior on the va
 
 ### Horseshoe
 
-Taking a slightly different approach, horseshoe priors fall into a class known as **global-local** shrinkage priors [@carvalho2010]. These priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage for some coefficients at the local level. The hierarchical representation of the regression model under a horseshoe prior is
+Taking a slightly different approach, horseshoe shrinkage priors fall into a class known as **global-local** shrinkage priors [@carvalho2010]. These priors use a global hyperparameter to shrink all coefficients towards zero, while maintaining a local hyperparameter to adjust the scale of shrinkage for some coefficients at the local level. The hierarchical representation of the regression model under a horseshoe prior is
 
 \begin{align}
   \beta_j | \eta_j &\sim N(0, \eta_j^2) \\
@@ -300,38 +302,39 @@ ggplot(mapping = aes(x = rbeta(1000000, 1/2, 1/2))) +
   geom_density(fill = "darkgrey", alpha = 0.5) +
   theme_bw() +
   labs(x = TeX("$\\kappa_j$"), y = "Density",
-       title = "Plot of Horseshoe Prior Distribution") +
+       title = "Plot of Horseshoe Shrinkage Coefficient Distribution",
+       caption = "Figure 3") +
   theme(plot.title = element_text(hjust = 0.5),
         panel.grid = element_blank())
 ```
 
-The distribution for $\kappa_j$ places a lot of mass near 0 (implying near-zero shrinkage, representing signals) and 1 (implying near-total shrinkage, representing noise). This specification allows for most of the coefficients to be pulled to zero, while allowing the remaining coefficients to reach their true values. It is a different specification than LASSO/NG, but one that is widely used and often performs better in practice.
+The distribution for $\kappa_j$, depicted in Figure 3, places a lot of mass near 0 (implying near-zero shrinkage, maintaining signals) and 1 (implying near-total shrinkage, reducing noise). This specification forces most of the coefficients to be pulled to zero, while allowing the remaining coefficients to reach their true values. It is a slightly different specification than LASSO/NG, but one that is widely used and often performs better in practice.
 
 ### Other Approaches
 
-There are several other shrinkage priors that have been proposed. The horseshoe+ prior places another latent variable in the hierarchy for another level of local shrinkage [@bhadra2017]. The Dirichlet-Laplace prior, another global-local shrinkage prior, draws local shrinkage coefficients from the joint Dirichlet distribution [@bhattacharya2014]. The SSLASSO prior hybridizes spike-and-slab and shrinkage priors by drawing from a mixture of Laplace distributions [@rockova2018]. While all of these approaches are promising and have their own strengths, they are excluded from further analysis here for the sake of time.
+Several other shrinkage priors have been proposed. The horseshoe+ prior places another latent variable in the hierarchy for another level of local shrinkage [@bhadra2017]. The Dirichlet-Laplace prior draws local shrinkage coefficients from the joint Dirichlet distribution [@bhattacharya2014]. The SSLASSO prior hybridizes spike-and-slab and shrinkage priors by drawing from a mixture of Laplace distributions [@rockova2018]. While all of these approaches are promising and have their own strengths, they are excluded from further analysis here for simplicity.
 
 
 # Variable Selection: Expectation-Maximization Variable Selection
 
 ## Overview
 
-Though all other methods described here use the MCMC algorithm approach to Bayesian variable selection, EMVS is an algorithm that is formulated differently. EMVS is highly useful in high dimensional settings ($p >> n$), since it runs in a tiny fraction of the time that MCMC requires and can effectively identify the high-probability sparse models [@rockova2013]. EMVS is anchored by the SSVS spike-and-slab approach [@george1993], but it can be extended into other settings as well.
+Though all previous methods use the MCMC algorithm, EMVS is an algorithm that is formulated differently. EMVS is highly useful in high dimensional settings ($p >> n$), since it runs in a tiny fraction of the time that MCMC requires and can effectively identify the high-probability sparse models [@rockova2013]. EMVS is anchored by the SSVS spike-and-slab approach [@george1993], but it can be extended into other settings as well.
 
 
 ## Algorithm
 
-The EMVS algorithm is very straightforward. Begin by specifying the full Bayesian regression setting, typically using a spike-and-slab prior such as SSVS. Then, repeat two steps until convergence:
+The EMVS algorithm is very straightforward. Begin by specifying the full Bayesian regression setting, typically using a spike-and-slab prior. Then, repeat two steps until convergence:
 
  - **Expectation (E) Step:** Calculate the posterior inclusion probabilities (i.e., expectations) for each $\beta_j$ given current parameter updates.
  - **Maximization (M) Step:** Update the parameter estimates by maximizing the objective function of all model parameters, given the data.
  
-More formal specifications of the equations required to execute this algorithm can be found in [@rockova2013]. In practice, this algorithm generally converges very quickly - in the experiment below, all specifications of the algorithm converged within 15 iterations, which is stellar performance.
+More formal specifications of the equations required to execute this algorithm can be found in [@rockova2013]. In practice, this algorithm generally converges very quickly - in the experiment below, all specifications of the algorithm converged within 15 iterations.
 
 
 ## Deterministic Annealing
 
-If the true posterior is multi-modal, it is very possible that poor initialization of the EMVS algorithm will lead to incorrect estimates of the posterior, as EMVS gets trapped in local modes. One potential solution to this is deterministic annealing. Instead of maximizing the objective function, we minimize a tempered version known as the negative free energy function. We can raise the "temperature", which smooths away the local modes of the negative free energy function, allowing only the true signals to shine through and giving us some robustness against poor initialization. As we progress through the algorithm, we lower the temperature progressively until its effects are completely removed, allowing us to view an equation that more truly resembles the posterior [@rockova2013]. Some form of cross-validation is required to find the optimal values of initial temperature, but since the EMVS algorithm converges so quickly, this is still much faster than MCMC sampling in most cases.
+If the true posterior is multi-modal, it is very possible that poor initialization of the EMVS algorithm will lead to incorrect estimates of the posterior, as EMVS gets trapped in local modes. One potential solution to this is deterministic annealing. Instead of maximizing the objective function, we maximize a tempered version known as the negative free energy function. We can raise the "temperature", which smooths away the local modes of the negative free energy function, allowing only the true signals to shine through and giving us some robustness against poor initialization. As we progress through the algorithm, we lower the temperature progressively until its effects are completely removed, allowing us to view an equation that accurately resembles the true posterior [@rockova2013]. Some form of cross-validation is required to find the optimal values of initial temperature, but since the EMVS algorithm converges so quickly, this is still much faster than MCMC sampling in most cases.
 
 
 # Experiment
