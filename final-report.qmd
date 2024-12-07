@@ -11,6 +11,7 @@ csl: apa.csl
 header-includes:
   - \usepackage{amssymb}
   - \usepackage{amsmath}
+  - \usepackage{mathtools}
 ---
 
 ```{r}
@@ -27,8 +28,6 @@ library(kableExtra)
 
 # Introduction
 
-*Note: all notes and code used in this project can be found at github.com/davmking/bayesian-variable-selection.*
-
 Consider the traditional regression setting:
 
 
@@ -37,32 +36,32 @@ Consider the traditional regression setting:
 \end{equation}
 
 
-In this setting, $\beta$ is the $p \times 1$ vector of predictors, $\mathbf{X}$ is the $n \times p$ feature matrix, $\mathbf{Y}$ is the $n \times 1$ vector of responses, and $\epsilon$ is the $n \times 1$ vector of random, irreducible, zero-mean noise. $p(\mathbf{Y} | \beta)$ is known as the **data-generative model**, i.e., the mechanism by which we believe the response variable $\mathbf{Y}$ is actually generated. Often, we have a great number of potential predictors, but believe that only a small handful of them are truly a part of the data-generative model. This is a statistical concept known as **sparsity**, where the predictors in the true data-generative model are **signals** and the remaining predictors are **noise**. Our goal is to separate the signals from the noise in order to truly understand the underlying data generative model.
+In this setting, $\beta$ is the $p \times 1$ vector of predictors, $\mathbf{X}$ is the $n \times p$ feature matrix, $\mathbf{Y}$ is the $n \times 1$ vector of responses, and $\epsilon$ represents random, irreducible, zero-mean noise. This process is known as the **data-generative model**, i.e., the mechanism by which we believe the response variable $\mathbf{Y}$ is generated. Often, we have many potential predictors, but believe that only a small handful are in the true data-generative model. This is a concept known as **sparsity**, where the true predictors are **signals** and the remaining predictors are **noise**. Our goal is to separate the signals from the noise and identify the underlying data-generative model.
 
-Our goal, therefore, is to control the number of predictors by performing **variable selection**. By identifying only the subset of signals, we can reduce computational complexity, minimize variance in the model, and improve interpretability. This is especially useful in situations where we care more about interpretation than prediction: An understanding of the actual data-generative model allows us to understand how response variables come about, which can have highly meaningful applications in real-world settings. As computational power and data availability have simultaneously increased, variable selection processes have developed major applications in fields such as genomics and the social sciences.
+To accomplish this, we wish to control the number of predictors by performing **variable selection**. By identifying the subset of true signals, we can reduce computational complexity, minimize model variance, and improve interpretability. This is especially useful in situations where we care more about interpretation than prediction: An understanding of the data-generative model allows us to determine how response variables are created. As computational power and data availability skyrocket, variable selection has developed highly meaningful applications in numerous fields, such as genomics and the social sciences.
 
-Separating signals from noise is not a small feat, however. Though it is tempting to try all possible combinations of variables while solving this problem (known as best subset selection), this method is computationally intractable except in situations where $p$ is very small. For a model with $p$ parameters, there are $2^p$ possible model formulations, which compose the model space $\mathcal{M}$. Searching over all of $\mathcal{M}$ quickly becomes impossible, at least with modern computing technology. Another possible solution is greedy algorithms such as forward- and back-selection, but these processes can miss important effects that arise when multiple related predictors are included in the model together. Other methods that penalize predictors, such as LASSO regression, have become standard across industries, but they are often not aggressive enough to select a sufficiently small subset of variables or lead to bias in the model's coefficient predictions.
+Separating signals from noise is not a small feat, however. The naive answer is to try all possible combinations of variables while solving this problem (known as best subset selection). However, this method is computationally intractable except in situations where $p$ is very small. For a model with $p$ parameters, there are $2^p$ possible model formulations, composing the model space $\mathcal{M}$. Searching over all of $\mathcal{M}$ becomes infeasible quickly as $p$ increases. Another possible solution is the use of greedy algorithms, such as forward- and back-selection. However, these processes can miss important effects that arise when related predictors are included in the model together. Other methods that penalize predictors, such as LASSO regression, have become standard across industries, but they are often not aggressive enough to select a sufficiently small subset of predictors or lead to bias in coefficient estimates.
 
-One very active domain of research around these problems draws from the Bayesian perspective on statistics. At the core of Bayesian statistics is Bayes' theorem, which describes how beliefs about a random variable should be updated after encountering new information:
+One very active domain of variable selection research draws from the Bayesian perspective on statistics. At the core of Bayesian statistics is Bayes' theorem, which describes how beliefs about a probability should be updated according to new information:
 
 \begin{equation}
   \mathbb{P}(B | A) = \frac{\mathbb{P}(A | B) \mathbb{P}(B)}{\mathbb{P}(A)}
 \end{equation}
 
-As will be discussed below, Bayesian statistics allows for the statistician to impose some structure on the model based on their prior beliefs about its format, which can help stabilize calculations and ensure an output of the desired form. It also can search over high-probability regions of the model space much more effectively than frequentist approaches. Many papers have compared different aspects of Bayesian model averaging to one another (e.g., [@lu2022], [@rockova2013]), but few if any have compared different domains of Bayesian variable selection to one another. Thus, this paper describes the foundation of Bayesian variable selection methods, and performs a brief experiment to compare approaches across domains.
+As discussed below, Bayesian statistics allows the statistician to impose some structure on the model based on their prior beliefs about its format, which can help stabilize calculations and ensure an output of the desired form. It also can search over high-probability regions of the model space much more effectively than frequentist approaches. Many papers have compared different aspects of Bayesian model averaging to one another (e.g., [@lu2022], [@rockova2013]), but few if any have compared different branches of Bayesian variable selection to one another. Thus, this paper introduces a variety of Bayesian variable selection methods, and performs a brief experiment to compare across these branches.
 
 
 ## Research Questions
 
-The central research questions for this paper were as follows:
+The central research questions for this paper are as follows:
 
 \begin{enumerate}
-  \item What methods of Bayesian variable selection exist, and how do they relate to one another?
+  \item What methods of Bayesian variable selection exist, and how do they relate?
   \item Which methods perform best in each of the following settings? \begin{align*}
-  n >> p \\
-  n > p \\
-  p > n \\
-  p >> n 
+  &n >> p \\
+  &n > p \\
+  &p > n \\
+  &p >> n 
   \end{align*}
   \item What are the computation time/accuracy tradeoffs?
 \end{enumerate}
@@ -386,6 +385,8 @@ Overall, there is no way to coin one "best" performing algorithm based on these 
 There are a number of limitations to the setting of this experiment. Synthetic data is inherently imperfect, since it may not reflect real-world situations, and some aspects of this study relied too heavily on the nature of the synthetic data. There are a number of variables that went unexplored, including which algorithms perform better as the signal-to-noise ratio (set to 1 in this study) changes, and how runtime scales as the number of observations increases. The low-observation setting ($n = 100$) is also concerning: While this was necessary for the sake of computation time, it could have misleading impacts on this problem and does not allow us to generalize beyond this setting to see which algorithms would be expected to perform best with much more data. There are also a number of other very promising methods developed in recent years (some mentioned above) that were excluded from this analysis due to difficulty of implementation, which could mean that the best performing algorithms were not considered here.
 
 Overall, though, this paper shows a robust comparison of Bayesian variable selection techniques, one that compares across branches of thinking in a manner that few if any papers have yet addressed. This paper compares and contrasts the strengths and weaknesses of various approaches, and demonstrates their capabilities in a carefully controlled experiment. Bayesian variable selection is an area of very active research right now, with most of these methods developed within the past 15 years. In another 15, who knows how far our knowledge in this field may advance? The possibilities are endless.
+
+*Note: all notes and code used in this project can be found at github.com/davmking/bayesian-variable-selection. The research nodes are in theory-notes.qmd, experiment files in experiment.qmd, Chat GPT citations in chat-gpt-prompts.txt, references in references.bib, and source code for this report in final-report.qmd. Note that this code relies on saved objects that are not pushed to GitHub; they can be created using code in experiment.qmd.*
 
 
 \newpage
